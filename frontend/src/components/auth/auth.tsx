@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PiggyBank, Eye, EyeOff, Mail, Lock, User, TrendingUp } from 'lucide-react';
 import './auth.css';
 
@@ -28,6 +29,12 @@ const Auth: React.FC = () => {
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+  
+  // NOVO: estado para mensagem de resposta do backend
+  const [serverMessage, setServerMessage] = useState('');
+  const [serverMessageIsError, setServerMessageIsError] = useState(false);
+
+  const navigate = useNavigate();
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -54,13 +61,16 @@ const Auth: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerMessage('');
+    setServerMessageIsError(false);
+
     if (!validateForm()) return;
 
     setLoading(true);
-    
+
     try {
-      const endpoint = isLogin ? '/login/' : '/cadastrar/';
-      const payload = isLogin 
+      const endpoint = isLogin ? '/auth/login/' : '/auth/cadastro/';
+      const payload = isLogin
         ? { email: formData.email, senha: formData.senha }
         : { nome: formData.nome, email: formData.email, senha: formData.senha };
 
@@ -72,16 +82,25 @@ const Auth: React.FC = () => {
         body: JSON.stringify(payload),
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
-        console.log('Success:', data);
-        // Aqui você pode redirecionar ou salvar o token
+        // Exibe mensagem de sucesso que vem do backend
+        setServerMessage(data.success || 'Sucesso!');
+        setServerMessageIsError(false);
+
+        // Redireciona após 1.5 segundos
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
       } else {
-        const errorData = await response.json();
-        console.error('Error:', errorData);
+        // Exibe mensagem de erro que vem do backend
+        setServerMessage(data.error || 'Erro inesperado.');
+        setServerMessageIsError(true);
       }
     } catch (error) {
-      console.error('Network error:', error);
+      setServerMessage('Erro na conexão.');
+      setServerMessageIsError(true);
     } finally {
       setLoading(false);
     }
@@ -93,13 +112,18 @@ const Auth: React.FC = () => {
       ...prev,
       [name]: value
     }));
-    
-    // Clear error when user starts typing
+
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
         [name]: undefined
       }));
+    }
+
+    // Limpa mensagem do servidor quando o usuário digita
+    if (serverMessage) {
+      setServerMessage('');
+      setServerMessageIsError(false);
     }
   };
 
@@ -112,6 +136,8 @@ const Auth: React.FC = () => {
       confirmPassword: ''
     });
     setErrors({});
+    setServerMessage('');
+    setServerMessageIsError(false);
   };
 
   return (
@@ -123,13 +149,15 @@ const Auth: React.FC = () => {
           <div className="shape shape-3"></div>
         </div>
       </div>
-      
+
       <div className="auth-card">
         <div className="auth-header">
-         <div className="logo">
-  <PiggyBank className="logo-icon" />
-  <span className="logo-text">Capital Online</span>
-</div>
+          <div className="logo">
+            {/* PiggyBank verde #22c55e */}
+            <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+            <span className="logo-text">Capital Online</span>
+          </div>
+
           <div className="tagline">
             <TrendingUp className="tagline-icon" />
             <span>Gerencie suas finanças com inteligência</span>
@@ -138,14 +166,14 @@ const Auth: React.FC = () => {
 
         <div className="auth-form-container">
           <div className="auth-toggle">
-            <button 
+            <button
               type="button"
               className={`toggle-btn ${isLogin ? 'active' : ''}`}
               onClick={() => isLogin || toggleMode()}
             >
               Entrar
             </button>
-            <button 
+            <button
               type="button"
               className={`toggle-btn ${!isLogin ? 'active' : ''}`}
               onClick={() => !isLogin || toggleMode()}
@@ -248,6 +276,21 @@ const Auth: React.FC = () => {
                 isLogin ? 'Entrar' : 'Criar Conta'
               )}
             </button>
+
+            {/* NOVO: mensagem de resposta do backend */}
+            {serverMessage && (
+              <div
+                style={{
+                  marginTop: 12,
+                  color: serverMessageIsError ? 'red' : 'green',
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                }}
+                role="alert"
+              >
+                {serverMessage}
+              </div>
+            )}
           </form>
 
           <div className="auth-footer">

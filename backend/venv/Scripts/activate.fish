@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV 'C:\Users\plent\Capital-Online-tcc\venv'
+set -gx VIRTUAL_ENV 'C:\Users\thais\OneDrive\Área de Trabalho\info geral\tcc\backend\venv'
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"Scripts $PATH
