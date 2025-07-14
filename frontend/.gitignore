@@ -2,13 +2,8 @@
 # Geral
 ENV=development
 DEBUG=True
-SECRET_KEY=sua_chave_secreta_segura
 
-# Banco de dados
-DATABASE_URL=postgresql://usuario:senha@localhost:5432/nome_do_banco
-
-# CORS
-FRONTEND_URL=http://localhost:3000
+node_modules/
 
 # Outras configs
 PORT=8000
