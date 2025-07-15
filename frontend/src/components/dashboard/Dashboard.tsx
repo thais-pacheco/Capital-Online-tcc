@@ -3,13 +3,11 @@ import {
   TrendingUp, 
   TrendingDown, 
   DollarSign, 
-  PlusCircle, 
   Search,
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
   BarChart3,
-  Target,
   LogOut,
   ChevronDown
 } from 'lucide-react';
