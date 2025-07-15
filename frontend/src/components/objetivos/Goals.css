@@ -1,0 +1,486 @@
+.goals-container {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.goals-header {
+  background-color: white;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.goals-header-inner {
+  max-width: 112rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.goals-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.goals-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.goals-header-logo-icon {
+  width: 2rem;
+  height: 2rem;
+  background-color: #059669;
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.goals-header-logo-text {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #111827;
+}
+
+.goals-nav {
+  display: none;
+  gap: 2rem;
+}
+
+@media(min-width: 768px) {
+  .goals-nav {
+    display: flex;
+  }
+}
+
+.goals-nav button {
+  color: #4b5563;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.goals-nav button:hover {
+  color: #059669;
+}
+
+.goals-nav button.active {
+  color: #059669;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.goals-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.goals-header-actions button {
+  padding: 0.5rem;
+  color: #4b5563;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.goals-header-actions button:hover {
+  color: #059669;
+}
+
+.goals-header-actions button.logout:hover {
+  color: #dc2626;
+}
+
+.goals-profile-circle {
+  width: 2rem;
+  height: 2rem;
+  background-color: #059669;
+  border-radius: 9999px;
+  color: white;
+  font-weight: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.goals-content {
+  max-width: 112rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.goals-back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: color 0.2s;
+  margin-bottom: 1rem;
+}
+
+.goals-back-button:hover {
+  color: #059669;
+}
+
+.goals-header-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media(min-width: 640px) {
+  .goals-header-section {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.goals-header-section h1 {
+  font-weight: 700;
+  font-size: 1.875rem;
+  color: #111827;
+}
+
+.goals-header-section p {
+  color: #4b5563;
+}
+
+.goals-new-button {
+  margin-top: 1rem;
+  background-color: #059669;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+@media(min-width: 640px) {
+  .goals-new-button {
+    margin-top: 0;
+  }
+}
+
+.goals-new-button:hover {
+  background-color: #047857;
+}
+
+.goals-form-container {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 2rem;
+}
+
+.goals-form-container h2 {
+  font-weight: 600;
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: #111827;
+}
+
+.goals-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media(min-width: 768px) {
+  .goals-form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.goals-form label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.goals-form input[type="text"],
+.goals-form input[type="number"],
+.goals-form input[type="date"],
+.goals-form select,
+.goals-form textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  color: #111827;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+
+.goals-form input[type="text"]:focus,
+.goals-form input[type="number"]:focus,
+.goals-form input[type="date"]:focus,
+.goals-form select:focus,
+.goals-form textarea:focus {
+  box-shadow: 0 0 0 2px #059669;
+  border-color: transparent;
+  outline-offset: 0;
+}
+
+.goals-form textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
+
+.goals-form-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.goals-submit-button {
+  background-color: #059669;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+}
+
+.goals-submit-button:hover {
+  background-color: #047857;
+}
+
+.goals-cancel-button {
+  background-color: #f3f4f6;
+  color: #374151;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+}
+
+.goals-cancel-button:hover {
+  background-color: #e5e7eb;
+}
+
+.goals-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media(min-width: 768px) {
+  .goals-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media(min-width: 1024px) {
+  .goals-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.goal-card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s;
+}
+
+.goal-card:hover {
+  box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+}
+
+.goal-card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.goal-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.goal-status-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-completed {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-overdue {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-active {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.goal-actions button {
+  padding: 0.25rem;
+  color: #9ca3af;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.goal-actions button:hover {
+  color: #059669;
+}
+
+.goal-actions button.delete:hover {
+  color: #dc2626;
+}
+
+.goal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #111827;
+}
+
+.goal-description {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+.goal-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+  height: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 0.5rem;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill-completed {
+  background-color: #22c55e;
+}
+
+.progress-fill-active {
+  background-color: #059669;
+}
+
+.goal-progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.goal-progress-input {
+  margin-top: 1rem;
+}
+
+.goal-progress-input label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.goal-progress-input input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+
+.goal-progress-input input:focus {
+  box-shadow: 0 0 0 2px #059669;
+  border-color: transparent;
+  outline-offset: 0;
+}
+
+.goal-meta {
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.goals-empty {
+  text-align: center;
+  padding: 3rem 0;
+  color: #9ca3af;
+}
+
+.goals-empty h3 {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.goals-empty p {
+  margin-bottom: 1.5rem;
+  color: #4b5563;
+}
+
+.goals-empty button {
+  background-color: #059669;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.goals-empty button:hover {
+  background-color: #047857;
+}
