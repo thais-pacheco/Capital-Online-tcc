@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Auth from './components/auth/auth';
 import Dashboard from './components/dashboard/Dashboard';
-import NewTransaction from './components/newtransaction/NewTransaction'; // ✅ Importe o componente
+import NewTransaction from './components/newtransaction/NewTransaction'; 
 
 function App() {
   return (

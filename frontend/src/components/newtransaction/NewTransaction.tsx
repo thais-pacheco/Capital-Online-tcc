@@ -30,7 +30,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
     description: '',
     amount: '',
     category: '',
-    document: '',
+    // document removido daqui
     date: new Date().toISOString().split('T')[0],
     notes: ''
   });
@@ -64,9 +64,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
       newErrors.category = 'Categoria é obrigatória';
     }
 
-    if (!formData.document.trim()) {
-      newErrors.document = 'Número do documento é obrigatório';
-    }
+    // validação de document removida
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -88,7 +86,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
       description: '',
       amount: '',
       category: '',
-      document: '',
+      // document removido daqui
       date: new Date().toISOString().split('T')[0],
       notes: ''
     });
@@ -172,9 +170,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                 <button
                   type="button"
                   onClick={() => handleInputChange('type', 'income')}
-                  className={`transaction-type-button ${
-                    formData.type === 'income' ? 'income' : ''
-                  }`}
+                  className={`transaction-type-button ${formData.type === 'income' ? 'income' : ''}`}
                 >
                   <div className="transaction-type-button-content">
                     <div className="transaction-type-icon-container">
@@ -190,9 +186,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                 <button
                   type="button"
                   onClick={() => handleInputChange('type', 'expense')}
-                  className={`transaction-type-button ${
-                    formData.type === 'expense' ? 'expense' : ''
-                  }`}
+                  className={`transaction-type-button ${formData.type === 'expense' ? 'expense' : ''}`}
                 >
                   <div className="transaction-type-button-content">
                     <div className="transaction-type-icon-container">
@@ -218,7 +212,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                     type="text"
                     id="description"
                     value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    onChange={e => handleInputChange('description', e.target.value)}
                     className={`form-input ${errors.description ? 'error-border' : ''}`}
                     placeholder="Ex: Venda de produtos, Conta de luz..."
                   />
@@ -240,7 +234,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                     step="0.01"
                     min="0"
                     value={formData.amount}
-                    onChange={(e) => handleInputChange('amount', e.target.value)}
+                    onChange={e => handleInputChange('amount', e.target.value)}
                     className={`form-input ${errors.amount ? 'error-border' : ''}`}
                     placeholder="0,00"
                   />
@@ -259,11 +253,11 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                   <select
                     id="category"
                     value={formData.category}
-                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    onChange={e => handleInputChange('category', e.target.value)}
                     className={`form-select ${errors.category ? 'error-border' : ''}`}
                   >
                     <option value="">Selecione uma categoria</option>
-                    {categories[formData.type].map((category) => (
+                    {categories[formData.type].map(category => (
                       <option key={category} value={category}>
                         {category}
                       </option>
@@ -275,22 +269,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                 )}
               </div>
 
-              <div className="form-group">
-                <label htmlFor="document" className="form-label">
-                  Número do Documento *
-                </label>
-                <input
-                  type="text"
-                  id="document"
-                  value={formData.document}
-                  onChange={(e) => handleInputChange('document', e.target.value)}
-                  className={`form-input ${errors.document ? 'error-border' : ''}`}
-                  placeholder="Ex: 123456"
-                />
-                {errors.document && (
-                  <p className="error-message">{errors.document}</p>
-                )}
-              </div>
+              {/* Campo número do documento removido */}
 
               <div className="form-group">
                 <label htmlFor="date" className="form-label">
@@ -300,7 +279,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                   type="date"
                   id="date"
                   value={formData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  onChange={e => handleInputChange('date', e.target.value)}
                   className="form-input"
                 />
               </div>
@@ -313,7 +292,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                   id="notes"
                   rows={3}
                   value={formData.notes}
-                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  onChange={e => handleInputChange('notes', e.target.value)}
                   className="form-textarea"
                   placeholder="Informações adicionais sobre esta movimentação..."
                 />
