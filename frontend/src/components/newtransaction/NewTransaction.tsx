@@ -30,7 +30,6 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
     description: '',
     amount: '',
     category: '',
-    // document removido daqui
     date: new Date().toISOString().split('T')[0],
     notes: ''
   });
@@ -64,8 +63,6 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
       newErrors.category = 'Categoria é obrigatória';
     }
 
-    // validação de document removida
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -86,7 +83,6 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
       description: '',
       amount: '',
       category: '',
-      // document removido daqui
       date: new Date().toISOString().split('T')[0],
       notes: ''
     });
@@ -206,7 +202,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                 <label htmlFor="description" className="form-label">
                   Descrição *
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="input-with-icon">
                   <FileText className="form-icon" />
                   <input
                     type="text"
@@ -226,7 +222,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                 <label htmlFor="amount" className="form-label">
                   Valor (R$) *
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="input-with-icon">
                   <DollarSign className="form-icon" />
                   <input
                     type="number"
@@ -248,7 +244,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                 <label htmlFor="category" className="form-label">
                   Categoria *
                 </label>
-                <div style={{ position: 'relative' }}>
+                <div className="input-with-icon">
                   <Tag className="form-icon" />
                   <select
                     id="category"
@@ -268,8 +264,6 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                   <p className="error-message">{errors.category}</p>
                 )}
               </div>
-
-              {/* Campo número do documento removido */}
 
               <div className="form-group">
                 <label htmlFor="date" className="form-label">
