@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -23,7 +24,7 @@ interface Transaction {
   document: string;
 }
 
-export type Page = 'dashboard' | 'new-transaction' | 'charts' | 'goals';
+export type Page = 'dashboard' | 'new-transaction' | 'charts' | 'objetivos';
 
 interface DashboardProps {
   onNavigate?: (page: Page) => void;
@@ -31,6 +32,7 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -115,14 +117,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
   const totalExpenses = 800000;
 
   const handleNavigate = (page: Page) => {
-    if (onNavigate) {
-      onNavigate(page);
-    }
-  };
+  if (page === 'objetivos') {
+    navigate('/objetivos'); 
+  } else if (onNavigate) {
+    onNavigate(page);
+  }
+};
+
 
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
+    } else {
+      navigate('/');
     }
   };
 
@@ -159,7 +166,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
               </button>
               <button 
                 className="nav-button"
-                onClick={() => handleNavigate('goals')}
+                onClick={() => handleNavigate('objetivos')}
               >
                 Objetivos
               </button>

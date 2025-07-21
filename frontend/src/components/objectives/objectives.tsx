@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
-import { DollarSign,ArrowLeft,Plus,Edit,Trash2,CheckCircle,Clock,AlertCircle,PlusCircle,LogOut
+import React, { useState, useEffect } from 'react'; 
+import { 
+  DollarSign, 
+  ArrowLeft, 
+  Plus, 
+  Edit, 
+  Trash2, 
+  CheckCircle, 
+  Clock, 
+  AlertCircle, 
+  PlusCircle, 
+  LogOut 
 } from 'lucide-react';
 
-import './Goals.css';
+import './objectives.css';
 
 type Page = 'dashboard' | 'new-transaction' | 'charts' | 'objetivos';
 
@@ -34,43 +44,24 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     category: ''
   });
 
-  const [goals, setGoals] = useState<Goal[]>([
-    {
-      id: '1',
-      title: 'Reserva de Emergência',
-      description: 'Criar uma reserva de emergência para 6 meses de despesas',
-      targetAmount: 5000000,
-      currentAmount: 3200000,
-      deadline: '2025-12-31',
-      category: 'Emergência',
-      status: 'active',
-      createdAt: '2025-01-01'
-    },
-    {
-      id: '2',
-      title: 'Viagem para Europa',
-      description: 'Juntar dinheiro para uma viagem de 15 dias pela Europa',
-      targetAmount: 1500000,
-      currentAmount: 800000,
-      deadline: '2025-07-01',
-      category: 'Lazer',
-      status: 'active',
-      createdAt: '2024-12-01'
-    },
-    {
-      id: '3',
-      title: 'Novo Computador',
-      description: 'Comprar um novo computador para trabalho',
-      targetAmount: 800000,
-      currentAmount: 800000,
-      deadline: '2025-03-01',
-      category: 'Equipamentos',
-      status: 'completed',
-      createdAt: '2024-11-01'
-    }
-  ]);
-
+  const [goals, setGoals] = useState<Goal[]>([]);
   const categories = ['Emergência', 'Lazer', 'Equipamentos', 'Investimentos', 'Casa', 'Educação', 'Outros'];
+
+  // Carrega os objetivos do backend ao montar o componente
+  useEffect(() => {
+    fetch('/api/objetivos')
+      .then(res => {
+        if (!res.ok) throw new Error('Falha ao carregar objetivos');
+        return res.json();
+      })
+      .then(data => {
+        setGoals(data);
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Erro ao carregar objetivos');
+      });
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -84,31 +75,56 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
       return;
     }
 
-    const newGoal: Goal = {
-      id: Date.now().toString(),
+    const payload = {
       title: formData.title,
       description: formData.description,
       targetAmount: parseFloat(formData.targetAmount) * 100,
-      currentAmount: 0,
       deadline: formData.deadline,
-      category: formData.category || 'Outros',
-      status: 'active',
-      createdAt: new Date().toISOString().split('T')[0]
+      category: formData.category || 'Outros'
     };
 
     if (editingGoal) {
-      setGoals(prev => prev.map(goal =>
-        goal.id === editingGoal.id
-          ? { ...newGoal, id: editingGoal.id, currentAmount: editingGoal.currentAmount, createdAt: editingGoal.createdAt }
-          : goal
-      ));
-      setEditingGoal(null);
+      // Editar objetivo
+      fetch(`/api/objetivos/${editingGoal.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Erro ao editar objetivo');
+          return res.json();
+        })
+        .then(updatedGoal => {
+          setGoals(prev => prev.map(goal => (goal.id === editingGoal.id ? updatedGoal : goal)));
+          setEditingGoal(null);
+          setShowCreateForm(false);
+          setFormData({ title: '', description: '', targetAmount: '', deadline: '', category: '' });
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Erro ao salvar objetivo');
+        });
     } else {
-      setGoals(prev => [...prev, newGoal]);
+      // Criar objetivo novo
+      fetch('/api/objetivos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(res => {
+          if (!res.ok) throw new Error('Erro ao criar objetivo');
+          return res.json();
+        })
+        .then(newGoal => {
+          setGoals(prev => [...prev, newGoal]);
+          setShowCreateForm(false);
+          setFormData({ title: '', description: '', targetAmount: '', deadline: '', category: '' });
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Erro ao criar objetivo');
+        });
     }
-
-    setFormData({ title: '', description: '', targetAmount: '', deadline: '', category: '' });
-    setShowCreateForm(false);
   };
 
   const handleEdit = (goal: Goal) => {
@@ -124,9 +140,17 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Tem certeza que deseja deletar este objetivo?')) {
-      setGoals(prev => prev.filter(goal => goal.id !== id));
-    }
+    if (!window.confirm('Tem certeza que deseja deletar este objetivo?')) return;
+
+    fetch(`/api/objetivos/${id}`, { method: 'DELETE' })
+      .then(res => {
+        if (!res.ok) throw new Error('Erro ao deletar objetivo');
+        setGoals(prev => prev.filter(goal => goal.id !== id));
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Erro ao deletar objetivo');
+      });
   };
 
   const handleCancel = () => {
@@ -288,7 +312,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
                       <button aria-label="Editar objetivo" onClick={() => handleEdit(goal)}>
                         <Edit size={18} />
                       </button>
-                      <button aria-label="Deletar objetivo" className="delete" onClick={() => handleDelete(goal.id)}>
+                      <button aria-label="Deletar objetivo" onClick={() => handleDelete(goal.id)}>
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -297,24 +321,21 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
                   <h3 className="goal-title">{goal.title}</h3>
                   <p className="goal-description">{goal.description}</p>
 
-                  <div className="goal-progress">
-                    <div className="progress-bar-bg" aria-hidden="true">
-                      <div
-                        className={`progress-bar-fill ${
-                          goal.status === 'completed' ? 'progress-fill-completed' : 'progress-fill-active'
-                        }`}
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                    <div className="goal-progress-info">
-                      <span>R$ {(goal.currentAmount / 100).toFixed(2)}</span>
-                      <span>R$ {(goal.targetAmount / 100).toFixed(2)}</span>
-                    </div>
+                  <div className="goal-progress-bar-container" aria-label="Barra de progresso do objetivo">
+                    <div className="goal-progress-bar" style={{ width: `${progressPercent}%` }} />
                   </div>
 
                   <div className="goal-meta">
-                    <span>Prazo: {goal.deadline}</span>
-                    <span>Criado em: {goal.createdAt}</span>
+                    <span>
+                      Meta: R$ {(goal.targetAmount / 100).toFixed(2)}
+                    </span>
+                    <span>
+                      Atual: R$ {(goal.currentAmount / 100).toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="goal-deadline">
+                    Prazo: {goal.deadline}
                   </div>
                 </article>
               );

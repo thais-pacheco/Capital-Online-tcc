@@ -1,30 +1,32 @@
+/* Goals.css */
+
 .goals-container {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: #F8F5FF; /* bg-gray-50 */
 }
 
 .goals-header {
   background-color: white;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb; /* gray-200 */
 }
 
 .goals-header-inner {
-  max-width: 112rem;
+  max-width: 112rem; /* max-w-7xl */
   margin: 0 auto;
-  padding: 0 1rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding: 0 1rem; /* px-4 */
+  padding-left: 1.5rem; /* sm:px-6 */
+  padding-right: 1.5rem; /* sm:px-6 */
+  padding-left: 2rem; /* lg:px-8 */
+  padding-right: 2rem; /* lg:px-8 */
 }
 
 .goals-header-flex {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: 1rem; /* py-4 */
+  padding-bottom: 1rem; /* py-4 */
 }
 
 .goals-header-logo {
@@ -36,7 +38,7 @@
 .goals-header-logo-icon {
   width: 2rem;
   height: 2rem;
-  background-color: #059669;
+  background-color: #059669; /* emerald-500 */
   border-radius: 0.5rem;
   display: flex;
   justify-content: center;
@@ -46,7 +48,7 @@
 .goals-header-logo-text {
   font-weight: 700;
   font-size: 1.25rem;
-  color: #111827;
+  color: #111827; /* gray-900 */
 }
 
 .goals-nav {
@@ -337,18 +339,18 @@
 }
 
 .status-completed {
-  background-color: #dcfce7;
-  color: #166534;
+  background-color: #dcfce7; /* bg-green-100 */
+  color: #166534; /* text-green-800 */
 }
 
 .status-overdue {
-  background-color: #fee2e2;
-  color: #991b1b;
+  background-color: #fee2e2; /* bg-red-100 */
+  color: #991b1b; /* text-red-800 */
 }
 
 .status-active {
-  background-color: #dbeafe;
-  color: #1e40af;
+  background-color: #dbeafe; /* bg-blue-100 */
+  color: #1e40af; /* text-blue-800 */
 }
 
 .goal-actions button {
