@@ -1,0 +1,9 @@
+# .env (Python back-end)
+# Geral
+ENV=development
+DEBUG=True
+
+node_modules/
+
+# Outras configs
+PORT=8000
