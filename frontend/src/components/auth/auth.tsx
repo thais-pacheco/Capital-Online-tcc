@@ -30,7 +30,6 @@ const Auth: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   
-  // NOVO: estado para mensagem de resposta do backend
   const [serverMessage, setServerMessage] = useState('');
   const [serverMessageIsError, setServerMessageIsError] = useState(false);
 
@@ -69,6 +68,7 @@ const Auth: React.FC = () => {
     setLoading(true);
 
     try {
+      // *** Corrigido para apontar para /auth/login/ e /auth/cadastro/ ***
       const endpoint = isLogin ? '/auth/login/' : '/auth/cadastro/';
       const payload = isLogin
         ? { email: formData.email, senha: formData.senha }
@@ -85,16 +85,13 @@ const Auth: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Exibe mensagem de sucesso que vem do backend
         setServerMessage(data.success || 'Sucesso!');
         setServerMessageIsError(false);
 
-        // Redireciona após 1.5 segundos
         setTimeout(() => {
           navigate('/dashboard');
         }, 1500);
       } else {
-        // Exibe mensagem de erro que vem do backend
         setServerMessage(data.error || 'Erro inesperado.');
         setServerMessageIsError(true);
       }
@@ -120,7 +117,6 @@ const Auth: React.FC = () => {
       }));
     }
 
-    // Limpa mensagem do servidor quando o usuário digita
     if (serverMessage) {
       setServerMessage('');
       setServerMessageIsError(false);
@@ -153,7 +149,6 @@ const Auth: React.FC = () => {
       <div className="auth-card">
         <div className="auth-header">
           <div className="logo">
-            {/* PiggyBank verde #22c55e */}
             <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
             <span className="logo-text">Capital Online</span>
           </div>
@@ -196,6 +191,7 @@ const Auth: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="Digite seu nome completo"
                     className={errors.nome ? 'error' : ''}
+                    autoComplete="name"
                   />
                 </div>
                 {errors.nome && <span className="error-message">{errors.nome}</span>}
@@ -214,6 +210,7 @@ const Auth: React.FC = () => {
                   onChange={handleInputChange}
                   placeholder="Digite seu email"
                   className={errors.email ? 'error' : ''}
+                  autoComplete="email"
                 />
               </div>
               {errors.email && <span className="error-message">{errors.email}</span>}
@@ -231,6 +228,7 @@ const Auth: React.FC = () => {
                   onChange={handleInputChange}
                   placeholder="Digite sua senha"
                   className={errors.senha ? 'error' : ''}
+                  autoComplete={isLogin ? "current-password" : "new-password"}
                 />
                 <button
                   type="button"
@@ -256,6 +254,7 @@ const Auth: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="Confirme sua senha"
                     className={errors.confirmPassword ? 'error' : ''}
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -277,7 +276,6 @@ const Auth: React.FC = () => {
               )}
             </button>
 
-            {/* NOVO: mensagem de resposta do backend */}
             {serverMessage && (
               <div
                 style={{

@@ -1,8 +1,11 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Auth from './components/auth/auth';
 import Dashboard from './components/dashboard/Dashboard';
 import Objectives from './components/objectives/objectives';
-import React from 'react';
+
+// Definindo o tipo Page centralizado aqui
+type Page = 'dashboard' | 'new-transaction' | 'charts' | 'objetivos';
 
 function App() {
   return (
@@ -16,8 +19,6 @@ function App() {
   );
 }
 
-type Page = 'dashboard' | 'new-transaction' | 'charts' | 'objetivos';
-
 function ObjectivesWrapper() {
   const navigate = useNavigate();
 
@@ -27,10 +28,10 @@ function ObjectivesWrapper() {
         navigate('/dashboard');
         break;
       case 'new-transaction':
-        // navegar para nova transação
+        // implementar depois
         break;
       case 'charts':
-        // navegar para gráficos
+        // implementar depois
         break;
       case 'objetivos':
         navigate('/objetivos');
@@ -44,11 +45,7 @@ function ObjectivesWrapper() {
     navigate('/');
   };
 
-  return (
-    <Objectives 
-      onNavigate={handleNavigate}
-      onLogout={handleLogout} />
-  );
+  return <Objectives onNavigate={handleNavigate} onLogout={handleLogout} userId="" />;
 }
 
 export default App;
