@@ -25,11 +25,10 @@ const Auth: React.FC = () => {
     nome: '',
     email: '',
     senha: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
-  
   const [serverMessage, setServerMessage] = useState('');
   const [serverMessageIsError, setServerMessageIsError] = useState(false);
 
@@ -68,7 +67,6 @@ const Auth: React.FC = () => {
     setLoading(true);
 
     try {
-      // *** Corrigido para apontar para /auth/login/ e /auth/cadastro/ ***
       const endpoint = isLogin ? '/auth/login/' : '/auth/cadastro/';
       const payload = isLogin
         ? { email: formData.email, senha: formData.senha }
@@ -80,6 +78,7 @@ const Auth: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+        credentials: 'include', // caso o backend use cookies (ajuste se não usar)
       });
 
       const data = await response.json();
@@ -105,15 +104,15 @@ const Auth: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
 
@@ -129,7 +128,7 @@ const Auth: React.FC = () => {
       nome: '',
       email: '',
       senha: '',
-      confirmPassword: ''
+      confirmPassword: '',
     });
     setErrors({});
     setServerMessage('');
@@ -177,7 +176,7 @@ const Auth: React.FC = () => {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
             {!isLogin && (
               <div className="form-group">
                 <label htmlFor="nome">Nome Completo</label>
@@ -234,6 +233,7 @@ const Auth: React.FC = () => {
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
                 >
                   {showPassword ? <EyeOff /> : <Eye />}
                 </button>
@@ -260,6 +260,7 @@ const Auth: React.FC = () => {
                     type="button"
                     className="password-toggle"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    tabIndex={-1}
                   >
                     {showConfirmPassword ? <EyeOff /> : <Eye />}
                   </button>
@@ -269,11 +270,7 @@ const Auth: React.FC = () => {
             )}
 
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? (
-                <div className="loading-spinner"></div>
-              ) : (
-                isLogin ? 'Entrar' : 'Criar Conta'
-              )}
+              {loading ? <div className="loading-spinner"></div> : isLogin ? 'Entrar' : 'Criar Conta'}
             </button>
 
             {serverMessage && (
