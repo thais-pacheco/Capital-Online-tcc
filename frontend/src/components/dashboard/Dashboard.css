@@ -1,4 +1,3 @@
-/* Dashboard Styles - CSS Puro */
 .dashboard {
   min-height: 100vh;
   background-color: #f8f9fa;
@@ -40,7 +39,7 @@
 .logo-icon {
   width: 32px;
   height: 32px;
-  background: #10b981;
+  background: #22c55e;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -72,7 +71,7 @@
 }
 
 .nav-button:hover {
-  color: #10b981;
+  color: #22c55e;
   background: #f0fdf4;
 }
 
@@ -114,7 +113,7 @@
 .profile-avatar {
   width: 32px;
   height: 32px;
-  background: #10b981;
+  background: #22c55e;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -182,11 +181,11 @@
 }
 
 .stat-icon.balance {
-  background: #10b981;
+  background: #22c55e;
 }
 
 .stat-icon.income {
-  background: #059669;
+  background: #22c55e;
 }
 
 .stat-icon.expense {
@@ -237,7 +236,7 @@
 }
 
 .chart-icon {
-  color: #10b981;
+  color: #22c55e;
   margin-bottom: 16px;
 }
 
@@ -299,7 +298,7 @@
 
 .search-input input:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #22c55e;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
@@ -322,7 +321,7 @@
 
 .select-wrapper select:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #22c55e;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
@@ -385,7 +384,7 @@
 }
 
 .transaction-icon.income {
-  background: #10b981;
+  background: #22c55e;
 }
 
 .transaction-icon.expense {
@@ -397,7 +396,7 @@
 }
 
 .amount.income {
-  color: #059669;
+  color: #22c55e;
 }
 
 .amount.expense {

@@ -1,196 +1,114 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
+import React, { useState, useEffect } from 'react';
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
   Search,
-  Calendar,
   ArrowUpRight,
   ArrowDownRight,
   BarChart3,
-  LogOut,
-  ChevronDown
+  ChevronDown,
+  PiggyBank
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 interface Transaction {
-  id: string;
-  date: string;
-  description: string;
-  category: string;
-  amount: number;
-  type: 'income' | 'expense';
-  document: string;
+  id: number;
+  data: string;
+  descricao: string;
+  categoria: string;
+  valor: number;
+  tipo: 'entrada' | 'saida';
+  documento?: string;
 }
 
-export type Page = 'dashboard' | 'new-transaction' | 'charts' | 'objetivos';
-
-interface DashboardProps {
-  onNavigate?: (page: Page) => void;
-  onLogout?: () => void;
-}
-
-const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  const transactions: Transaction[] = [
-    {
-      id: '1',
-      date: '24/05/2025',
-      description: 'Venda de produtos',
-      category: 'Vendas',
-      amount: 10000,
-      type: 'income',
-      document: '769467'
-    },
-    {
-      id: '2',
-      date: '24/05/2025',
-      description: 'Venda de produtos',
-      category: 'Vendas',
-      amount: 10000,
-      type: 'income',
-      document: '769467'
-    },
-    {
-      id: '3',
-      date: '24/05/2025',
-      description: 'Venda de produtos',
-      category: 'Vendas',
-      amount: 10000,
-      type: 'expense',
-      document: '769467'
-    },
-    {
-      id: '4',
-      date: '24/05/2025',
-      description: 'Venda de produtos',
-      category: 'Vendas',
-      amount: 10000,
-      type: 'expense',
-      document: '769467'
-    },
-    {
-      id: '5',
-      date: '24/05/2025',
-      description: 'Venda de produtos',
-      category: 'Vendas',
-      amount: 10000,
-      type: 'income',
-      document: '769467'
-    },
-    {
-      id: '6',
-      date: '24/05/2025',
-      description: 'Venda de produtos',
-      category: 'Vendas',
-      amount: 10000,
-      type: 'expense',
-      document: '769467'
-    },
-    {
-      id: '7',
-      date: '24/05/2025',
-      description: 'Venda de produtos',
-      category: 'Vendas',
-      amount: 10000,
-      type: 'income',
-      document: '769467'
-    }
-  ];
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/movimentacoes/')
+      .then(res => res.json())
+      .then(data => setTransactions(data))
+      .catch(error => console.error('Erro ao buscar movimentações:', error));
+  }, []);
 
   const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = selectedType === 'all' || transaction.type === selectedType;
-    const matchesCategory = selectedCategory === 'all' || transaction.category === selectedCategory;
-    
+    const matchesSearch =
+      transaction.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType =
+      selectedType === 'all' || transaction.tipo === (selectedType === 'income' ? 'entrada' : 'saida');
+    const matchesCategory =
+      selectedCategory === 'all' || transaction.categoria === selectedCategory;
+
     return matchesSearch && matchesType && matchesCategory;
   });
 
-  const totalBalance = 200000;
-  const totalIncome = 1000000;
-  const totalExpenses = 800000;
+  const totalIncome = transactions
+    .filter(t => t.tipo === 'entrada')
+    .reduce((sum, t) => sum + t.valor, 0);
 
-  const handleNavigate = (page: Page) => {
-  if (page === 'objetivos') {
-    navigate('/objetivos'); 
-  } else if (onNavigate) {
-    onNavigate(page);
-  }
-};
+  const totalExpenses = transactions
+    .filter(t => t.tipo === 'saida')
+    .reduce((sum, t) => sum + t.valor, 0);
 
-
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    } else {
-      navigate('/');
-    }
-  };
+  const totalBalance = totalIncome - totalExpenses;
 
   return (
     <div className="dashboard">
-      {/* Header */}
-      <header className="header">
-        <div className="header-container">
-          <div className="header-left">
-            <div className="logo">
-              <div className="logo-icon">
-                <DollarSign size={20} />
+      <header className="newtransaction-header">
+        <div className="newtransaction-header-inner">
+          <div className="newtransaction-header-flex">
+            <div className="newtransaction-logo-group">
+              <div className="logo">
+                <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+                <span className="logo-text">CAPITAL ONLINE</span>
               </div>
-              <span className="logo-text">CAPITAL ONLINE</span>
             </div>
-            <nav className="nav">
+            <nav className="newtransaction-nav">
               <button 
-                className="nav-button active"
-                onClick={() => handleNavigate('dashboard')}
+                className="newtransaction-nav-button active"
+                onClick={() => navigate('/dashboard')}
               >
                 Dashboard
               </button>
               <button 
-                className="nav-button"
-                onClick={() => handleNavigate('new-transaction')}
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/nova-movimentacao')}
               >
                 Nova movimentação
               </button>
               <button 
-                className="nav-button"
-                onClick={() => handleNavigate('charts')}
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/graficos')}
               >
                 Gráficos
               </button>
               <button 
-                className="nav-button"
-                onClick={() => handleNavigate('objetivos')}
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/objetivos')}
               >
                 Objetivos
               </button>
             </nav>
-          </div>
-          <div className="header-right">
-            <button className="icon-button">
-              <Calendar size={20} />
-            </button>
-            <button className="icon-button logout" onClick={handleLogout}>
-              <LogOut size={20} />
-            </button>
-            <div className="profile-avatar">J</div>
+            <div className="newtransaction-header-actions">
+              <div className="newtransaction-profile-circle">J</div>
+            </div>
           </div>
         </div>
       </header>
 
       <div className="main-content">
-        {/* Page Header */}
         <div className="page-header">
           <h1>Dashboard</h1>
         </div>
 
-        {/* Stats Cards */}
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-header">
@@ -229,7 +147,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
           </div>
         </div>
 
-        {/* Chart Section */}
         <div className="chart-section">
           <div className="section-header">
             <h2>Visão Geral Financeira</h2>
@@ -245,13 +162,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
           </div>
         </div>
 
-        {/* Transactions Section */}
         <div className="transactions-section">
           <div className="section-header">
             <h2>Histórico de movimentações</h2>
           </div>
-          
-          {/* Filters */}
+
           <div className="filters">
             <div className="search-input">
               <Search size={16} />
@@ -262,7 +177,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
+
             <div className="select-wrapper">
               <select
                 value={selectedType}
@@ -274,21 +189,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
               </select>
               <ChevronDown size={16} />
             </div>
-            
+
             <div className="select-wrapper">
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
                 <option value="all">Todas as categorias</option>
-                <option value="Vendas">Vendas</option>
-                <option value="Utilidades">Utilidades</option>
+                {[...new Set(transactions.map(t => t.categoria))].map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
               <ChevronDown size={16} />
             </div>
           </div>
 
-          {/* Transactions Table */}
           <div className="table-container">
             <table className="transactions-table">
               <thead>
@@ -302,27 +217,34 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onLogout }) => {
               <tbody>
                 {filteredTransactions.map((transaction) => (
                   <tr key={transaction.id}>
-                    <td>{transaction.date}</td>
+                    <td>{new Date(transaction.data).toLocaleDateString('pt-BR')}</td>
                     <td>
                       <div className="transaction-description">
-                        <div className={`transaction-icon ${transaction.type}`}>
-                          {transaction.type === 'income' ? (
+                        <div className={`transaction-icon ${transaction.tipo === 'entrada' ? 'income' : 'expense'}`}>
+                          {transaction.tipo === 'entrada' ? (
                             <TrendingUp size={16} />
                           ) : (
                             <TrendingDown size={16} />
                           )}
                         </div>
-                        <span>{transaction.description}</span>
+                        <span>{transaction.descricao}</span>
                       </div>
                     </td>
-                    <td>{transaction.document}</td>
+                    <td>{transaction.documento || '--'}</td>
                     <td>
-                      <span className={`amount ${transaction.type}`}>
-                        {transaction.type === 'income' ? '+' : '-'}R$ {(transaction.amount / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      <span className={`amount ${transaction.tipo === 'entrada' ? 'income' : 'expense'}`}>
+                        {transaction.tipo === 'entrada' ? '+' : '-'}R$ {(transaction.valor / 100).toLocaleString('pt-BR', {
+                          minimumFractionDigits: 2,
+                        })}
                       </span>
                     </td>
                   </tr>
                 ))}
+                {filteredTransactions.length === 0 && (
+                  <tr>
+                    <td colSpan={4}>Nenhuma movimentação encontrada.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

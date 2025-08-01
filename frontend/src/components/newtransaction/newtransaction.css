@@ -256,6 +256,7 @@
   width: 1.25rem;
   height: 1.25rem;
   color: #6b7280;
+  font-size: 1.25rem;
 }
 
 .transaction-type-button.income .transaction-type-icon {
@@ -293,9 +294,10 @@
   .form-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .form-grid-full {
-    grid-column: 1 / -1;
-  }
+}
+
+.form-grid-full {
+  grid-column: 1 / -1;
 }
 
 .form-group {
@@ -318,7 +320,7 @@
 }
 
 .form-input {
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  padding: 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 0.875rem;
@@ -338,7 +340,7 @@
 }
 
 .form-select {
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  padding: 0.75rem;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 0.875rem;
@@ -364,6 +366,7 @@
   min-height: 80px;
   font-family: inherit;
   transition: border-color 0.2s;
+  width: 100%;
 }
 
 .form-textarea:focus {
