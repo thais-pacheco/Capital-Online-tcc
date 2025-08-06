@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PiggyBank } from 'lucide-react';
 import './newtransaction.css';
@@ -7,8 +7,7 @@ interface FormData {
   type: 'income' | 'expense';
   description: string;
   amount: string;
-  category: string;
-  documentNumber: string;
+  category: string; // aqui é string porque value do select é string, mas representa o id (número)
   date: string;
   observations: string;
 }
@@ -19,13 +18,29 @@ export default function NewTransaction() {
     description: '',
     amount: '',
     category: '',
-    documentNumber: '',
     date: '',
     observations: '',
   });
 
+  const [categories, setCategories] = useState<{ id: number; nome: string; tipo: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch('http://127.0.0.1:8000/api/categorias/')
+      .then(res => res.json())
+      .then(data => {
+        const filtered = data.filter((cat: any) =>
+          formData.type === 'income' ? cat.tipo === 'entrada' : cat.tipo === 'saida'
+        );
+        setCategories(filtered);
+      })
+      .catch(err => {
+        console.error('Erro ao carregar categorias', err);
+        setErrorMessage('Erro ao carregar categorias');
+      });
+  }, [formData.type]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -35,13 +50,13 @@ export default function NewTransaction() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage('');
 
     const payload = {
       titulo: formData.description,
       tipo: formData.type === 'income' ? 'entrada' : 'saida',
       valor: parseFloat(formData.amount),
-      categoria: formData.category,
-      numeroDocumento: formData.documentNumber,
+      categoria: parseInt(formData.category), // **aqui enviamos o ID da categoria (número)**
       data: formData.date,
       observacoes: formData.observations,
     };
@@ -59,10 +74,10 @@ export default function NewTransaction() {
         navigate('/dashboard');
       } else {
         const error = await response.json();
-        alert('Erro ao salvar: ' + JSON.stringify(error));
+        setErrorMessage('Erro ao salvar: ' + JSON.stringify(error));
       }
     } catch (err) {
-      alert('Erro ao conectar com o servidor.');
+      setErrorMessage('Erro ao conectar com o servidor.');
     } finally {
       setLoading(false);
     }
@@ -80,23 +95,14 @@ export default function NewTransaction() {
               </div>
             </div>
             <nav className="newtransaction-nav">
-              <button 
-                className="newtransaction-nav-button"
-                onClick={() => navigate('/dashboard')}
-              >
+              <button className="newtransaction-nav-button" onClick={() => navigate('/dashboard')}>
                 Dashboard
               </button>
               <button className="newtransaction-nav-button active">Nova movimentação</button>
-              <button 
-                className="newtransaction-nav-button"
-                onClick={() => navigate('/graficos')}
-              >
+              <button className="newtransaction-nav-button" onClick={() => navigate('/graficos')}>
                 Gráficos
               </button>
-              <button 
-                className="newtransaction-nav-button"
-                onClick={() => navigate('/objetivos')}
-              >
+              <button className="newtransaction-nav-button" onClick={() => navigate('/objetivos')}>
                 Objetivos
               </button>
             </nav>
@@ -111,15 +117,19 @@ export default function NewTransaction() {
         <h1 className="newtransaction-title">Nova movimentação</h1>
         <p className="newtransaction-subtitle">Registre uma nova entrada ou saída financeira</p>
 
+        {errorMessage && (
+          <div className="error-card" style={{ color: 'red', marginBottom: '1rem' }}>
+            {errorMessage}
+          </div>
+        )}
+
         <div className="newtransaction-form-container">
           <form className="newtransaction-form" onSubmit={handleSubmit}>
             <label className="transaction-type-label">Tipo de movimentação</label>
             <div className="transaction-type-buttons">
               <button
                 type="button"
-                className={`transaction-type-button ${
-                  formData.type === 'income' ? 'income' : ''
-                }`}
+                className={`transaction-type-button ${formData.type === 'income' ? 'income' : ''}`}
                 onClick={() => setFormData(prev => ({ ...prev, type: 'income' }))}
               >
                 <div className="transaction-type-button-content">
@@ -134,9 +144,7 @@ export default function NewTransaction() {
               </button>
               <button
                 type="button"
-                className={`transaction-type-button ${
-                  formData.type === 'expense' ? 'expense' : ''
-                }`}
+                className={`transaction-type-button ${formData.type === 'expense' ? 'expense' : ''}`}
                 onClick={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
               >
                 <div className="transaction-type-button-content">
@@ -184,28 +192,20 @@ export default function NewTransaction() {
                 <label className="form-label">
                   Categoria <span className="required">*</span>
                 </label>
-                <input
+                <select
                   name="category"
-                  type="text"
-                  className="form-input"
+                  className="form-select"
                   value={formData.category}
                   onChange={handleChange}
                   required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  Número do Documento <span className="required">*</span>
-                </label>
-                <input
-                  name="documentNumber"
-                  type="text"
-                  className="form-input"
-                  value={formData.documentNumber}
-                  onChange={handleChange}
-                  required
-                />
+                >
+                  <option value="">Selecione</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nome}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-group">
