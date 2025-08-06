@@ -187,6 +187,8 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
               <button className="active">Objetivos</button>
             </nav>
 
+      
+
             <div className="goals-header-actions">
               <button onClick={() => onNavigate('new-transaction')} title="Nova Transação">
                 <PlusCircle size={20} />
@@ -274,7 +276,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
                   <option value="lazer">Lazer</option>
                   <option value="saude">Saúde</option>
                   <option value="investimento">Investimento</option>
-                  {/* pode adicionar outras categorias aqui */}
+                  
                 </select>
               </div>
 
