@@ -21,9 +21,9 @@ class TransacaoSerializer(serializers.ModelSerializer):
         return {
             'id': representation['id'],
             'data': representation['data'],
-            'titulo': representation['titulo'],  # agora o campo volta como 'titulo'
+            'titulo': representation['titulo'],
             'categoria': representation['categoria_nome'],
-            'valor': float(instance.valor),  # valor original com sinal
-            'tipo': instance.tipo,           # tipo direto do modelo
-            'documento': representation['observacoes'] or ''
+            'valor': float(instance.valor),
+            'tipo': instance.tipo,
+            'observacoes': representation['observacoes'] or ''
         }

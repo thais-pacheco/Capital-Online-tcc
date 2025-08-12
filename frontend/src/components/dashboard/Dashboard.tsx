@@ -275,7 +275,7 @@ const Dashboard: React.FC = () => {
                 <tr>
                   <th>DATA</th>
                   <th>DESCRIÇÃO</th>
-                  <th>DOCUMENTO</th>
+                  <th>OBSERVAÇÕES</th>  {/* Alterado aqui */}
                   <th>VALOR</th>
                 </tr>
               </thead>
