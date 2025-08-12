@@ -137,25 +137,25 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <nav className="newtransaction-nav">
-              <button 
+              <button
                 className="newtransaction-nav-button active"
                 onClick={() => navigate('/dashboard')}
               >
                 Dashboard
               </button>
-              <button 
+              <button
                 className="newtransaction-nav-button"
                 onClick={() => navigate('/nova-movimentacao')}
               >
                 Nova movimentação
               </button>
-              <button 
+              <button
                 className="newtransaction-nav-button"
                 onClick={() => navigate('/graficos')}
               >
                 Gráficos
               </button>
-              <button 
+              <button
                 className="newtransaction-nav-button"
                 onClick={() => navigate('/objetivos')}
               >
@@ -272,43 +272,37 @@ const Dashboard: React.FC = () => {
           <div className="table-container">
             <table className="transactions-table">
               <thead>
-                <tr>
-                  <th>DATA</th>
-                  <th>DESCRIÇÃO</th>
-                  <th>OBSERVAÇÕES</th>  {/* Alterado aqui */}
-                  <th>VALOR</th>
-                </tr>
+                <tr><th>DATA</th><th>DESCRIÇÃO</th><th>OBSERVAÇÕES</th><th>VALOR</th></tr>
               </thead>
               <tbody>
-                {filteredTransactions.map((transaction) => (
-                  <tr key={transaction.id}>
-                    <td>{new Date(transaction.data).toLocaleDateString('pt-BR')}</td>
-                    <td>
-                      <div className="transaction-description">
-                        <div className={`transaction-icon ${transaction.tipo === 'entrada' ? 'income' : 'expense'}`}>
-                          {transaction.tipo === 'entrada' ? (
-                            <TrendingUp size={16} />
-                          ) : (
-                            <TrendingDown size={16} />
-                          )}
+                {filteredTransactions.length === 0 ? (
+                  <tr><td colSpan={4}>Nenhuma movimentação encontrada.</td></tr>
+                ) : (
+                  filteredTransactions.map((transaction) => (
+                    <tr key={transaction.id}>
+                      <td>{new Date(transaction.data).toLocaleDateString('pt-BR')}</td>
+                      <td>
+                        <div className="transaction-description">
+                          <div className={`transaction-icon ${transaction.tipo === 'entrada' ? 'income' : 'expense'}`}>
+                            {transaction.tipo === 'entrada' ? (
+                              <TrendingUp size={16} />
+                            ) : (
+                              <TrendingDown size={16} />
+                            )}
+                          </div>
+                          <span>{transaction.titulo}</span>
                         </div>
-                        <span>{transaction.titulo}</span>
-                      </div>
-                    </td>
-                    <td>{transaction.observacoes || '--'}</td>
-                    <td>
-                      <span className={`amount ${transaction.tipo === 'entrada' ? 'income' : 'expense'}`}>
-                        {transaction.tipo === 'entrada' ? '+' : '-'}R$ {(transaction.valor / 100).toLocaleString('pt-BR', {
-                          minimumFractionDigits: 2,
-                        })}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-                {filteredTransactions.length === 0 && (
-                  <tr>
-                    <td colSpan={4}>Nenhuma movimentação encontrada.</td>
-                  </tr>
+                      </td>
+                      <td>{transaction.observacoes || '--'}</td>
+                      <td>
+                        <span className={`amount ${transaction.tipo === 'entrada' ? 'income' : 'expense'}`}>
+                          {transaction.tipo === 'entrada' ? '+' : '-'}R$ {(transaction.valor / 100).toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2,
+                          })}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
