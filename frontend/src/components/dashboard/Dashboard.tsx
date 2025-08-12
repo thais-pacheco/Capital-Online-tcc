@@ -16,11 +16,11 @@ import './Dashboard.css';
 interface Transaction {
   id: number;
   data: string;
-  descricao: string;
-  categoria: string;
+  titulo: string;
+  categoria: number;
   valor: number;
   tipo: 'entrada' | 'saida';
-  documento?: string;
+  observacoes?: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -30,22 +30,69 @@ const Dashboard: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/movimentacoes/')
-      .then(res => res.json())
-      .then(data => setTransactions(data))
-      .catch(error => console.error('Erro ao buscar movimentações:', error));
+    const fetchTransactions = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://127.0.0.1:8000/api/transacoes/');
+        
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Validação e normalização dos dados
+        const validatedTransactions = data.map((t: any) => {
+          const tipo = typeof t.tipo === 'string' 
+            ? t.tipo.toLowerCase().trim() === 'entrada' 
+              ? 'entrada' 
+              : 'saida'
+            : 'saida';
+            
+          const valor = Math.abs(Number(t.valor));
+          
+          return {
+            id: t.id,
+            data: t.data,
+            titulo: t.titulo || 'Sem título',
+            categoria: Number(t.categoria) || 0,
+            valor: valor,
+            tipo: tipo,
+            observacoes: t.observacoes
+          };
+        });
+        
+        setTransactions(validatedTransactions);
+        setError('');
+      } catch (err) {
+        setError('Erro ao carregar transações. Tente recarregar a página.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
   }, []);
 
   const filteredTransactions = transactions.filter(transaction => {
+    if (!transaction) return false;
+
+    const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
-      transaction.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.categoria.toLowerCase().includes(searchTerm.toLowerCase());
+      (transaction.titulo?.toLowerCase() || '').includes(searchLower) ||
+      (transaction.categoria?.toString()?.toLowerCase() || '').includes(searchLower);
+    
     const matchesType =
-      selectedType === 'all' || transaction.tipo === (selectedType === 'income' ? 'entrada' : 'saida');
+      selectedType === 'all' || 
+      (selectedType === 'income' ? transaction.tipo === 'entrada' : transaction.tipo === 'saida');
+    
     const matchesCategory =
-      selectedCategory === 'all' || transaction.categoria === selectedCategory;
+      selectedCategory === 'all' || 
+      transaction.categoria?.toString() === selectedCategory;
 
     return matchesSearch && matchesType && matchesCategory;
   });
@@ -59,6 +106,24 @@ const Dashboard: React.FC = () => {
     .reduce((sum, t) => sum + t.valor, 0);
 
   const totalBalance = totalIncome - totalExpenses;
+
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        <div className="loading-spinner"></div>
+        <p>Carregando transações...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="dashboard-error">
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Recarregar</button>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
@@ -196,7 +261,7 @@ const Dashboard: React.FC = () => {
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
                 <option value="all">Todas as categorias</option>
-                {[...new Set(transactions.map(t => t.categoria))].map(cat => (
+                {[...new Set(transactions.map(t => t.categoria?.toString()))].map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
@@ -227,10 +292,10 @@ const Dashboard: React.FC = () => {
                             <TrendingDown size={16} />
                           )}
                         </div>
-                        <span>{transaction.descricao}</span>
+                        <span>{transaction.titulo}</span>
                       </div>
                     </td>
-                    <td>{transaction.documento || '--'}</td>
+                    <td>{transaction.observacoes || '--'}</td>
                     <td>
                       <span className={`amount ${transaction.tipo === 'entrada' ? 'income' : 'expense'}`}>
                         {transaction.tipo === 'entrada' ? '+' : '-'}R$ {(transaction.valor / 100).toLocaleString('pt-BR', {
