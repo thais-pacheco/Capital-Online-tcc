@@ -1,0 +1,7 @@
+Django
+djangorestframework
+mysqlclient
+PyMySQL
+bcrypt
+django-cors-headers
+djangorestframework-simplejwt
