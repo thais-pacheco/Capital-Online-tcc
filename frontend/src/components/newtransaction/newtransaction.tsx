@@ -7,7 +7,7 @@ interface FormData {
   type: 'income' | 'expense';
   description: string;
   amount: string;
-  category: string; // aqui é string porque value do select é string, mas representa o id (número)
+  category: string; 
   date: string;
   observations: string;
 }

@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react'; 
 import { 
-  DollarSign, 
-  ArrowLeft, 
+  PiggyBank,
   Clock,
   AlertCircle,
   CheckCircle,
   Edit,
   Trash2,
   Plus,
-  PlusCircle,
-  LogOut
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import './objectives.css';
 
@@ -20,20 +18,22 @@ interface Goal {
   id: number;
   titulo: string;
   descricao: string;
-  valor: number;          // valor necessário (meta)
-  valor_atual: number;    // valor atual (no backend, pode ser 0 ou atualizado)
-  data_limite: string;    // prazo
+  valor: number;          
+  valor_atual: number;    
+  data_limite: string;    
   criado_em: string;
-  categoria?: string;     // categoria opcional
+  categoria?: string;    
   status: 'active' | 'completed' | 'overdue';
 }
 
 interface GoalsProps {
   onNavigate: (page: Page) => void;
   onLogout: () => void;
+  userId: string; 
 }
 
-const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
+
+const Goals: React.FC<GoalsProps> = ({onLogout }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
@@ -169,42 +169,40 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
       ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
       : 'R$ 0,00';
 
+      const navigate = useNavigate();
   return (
     <div className="goals-container">
-      <header className="goals-header">
+     
+     <header className="goals-header">
         <div className="goals-header-inner">
           <div className="goals-header-flex">
-            <div className="goals-header-logo">
-              <div className="goals-header-logo-icon">
-                <DollarSign size={20} color="white" />
+            <div className="goals-logo-group">
+              <div className="logo">
+                <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+                <span className="logo-text">CAPITAL ONLINE</span>
               </div>
-              <span className="goals-header-logo-text">CAPITAL ONLINE</span>
             </div>
-
-            <nav className="goals-nav" aria-label="Menu de navegação">
-              <button onClick={() => onNavigate('dashboard')}>Dashboard</button>
-              <button onClick={() => onNavigate('charts')}>Gráficos</button>
-              <button className="active">Objetivos</button>
+            <nav className="goals-nav">
+              <button className="goals-nav-button" onClick={() => navigate('/dashboard')}>
+                Dashboard
+              </button>
+              <button className="goals-nav-button active">Nova movimentação</button>
+              <button className="goals-nav-button" onClick={() => navigate('/graficos')}>
+                Gráficos
+              </button>
+              <button className="goals-nav-button" onClick={() => navigate('/objetivos')}>
+                Objetivos
+              </button>
             </nav>
-
             <div className="goals-header-actions">
-              <button onClick={() => onNavigate('new-transaction')} title="Nova Transação">
-                <PlusCircle size={20} />
-              </button>
-              <button className="logout" onClick={onLogout} title="Sair">
-                <LogOut size={20} />
-              </button>
-              <div className="goals-profile-circle">T</div>
+              <div className="goals-profile-circle">J</div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="goals-content" aria-label="Área principal de objetivos">
-        <button className="goals-back-button" onClick={() => onNavigate('dashboard')} aria-label="Voltar ao dashboard">
-          <ArrowLeft size={18} /> Voltar
-        </button>
 
+      <main className="goals-content" aria-label="Área principal de objetivos">
         <section className="goals-header-section">
           <h1>Meus Objetivos</h1>
           <p>Gerencie seus objetivos financeiros</p>

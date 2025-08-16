@@ -1,9 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Auth from './components/auth/auth';
-import Dashboard from './components/dashboard/Dashboard';
-import Home from './components/home/home';
-import NewTransaction from './components/newtransaction/newtransaction';
-import Objectives from './components/objectives/objectives';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Auth from "./components/auth/auth";
+import Dashboard from "./components/dashboard/Dashboard";
+import Home from "./components/home/home";
+import NewTransaction from "./components/newtransaction/newtransaction";
+import Objectives from "./components/objectives/objectives";
+
+const userId = "123";
 
 function App() {
   return (
@@ -19,7 +21,7 @@ function App() {
             <Objectives
               onNavigate={(page) => console.log("Navegar para:", page)}
               onLogout={() => console.log("Logout")}
-              userId="123" // depois você pode substituir pelo id real do usuário logado
+              userId={userId}
             />
           }
         />
