@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PiggyBank } from 'lucide-react';
 import './newtransaction.css';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface FormData {
   type: 'income' | 'expense';
@@ -28,7 +29,7 @@ export default function NewTransaction() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/categorias/')
+    fetch(`${API_URL}/api/categorias/`)
       .then(res => res.json())
       .then(data => {
         const filtered = data.filter((cat: any) =>
