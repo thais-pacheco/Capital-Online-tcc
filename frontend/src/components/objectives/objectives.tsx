@@ -46,14 +46,7 @@ const Goals: React.FC<GoalsProps> = ({onLogout }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
 
-const API_URL = import.meta.env.VITE_API_URL;
-
-useEffect(() => {
-  fetch(`${API_URL}/api/objetivos/`)
-    .then((res) => res.json())
-    .then((data) => console.log(data))
-    .catch((err) => console.error("Erro ao buscar objetivos:", err));
-}, []);
+const API_URL = 'https://capital-online-tcc.onrender.com/api/objetivos/';
 
 
   const calculateStatus = (goal: Goal) => {
