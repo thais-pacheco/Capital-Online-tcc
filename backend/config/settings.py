@@ -57,7 +57,9 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "https://capital-online-tcc.onrender.com",
 ]
+
 
 CORS_ALLOW_CREDENTIALS = True
 

@@ -72,7 +72,7 @@ const Auth: React.FC = () => {
         ? { email: formData.email, senha: formData.senha }
         : { nome: formData.nome, email: formData.email, senha: formData.senha };
 
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(`https://capital-online-tcc.onrender.com${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
