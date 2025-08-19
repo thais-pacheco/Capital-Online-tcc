@@ -187,11 +187,11 @@ const API_URL = 'https://capital-online-tcc.onrender.com/api/objetivos/';
               <button className="goals-nav-button" onClick={() => navigate('/dashboard')}>
                 Dashboard
               </button>
-              <button className="goals-nav-button active">Nova movimentação</button>
+              <button className="goals-nav-button" onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
               <button className="goals-nav-button" onClick={() => navigate('/graficos')}>
                 Gráficos
               </button>
-              <button className="goals-nav-button" onClick={() => navigate('/objetivos')}>
+              <button className="goals-nav-button active" onClick={() => navigate('/objetivos')}>
                 Objetivos
               </button>
             </nav>

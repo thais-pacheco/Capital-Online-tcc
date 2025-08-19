@@ -11,9 +11,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Auth />} />
+        {/* Agora "/" mostra o Home */}
+        <Route path="/" element={<Home />} />
+
+        {/* Auth fica em "/login" */}
+        <Route path="/login" element={<Auth />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/home" element={<Home />} />
         <Route path="/nova-movimentacao" element={<NewTransaction />} />
         <Route
           path="/objetivos"

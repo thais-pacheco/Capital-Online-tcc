@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PiggyBank } from 'lucide-react';
 import './newtransaction.css';
-const API_URL = import.meta.env.VITE_API_URL;
 
 interface FormData {
   type: 'income' | 'expense';
   description: string;
   amount: string;
-  category: string; 
+  category: string; // aqui é string porque value do select é string, mas representa o id (número)
   date: string;
   observations: string;
 }
@@ -29,7 +28,7 @@ export default function NewTransaction() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`${API_URL}/api/categorias/`)
+    fetch('http://127.0.0.1:8000/api/categorias/')
       .then(res => res.json())
       .then(data => {
         const filtered = data.filter((cat: any) =>
@@ -63,7 +62,7 @@ export default function NewTransaction() {
     };
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+      const response = await fetch('https://capital-online-tcc.onrender.com/api/transacoes/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
