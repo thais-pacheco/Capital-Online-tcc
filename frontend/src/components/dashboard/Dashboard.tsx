@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import {
   TrendingUp,
   TrendingDown,
-  DollarSign,
   Search,
   ArrowUpRight,
   ArrowDownRight,
@@ -45,7 +44,6 @@ const Dashboard: React.FC = () => {
         
         const data = await response.json();
         
-        // Validação e normalização dos dados
         const validatedTransactions = data.map((t: any) => {
           const tipo = typeof t.tipo === 'string' 
             ? t.tipo.toLowerCase().trim() === 'entrada' 
@@ -127,6 +125,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
+      {/* Novo Header com PiggyBank */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
@@ -161,24 +160,38 @@ const Dashboard: React.FC = () => {
               >
                 Objetivos
               </button>
+              <button
+                className="newtransaction-nav-button"
+                onClick={() => window.location.href = '/perfil'}
+              >
+                Perfil
+              </button>
             </nav>
             <div className="newtransaction-header-actions">
-              <div className="newtransaction-profile-circle">J</div>
+              <div 
+                className="newtransaction-profile-circle" 
+                onClick={() => window.location.href = '/perfil'} 
+                style={{ cursor: 'pointer' }}
+              >
+                P
+              </div>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Conteúdo principal */}
       <div className="main-content">
         <div className="page-header">
           <h1>Dashboard</h1>
         </div>
 
+        {/* Stats */}
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon balance">
-                <DollarSign size={20} />
+                <ArrowUpRight size={20} />
               </div>
               <span className="stat-label">Saldo Atual</span>
             </div>
@@ -212,6 +225,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Chart Section */}
         <div className="chart-section">
           <div className="section-header">
             <h2>Visão Geral Financeira</h2>
@@ -227,6 +241,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Transactions */}
         <div className="transactions-section">
           <div className="section-header">
             <h2>Histórico de movimentações</h2>
