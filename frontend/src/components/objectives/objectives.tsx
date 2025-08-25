@@ -12,8 +12,7 @@ import { useNavigate } from 'react-router-dom';
 
 import './objectives.css';
 
-export type Page = 'dashboard' | 'new-transaction' | 'charts' | 'objetivos';
-
+import type { Page } from '../../types';
 interface Goal {
   id: number;
   titulo: string;
