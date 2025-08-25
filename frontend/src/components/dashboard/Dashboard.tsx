@@ -168,12 +168,6 @@ const Dashboard: React.FC = () => {
               >
                 Objetivos
               </button>
-              <button
-                className="newtransaction-nav-button"
-                onClick={() => navigate('/perfil')}
-              >
-                Perfil
-              </button>
             </nav>
 
             <div className="newtransaction-header-actions">

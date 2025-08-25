@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
-import { 
-  ArrowLeft, 
+import {
   User,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Edit,
+  Save,
+  X,
   Camera,
   Shield,
   Bell,
+  Eye,
+  EyeOff,
+  Trash2,
   Download,
   LogOut,
+  Lock,
   PiggyBank
 } from 'lucide-react';
-import './Profile.css';
+import './profile.css';
 
-// Define Page type 
-export type Page = 'dashboard' | 'new-transaction' | 'charts' | 'goals' | 'profile';
+type PageRoute = 'dashboard' | 'new-transaction' | 'charts' | 'goals' | 'profile';
 
 interface ProfileProps {
-  onNavigate: (page: Page) => void;
+  onNavigate: (page: PageRoute) => void;
   onLogout: () => void;
 }
 
@@ -29,18 +38,20 @@ interface UserProfile {
   avatar: string;
 }
 
-interface UserStats {
-  totalTransactions: number;
-  totalGoals: number;
-  completedGoals: number;
-  averageMonthlyIncome: number;
-  averageMonthlyExpense: number;
-  longestStreak: number;
-}
+type NotificationKeys =
+  | 'emailNotifications'
+  | 'pushNotifications'
+  | 'weeklyReports'
+  | 'goalReminders'
+  | 'transactionAlerts';
 
 const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
+  const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications' | 'data'>('profile');
-  // Removido: showConfirmPassword e setShowConfirmPassword pois não são usados
+
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [profile, setProfile] = useState<UserProfile>({
     name: 'Pedro Silva',
@@ -54,48 +65,85 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
 
   const [editProfile, setEditProfile] = useState<UserProfile>(profile);
 
-  // Removido: passwordData e setPasswordData pois não são usados
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
 
-  // Removido: notifications e setNotifications pois não são usados
+  const [notifications, setNotifications] = useState<Record<NotificationKeys, boolean>>({
+    emailNotifications: true,
+    pushNotifications: true,
+    weeklyReports: true,
+    goalReminders: true,
+    transactionAlerts: false
+  });
 
-  const stats: UserStats = {
-    totalTransactions: 247,
-    totalGoals: 8,
-    completedGoals: 3,
-    averageMonthlyIncome: 8500,
-    averageMonthlyExpense: 6200,
-    longestStreak: 45
+  const notificationLabels: Record<NotificationKeys, { title: string; desc: string }> = {
+    emailNotifications: {
+      title: 'Notificações por Email',
+      desc: 'Receba atualizações importantes por email'
+    },
+    pushNotifications: {
+      title: 'Notificações Push',
+      desc: 'Notificações em tempo real no navegador'
+    },
+    weeklyReports: {
+      title: 'Relatórios Semanais',
+      desc: 'Resumo semanal das suas finanças'
+    },
+    goalReminders: {
+      title: 'Lembretes de Objetivos',
+      desc: 'Lembretes sobre seus objetivos financeiros'
+    },
+    transactionAlerts: {
+      title: 'Alertas de Transação',
+      desc: 'Alertas para transações importantes'
+    }
   };
 
   const handleSaveProfile = () => {
     setProfile(editProfile);
+    setIsEditing(false);
     alert('Perfil atualizado com sucesso!');
   };
 
-  const handleInputChange = (field: keyof UserProfile, value: string) => {
-    setEditProfile(prev => ({ ...prev, [field]: value }));
+  const handleSavePassword = () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('As senhas não coincidem!');
+      return;
+    }
+    if (passwordData.newPassword.length < 8) {
+      alert('A nova senha deve ter pelo menos 8 caracteres!');
+      return;
+    }
+    alert('Senha alterada com sucesso!');
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    });
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString('pt-BR');
 
   const tabs = [
-    { id: 'profile', label: 'Perfil', icon: User },
-    { id: 'security', label: 'Segurança', icon: Shield },
-    { id: 'notifications', label: 'Notificações', icon: Bell },
-    { id: 'data', label: 'Dados', icon: Download }
+    { id: 'profile' as const, label: 'Perfil', icon: User },
+    { id: 'security' as const, label: 'Segurança', icon: Shield },
+    { id: 'notifications' as const, label: 'Notificações', icon: Bell },
+    { id: 'data' as const, label: 'Dados', icon: Download }
   ];
 
   return (
-    <div className="profile-container">
+    <div className="profile-page">
       {/* Header igual ao Dashboard */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
             {/* Logo */}
             <div className="newtransaction-logo-group">
-              <div className="logo">
+              <div className="logo" onClick={() => onNavigate('dashboard')} style={{ cursor: 'pointer' }}>
                 <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
                 <span className="logo-text">CAPITAL ONLINE</span>
               </div>
@@ -127,25 +175,27 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
               >
                 Objetivos
               </button>
-              <button
-                className="newtransaction-nav-button active"
-                onClick={() => onNavigate('profile')}
-              >
-                Perfil
-              </button>
             </nav>
 
-            {/* Perfil e Logout */}
+            {/* Ações */}
             <div className="newtransaction-header-actions">
-              <div 
-                className="newtransaction-profile-circle" 
-                onClick={() => onNavigate('profile')} 
+              <button className="icon-button" title="Calendário">
+                <Calendar className="icon" />
+              </button>
+              <button className="icon-button" title="Notificações">
+                <Bell className="icon" />
+              </button>
+
+              <div
+                className="newtransaction-profile-circle"
+                onClick={() => onNavigate('profile')}
                 style={{ cursor: 'pointer' }}
               >
                 P
               </div>
-              <button 
-                className="icon-button logout" 
+
+              <button
+                className="icon-button logout"
                 title="Sair"
                 onClick={onLogout}
               >
@@ -156,171 +206,281 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
         </div>
       </header>
 
-      {/* Conteúdo do perfil */}
-      <div className="profile-content">
-        <div className="page-header">
-          <button 
-            onClick={() => onNavigate('dashboard')}
-            className="back-button"
-          >
-            <ArrowLeft className="icon" />
-            <span>Voltar ao Dashboard</span>
-          </button>
-          <div className="page-title-container">
-            <div>
-              <h1 className="page-title">Meu Perfil</h1>
-              <p className="page-subtitle">Gerencie suas informações pessoais e configurações da conta.</p>
-            </div>
-          </div>
-        </div>
+      {/* Main */}
+      <main className="profile-container">
+        <h1 className="page-title">Meu Perfil</h1>
+        <p className="page-subtitle">Gerencie suas informações pessoais e configurações da conta.</p>
 
-        <div className="profile-grid">
+        <div className="layout">
           {/* Sidebar */}
-          <div className="sidebar">
-            <div className="sidebar-card">
-              {/* Profile Summary */}
-              <div className="profile-summary">
-                <div className="avatar-container">
-                  <div className="profile-avatar">
-                    <span className="avatar-large-text">P</span>
-                  </div>
-                  <button className="avatar-edit-button">
-                    <Camera className="icon" />
+          <aside className="sidebar">
+            <div className="profile-summary">
+              <div className="avatar-wrapper">
+                <div className="avatar-large">P</div>
+                <button className="avatar-edit" aria-label="Alterar foto">
+                  <Camera className="icon-small" />
+                </button>
+              </div>
+              <h3 className="summary-name">{profile.name}</h3>
+              <p className="summary-since">Membro desde {formatDate(profile.memberSince)}</p>
+            </div>
+
+            <nav className="tab-nav">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={activeTab === tab.id ? 'tab active' : 'tab'}
+                  >
+                    <Icon className="icon" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          {/* Conteúdo */}
+          <section className="tab-content">
+            {activeTab === 'profile' && (
+              <>
+                <div className="section-header">
+                  <h2 className="section-title">Informações Pessoais</h2>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    {isEditing ? <X className="icon" /> : <Edit className="icon" />}
+                    {isEditing ? 'Cancelar' : 'Editar'}
                   </button>
                 </div>
-                <h3 className="profile-name">{profile.name}</h3>
-                <p className="profile-member-since">Membro desde {formatDate(profile.memberSince)}</p>
-              </div>
 
-              {/* Navigation Tabs */}
-              <nav className="tab-navigation">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
-                    >
-                      <Icon className="tab-icon" />
-                      <span className="tab-label">{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
-
-            {/* Stats Card */}
-            <div className="stats-card">
-              <h3 className="stats-title">Suas Estatísticas</h3>
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <span className="stat-label">Transações</span>
-                  <span className="stat-value">{stats.totalTransactions}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Objetivos</span>
-                  <span className="stat-value">{stats.totalGoals}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Concluídos</span>
-                  <span className="stat-value completed">{stats.completedGoals}</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-label">Sequência</span>
-                  <span className="stat-value">{stats.longestStreak} dias</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="main-content">
-            <div className="content-card">
-              {/* Tabs Content */}
-              {activeTab === 'profile' && (
-                <div className="tab-content">
-                  {/* Conteúdo da aba Perfil */}
-                  <form
-                    className="profile-form"
-                    onSubmit={e => {
-                      e.preventDefault();
-                      handleSaveProfile();
-                    }}
-                  >
-                    <div className="form-group">
-                      <label htmlFor="name">Nome</label>
+                <div className="grid-2">
+                  <div className="form-group">
+                    <label className="label">Nome</label>
+                    {isEditing ? (
                       <input
-                        id="name"
-                        type="text"
+                        className="input"
                         value={editProfile.name}
-                        onChange={e => handleInputChange('name', e.target.value)}
+                        onChange={(e) => setEditProfile({ ...editProfile, name: e.target.value })}
                       />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="email">Email</label>
+                    ) : (
+                      <div className="display-field">
+                        <User className="display-icon" /> {profile.name}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="label">Email</label>
+                    {isEditing ? (
                       <input
-                        id="email"
-                        type="email"
+                        className="input"
                         value={editProfile.email}
-                        onChange={e => handleInputChange('email', e.target.value)}
+                        onChange={(e) => setEditProfile({ ...editProfile, email: e.target.value })}
                       />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="phone">Telefone</label>
+                    ) : (
+                      <div className="display-field">
+                        <Mail className="display-icon" /> {profile.email}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="label">Telefone</label>
+                    {isEditing ? (
                       <input
-                        id="phone"
-                        type="text"
+                        className="input"
                         value={editProfile.phone}
-                        onChange={e => handleInputChange('phone', e.target.value)}
+                        onChange={(e) => setEditProfile({ ...editProfile, phone: e.target.value })}
                       />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="address">Endereço</label>
+                    ) : (
+                      <div className="display-field">
+                        <Phone className="display-icon" /> {profile.phone}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="label">Endereço</label>
+                    {isEditing ? (
                       <input
-                        id="address"
-                        type="text"
+                        className="input"
                         value={editProfile.address}
-                        onChange={e => handleInputChange('address', e.target.value)}
+                        onChange={(e) => setEditProfile({ ...editProfile, address: e.target.value })}
                       />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="birthDate">Data de Nascimento</label>
+                    ) : (
+                      <div className="display-field">
+                        <MapPin className="display-icon" /> {profile.address}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="form-group">
+                    <label className="label">Data de Nascimento</label>
+                    {isEditing ? (
                       <input
-                        id="birthDate"
+                        className="input"
                         type="date"
                         value={editProfile.birthDate}
-                        onChange={e => handleInputChange('birthDate', e.target.value)}
+                        onChange={(e) => setEditProfile({ ...editProfile, birthDate: e.target.value })}
                       />
-                    </div>
-                    <button type="submit" className="save-profile-button">
-                      Salvar Perfil
+                    ) : (
+                      <div className="display-field">
+                        <Calendar className="display-icon" /> {formatDate(profile.birthDate)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {isEditing && (
+                  <div className="actions-row">
+                    <button className="btn btn-primary" onClick={handleSaveProfile}>
+                      <Save className="icon" /> Salvar
                     </button>
-                  </form>
-                </div>
-              )}
+                  </div>
+                )}
+              </>
+            )}
 
-              {activeTab === 'security' && (
-                <div className="tab-content">
-                  {/* Aba Segurança */}
-                </div>
-              )}
+            {activeTab === 'security' && (
+              <div>
+                <h2 className="section-title">Segurança</h2>
+                <div className="security-section">
+                  <h3 className="subsection-title">Alterar Senha</h3>
+                  <p className="subsection-desc">
+                    Mantenha sua conta segura com uma senha forte.
+                  </p>
 
-              {activeTab === 'notifications' && (
-                <div className="tab-content">
-                  {/* Aba Notificações */}
-                </div>
-              )}
+                  <div className="form-group">
+                    <label className="label">Senha Atual</label>
+                    <div className="password-input">
+                      <input
+                        type={showCurrentPassword ? 'text' : 'password'}
+                        className="input"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        placeholder="Digite sua senha atual"
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      >
+                        {showCurrentPassword ? <EyeOff className="icon" /> : <Eye className="icon" />}
+                      </button>
+                    </div>
+                  </div>
 
-              {activeTab === 'data' && (
-                <div className="tab-content">
-                  {/* Aba Dados */}
+                  <div className="form-group">
+                    <label className="label">Nova Senha</label>
+                    <div className="password-input">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        className="input"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                        placeholder="Digite sua nova senha"
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? <EyeOff className="icon" /> : <Eye className="icon" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="label">Confirmar Nova Senha</label>
+                    <div className="password-input">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        className="input"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                        placeholder="Confirme sua nova senha"
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="icon" /> : <Eye className="icon" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="actions-row">
+                    <button className="btn btn-primary" onClick={handleSavePassword}>
+                      <Lock className="icon" /> Alterar Senha
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div>
+                <h2 className="section-title">Notificações</h2>
+                <div className="notif-list">
+                  {Object.entries(notificationLabels).map(([key, { title, desc }]) => (
+                    <div key={key} className="notif-row">
+                      <div>
+                        <p className="notif-title">{title}</p>
+                        <p className="notif-desc">{desc}</p>
+                      </div>
+                      <label className="switch">
+                        <input
+                          type="checkbox"
+                          checked={notifications[key as NotificationKeys]}
+                          onChange={(e) =>
+                            setNotifications((prev) => ({
+                              ...prev,
+                              [key]: e.target.checked
+                            }))
+                          }
+                        />
+                        <span className="slider"></span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'data' && (
+              <div>
+                <h2 className="section-title">Dados da Conta</h2>
+                <div className="card card-blue">
+                  <Download className="card-icon" />
+                  <div className="card-body">
+                    <h3>Exportar Dados</h3>
+                    <p>Baixe uma cópia das suas informações pessoais.</p>
+                    <button className="btn btn-blue">
+                      <Download className="icon" /> Exportar
+                    </button>
+                  </div>
+                </div>
+
+                <div className="card card-red">
+                  <Trash2 className="card-icon" />
+                  <div className="card-body">
+                    <h3>Excluir Conta</h3>
+                    <p>Essa ação é irreversível. Todos os seus dados serão apagados.</p>
+                    <button className="btn btn-danger">
+                      <Trash2 className="icon" /> Excluir Conta
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
