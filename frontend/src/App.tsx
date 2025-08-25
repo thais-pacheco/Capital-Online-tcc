@@ -4,6 +4,7 @@ import Dashboard from "./components/dashboard/Dashboard";
 import Home from "./components/home/home";
 import NewTransaction from "./components/newtransaction/newtransaction";
 import Objectives from "./components/objectives/objectives";
+import Profile from "./components/perfil/Profile"; 
 
 const userId = "123";
 
@@ -28,6 +29,9 @@ function App() {
             />
           }
         />
+
+        {/* Nova rota para o perfil */}
+        <Route path="/perfil" element={<Profile />} />
       </Routes>
     </Router>
   );

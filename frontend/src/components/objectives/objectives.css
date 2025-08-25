@@ -82,7 +82,7 @@
 }
 
 .goals-nav-button:hover {
-  color: #059669;
+  color: #22c55e;
 }
 
 .goals-nav-button.active {
@@ -110,7 +110,7 @@
 }
 
 .goals-action-button:hover {
-  color: #059669;
+  color: #22c55e;
 }
 
 .goals-action-button.logout:hover {
@@ -130,17 +130,6 @@
   font-size: 0.875rem;
 }
 
-.goals-nav {
-  display: none;
-  gap: 2rem;
-}
-
-@media(min-width: 768px) {
-  .goals-nav {
-    display: flex;
-  }
-}
-
 .goals-nav button {
   color: #4b5563;
   background: none;
@@ -150,21 +139,15 @@
 }
 
 .goals-nav button:hover {
-  color: #059669;
+  color: #22c55e;
 }
 
 .goals-nav button.active {
-  color: #059669;
+  color: #22c55e;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-}
-
-.goals-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
 }
 
 .goals-header-actions button {
@@ -177,34 +160,17 @@
 }
 
 .goals-header-actions button:hover {
-  color: #059669;
+  color: #22c55e;
 }
 
 .goals-header-actions button.logout:hover {
   color: #dc2626;
 }
 
-.goals-profile-circle {
-  width: 2rem;
-  height: 2rem;
-  background-color: #059669;
-  border-radius: 9999px;
-  color: white;
-  font-weight: 500;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 0.875rem;
-}
-
 .goals-content {
   max-width: 112rem;
   margin: 0 auto;
-  padding: 2rem 1rem;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  padding-left: 2rem;
-  padding-right: 2rem;
+  padding: 2rem;
 }
 
 .goals-back-button {
@@ -218,7 +184,7 @@
 }
 
 .goals-back-button:hover {
-  color: #059669;
+  color: #22c55e;
 }
 
 .goals-header-section {
@@ -247,7 +213,7 @@
 
 .goals-new-button {
   margin-top: 1rem;
-  background-color: #059669;
+  background-color: #22c55e;
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
@@ -265,7 +231,7 @@
 }
 
 .goals-new-button:hover {
-  background-color: #047857;
+  background-color: #16a34a;
 }
 
 .goals-form-container {
@@ -324,7 +290,7 @@
 .goals-form input[type="date"]:focus,
 .goals-form select:focus,
 .goals-form textarea:focus {
-  box-shadow: 0 0 0 2px #059669;
+  box-shadow: 0 0 0 2px #22c55e;
   border-color: transparent;
   outline-offset: 0;
 }
@@ -340,7 +306,7 @@
 }
 
 .goals-submit-button {
-  background-color: #059669;
+  background-color: #22c55e;
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
@@ -350,7 +316,7 @@
 }
 
 .goals-submit-button:hover {
-  background-color: #047857;
+  background-color: #16a34a;
 }
 
 .goals-cancel-button {
@@ -418,18 +384,18 @@
 }
 
 .status-completed {
-  background-color: #dcfce7; /* bg-green-100 */
-  color: #166534; /* text-green-800 */
+  background-color: #bbf7d0;
+  color: #15803d;
 }
 
 .status-overdue {
-  background-color: #fee2e2; /* bg-red-100 */
-  color: #991b1b; /* text-red-800 */
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .status-active {
-  background-color: #dbeafe; /* bg-blue-100 */
-  color: #1e40af; /* text-blue-800 */
+  background-color: #dbeafe;
+  color: #1e40af;
 }
 
 .goal-actions button {
@@ -442,7 +408,7 @@
 }
 
 .goal-actions button:hover {
-  color: #059669;
+  color: #22c55e;
 }
 
 .goal-actions button.delete:hover {
@@ -487,7 +453,7 @@
 }
 
 .progress-fill-active {
-  background-color: #059669;
+  background-color: #22c55e;
 }
 
 .goal-progress-info {
@@ -520,7 +486,7 @@
 }
 
 .goal-progress-input input:focus {
-  box-shadow: 0 0 0 2px #059669;
+  box-shadow: 0 0 0 2px #22c55e;
   border-color: transparent;
   outline-offset: 0;
 }
@@ -553,7 +519,7 @@
 }
 
 .goals-empty button {
-  background-color: #059669;
+  background-color: #22c55e;
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
@@ -563,5 +529,5 @@
 }
 
 .goals-empty button:hover {
-  background-color: #047857;
+  background-color: #16a34a;
 }

@@ -7,6 +7,9 @@ import {
   Edit,
   Trash2,
   Plus,
+  Calendar,
+  Bell,
+  LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,8 +35,7 @@ interface GoalsProps {
   userId: string; 
 }
 
-
-const Goals: React.FC<GoalsProps> = ({onLogout }) => {
+const Goals: React.FC<GoalsProps> = ({ onLogout }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
@@ -46,8 +48,8 @@ const Goals: React.FC<GoalsProps> = ({onLogout }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
 
-const API_URL = 'https://capital-online-tcc.onrender.com/api/objetivos/';
-
+  const API_URL = 'https://capital-online-tcc.onrender.com/api/objetivos/';
+  const navigate = useNavigate();
 
   const calculateStatus = (goal: Goal) => {
     const hoje = new Date();
@@ -170,38 +172,65 @@ const API_URL = 'https://capital-online-tcc.onrender.com/api/objetivos/';
       ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
       : 'R$ 0,00';
 
-      const navigate = useNavigate();
+  const handleLogout = () => {
+    onLogout();
+    navigate('/login');
+  };
+
   return (
     <div className="goals-container">
-     
-     <header className="goals-header">
-        <div className="goals-header-inner">
-          <div className="goals-header-flex">
-            <div className="goals-logo-group">
+      {/* Header igual ao do Dashboard */}
+      <header className="newtransaction-header">
+        <div className="newtransaction-header-inner">
+          <div className="newtransaction-header-flex">
+            <div className="newtransaction-logo-group">
               <div className="logo">
                 <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
                 <span className="logo-text">CAPITAL ONLINE</span>
               </div>
             </div>
-            <nav className="goals-nav">
-              <button className="goals-nav-button" onClick={() => navigate('/dashboard')}>
+            <nav className="newtransaction-nav">
+              <button className="newtransaction-nav-button" onClick={() => navigate('/dashboard')}>
                 Dashboard
               </button>
-              <button className="goals-nav-button" onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
-              <button className="goals-nav-button" onClick={() => navigate('/graficos')}>
+              <button className="newtransaction-nav-button" onClick={() => navigate('/nova-movimentacao')}>
+                Nova movimentação
+              </button>
+              <button className="newtransaction-nav-button" onClick={() => navigate('/graficos')}>
                 Gráficos
               </button>
-              <button className="goals-nav-button active" onClick={() => navigate('/objetivos')}>
+              <button className="newtransaction-nav-button active" onClick={() => navigate('/objetivos')}>
                 Objetivos
               </button>
             </nav>
-            <div className="goals-header-actions">
-              <div className="goals-profile-circle">J</div>
+
+            <div className="newtransaction-header-actions">
+              <button className="icon-button" title="Calendário">
+                <Calendar className="icon" />
+              </button>
+              <button className="icon-button" title="Notificações">
+                <Bell className="icon" />
+              </button>
+
+              <div 
+                className="newtransaction-profile-circle" 
+                onClick={() => navigate('/perfil')} 
+                style={{ cursor: 'pointer' }}
+              >
+                P
+              </div>
+
+              <button 
+                className="icon-button logout" 
+                title="Sair"
+                onClick={handleLogout}
+              >
+                <LogOut className="icon" />
+              </button>
             </div>
           </div>
         </div>
       </header>
-
 
       <main className="goals-content" aria-label="Área principal de objetivos">
         <section className="goals-header-section">
@@ -273,7 +302,6 @@ const API_URL = 'https://capital-online-tcc.onrender.com/api/objetivos/';
                   <option value="lazer">Lazer</option>
                   <option value="saude">Saúde</option>
                   <option value="investimento">Investimento</option>
-                  {/* pode adicionar outras categorias aqui */}
                 </select>
               </div>
 
