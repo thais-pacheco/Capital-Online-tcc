@@ -54,10 +54,10 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [profile, setProfile] = useState<UserProfile>({
-    name: 'Pedro Silva',
-    email: 'pedro.silva@email.com',
+    name: 'Plentz amanda ',
+    email: 'plentzamanda@email.com',
     phone: '(11) 99999-9999',
-    address: 'São Paulo, SP',
+    address: 'Porto Alegre, RS',
     birthDate: '1990-05-15',
     memberSince: '2024-01-15',
     avatar: ''
