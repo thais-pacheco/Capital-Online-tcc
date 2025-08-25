@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PiggyBank } from 'lucide-react';
+import { PiggyBank, Calendar, Bell, LogOut } from 'lucide-react';
 import './newtransaction.css';
 
 interface FormData {
   type: 'income' | 'expense';
   description: string;
   amount: string;
-  category: string; // aqui é string porque value do select é string, mas representa o id (número)
+  category: string;
   date: string;
   observations: string;
 }
@@ -56,7 +56,7 @@ export default function NewTransaction() {
       titulo: formData.description,
       tipo: formData.type === 'income' ? 'entrada' : 'saida',
       valor: parseFloat(formData.amount),
-      categoria: parseInt(formData.category), // **aqui enviamos o ID da categoria (número)**
+      categoria: parseInt(formData.category),
       data: formData.date,
       observacoes: formData.observations,
     };
@@ -85,6 +85,7 @@ export default function NewTransaction() {
 
   return (
     <div className="newtransaction-container">
+      {/* Header atualizado */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
@@ -94,6 +95,7 @@ export default function NewTransaction() {
                 <span className="logo-text">CAPITAL ONLINE</span>
               </div>
             </div>
+
             <nav className="newtransaction-nav">
               <button className="newtransaction-nav-button" onClick={() => navigate('/dashboard')}>
                 Dashboard
@@ -106,13 +108,35 @@ export default function NewTransaction() {
                 Objetivos
               </button>
             </nav>
+
             <div className="newtransaction-header-actions">
-              <div className="newtransaction-profile-circle">J</div>
+              <button className="icon-button" onClick={() => alert('Abrir calendário')}>
+                <Calendar className="icon" />
+              </button>
+              <button className="icon-button" onClick={() => alert('Ver notificações')}>
+                <Bell className="icon" />
+              </button>
+              <div
+                className="newtransaction-profile-circle"
+                onClick={() => navigate('/perfil')}
+              >
+                P
+              </div>
+              <button
+                className="icon-button logout"
+                onClick={() => {
+                  localStorage.clear();
+                  navigate('/login');
+                }}
+              >
+                <LogOut className="icon" />
+              </button>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Conteúdo principal */}
       <main className="newtransaction-content">
         <h1 className="newtransaction-title">Nova movimentação</h1>
         <p className="newtransaction-subtitle">Registre uma nova entrada ou saída financeira</p>
@@ -125,6 +149,7 @@ export default function NewTransaction() {
 
         <div className="newtransaction-form-container">
           <form className="newtransaction-form" onSubmit={handleSubmit}>
+            {/* Tipo de movimentação */}
             <label className="transaction-type-label">Tipo de movimentação</label>
             <div className="transaction-type-buttons">
               <button
@@ -159,10 +184,9 @@ export default function NewTransaction() {
               </button>
             </div>
 
+            {/* Campos do formulário */}
             <div className="form-group form-grid-full">
-              <label className="form-label">
-                Descrição <span className="required">*</span>
-              </label>
+              <label className="form-label">Descrição <span className="required">*</span></label>
               <input
                 name="description"
                 type="text"
@@ -175,9 +199,7 @@ export default function NewTransaction() {
 
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">
-                  Valor <span className="required">*</span>
-                </label>
+                <label className="form-label">Valor <span className="required">*</span></label>
                 <input
                   name="amount"
                   type="number"
@@ -189,9 +211,7 @@ export default function NewTransaction() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">
-                  Categoria <span className="required">*</span>
-                </label>
+                <label className="form-label">Categoria <span className="required">*</span></label>
                 <select
                   name="category"
                   className="form-select"
@@ -201,9 +221,7 @@ export default function NewTransaction() {
                 >
                   <option value="">Selecione</option>
                   {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.nome}
-                    </option>
+                    <option key={cat.id} value={cat.id}>{cat.nome}</option>
                   ))}
                 </select>
               </div>

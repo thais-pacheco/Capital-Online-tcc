@@ -7,7 +7,10 @@ import {
   ArrowDownRight,
   BarChart3,
   ChevronDown,
-  PiggyBank
+  PiggyBank,
+  Calendar,
+  Bell,
+  LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
@@ -105,6 +108,11 @@ const Dashboard: React.FC = () => {
 
   const totalBalance = totalIncome - totalExpenses;
 
+  const handleLogout = () => {
+    // Adicione lógica de logout aqui
+    navigate('/login');
+  };
+
   if (loading) {
     return (
       <div className="dashboard-loading">
@@ -125,7 +133,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
-      {/* Novo Header com PiggyBank */}
+      {/* Header Atualizado */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
@@ -162,19 +170,38 @@ const Dashboard: React.FC = () => {
               </button>
               <button
                 className="newtransaction-nav-button"
-                onClick={() => window.location.href = '/perfil'}
+                onClick={() => navigate('/perfil')}
               >
                 Perfil
               </button>
             </nav>
+
             <div className="newtransaction-header-actions">
+              {/* Ícones adicionais */}
+              <button className="icon-button" title="Calendário">
+                <Calendar className="icon" />
+              </button>
+              <button className="icon-button" title="Notificações">
+                <Bell className="icon" />
+              </button>
+
+              {/* Perfil */}
               <div 
                 className="newtransaction-profile-circle" 
-                onClick={() => window.location.href = '/perfil'} 
+                onClick={() => navigate('/perfil')} 
                 style={{ cursor: 'pointer' }}
               >
                 P
               </div>
+
+              {/* Logout */}
+              <button 
+                className="icon-button logout" 
+                title="Sair"
+                onClick={handleLogout}
+              >
+                <LogOut className="icon" />
+              </button>
             </div>
           </div>
         </div>
