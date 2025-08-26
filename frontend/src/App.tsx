@@ -8,6 +8,8 @@ import NewTransaction from "./components/newtransaction/newtransaction";
 import Objectives from "./components/objectives/objectives";
 import Charts from "./components/charts/charts";
 
+import Profile from "./components/perfil/Profile"; 
+
 const userId = "123";
 
 function App() {
@@ -38,6 +40,9 @@ function App() {
           path="/graficos"
           element={<Charts onLogout={handleLogout} />}
         />
+
+        {/* Nova rota para o perfil */}
+        <Route path="/perfil" element={<Profile />} />
       </Routes>
     </Router>
   );

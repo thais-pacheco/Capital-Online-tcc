@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PiggyBank } from 'lucide-react';
+import { 
+  PiggyBank,
+  Calendar,
+  Bell,
+  LogOut
+} from 'lucide-react';
 import './newtransaction.css';
 
 interface FormData {
   type: 'income' | 'expense';
   description: string;
   amount: string;
-  category: string; // aqui é string porque value do select é string, mas representa o id (número)
+  category: string; 
   date: string;
   observations: string;
 }
@@ -56,7 +61,7 @@ export default function NewTransaction() {
       titulo: formData.description,
       tipo: formData.type === 'income' ? 'entrada' : 'saida',
       valor: parseFloat(formData.amount),
-      categoria: parseInt(formData.category), // **aqui enviamos o ID da categoria (número)**
+      categoria: parseInt(formData.category),
       data: formData.date,
       observacoes: formData.observations,
     };
@@ -83,8 +88,13 @@ export default function NewTransaction() {
     }
   };
 
+  const handleLogout = () => {
+    navigate('/login'); // depois você pode plugar no seu onLogout
+  };
+
   return (
     <div className="newtransaction-container">
+      {/* Header igual ao do Dashboard */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
@@ -98,7 +108,9 @@ export default function NewTransaction() {
               <button className="newtransaction-nav-button" onClick={() => navigate('/dashboard')}>
                 Dashboard
               </button>
-              <button className="newtransaction-nav-button active">Nova movimentação</button>
+              <button className="newtransaction-nav-button active">
+                Nova movimentação
+              </button>
               <button className="newtransaction-nav-button" onClick={() => navigate('/graficos')}>
                 Gráficos
               </button>
@@ -106,13 +118,36 @@ export default function NewTransaction() {
                 Objetivos
               </button>
             </nav>
+
             <div className="newtransaction-header-actions">
-              <div className="newtransaction-profile-circle">J</div>
+              <button className="icon-button" title="Calendário">
+                <Calendar className="icon" />
+              </button>
+              <button className="icon-button" title="Notificações">
+                <Bell className="icon" />
+              </button>
+
+              <div 
+                className="newtransaction-profile-circle" 
+                onClick={() => navigate('/perfil')} 
+                style={{ cursor: 'pointer' }}
+              >
+                P
+              </div>
+
+              <button 
+                className="icon-button logout" 
+                title="Sair"
+                onClick={handleLogout}
+              >
+                <LogOut className="icon" />
+              </button>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Conteúdo original mantido */}
       <main className="newtransaction-content">
         <h1 className="newtransaction-title">Nova movimentação</h1>
         <p className="newtransaction-subtitle">Registre uma nova entrada ou saída financeira</p>

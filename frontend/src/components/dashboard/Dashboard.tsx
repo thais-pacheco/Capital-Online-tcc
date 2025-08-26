@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import {
   TrendingUp,
   TrendingDown,
-  DollarSign,
   Search,
   ArrowUpRight,
   ArrowDownRight,
   BarChart3,
   ChevronDown,
-  PiggyBank
+  PiggyBank,
+  Calendar,
+  Bell,
+  LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
@@ -37,8 +39,7 @@ const Dashboard: React.FC = () => {
     const fetchTransactions = async () => {
       try {
         setLoading(true);
-        const response = await fetch('https://capital-online-tcc.onrender.com/api/transacoes/');
-
+        const response = await fetch('http://127.0.0.1:8000/api/transacoes/');
         
         if (!response.ok) {
           throw new Error(`Erro HTTP: ${response.status}`);
@@ -46,7 +47,6 @@ const Dashboard: React.FC = () => {
         
         const data = await response.json();
         
-        // Validação e normalização dos dados
         const validatedTransactions = data.map((t: any) => {
           const tipo = typeof t.tipo === 'string' 
             ? t.tipo.toLowerCase().trim() === 'entrada' 
@@ -108,6 +108,11 @@ const Dashboard: React.FC = () => {
 
   const totalBalance = totalIncome - totalExpenses;
 
+  const handleLogout = () => {
+    // Adicione lógica de logout aqui
+    navigate('/login');
+  };
+
   if (loading) {
     return (
       <div className="dashboard-loading">
@@ -128,6 +133,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
+      {/* Header Atualizado */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
@@ -162,24 +168,52 @@ const Dashboard: React.FC = () => {
               >
                 Objetivos
               </button>
+             
             </nav>
+
             <div className="newtransaction-header-actions">
-              <div className="newtransaction-profile-circle">J</div>
+              {/* Ícones adicionais */}
+              <button className="icon-button" title="Calendário">
+                <Calendar className="icon" />
+              </button>
+              <button className="icon-button" title="Notificações">
+                <Bell className="icon" />
+              </button>
+
+              {/* Perfil */}
+              <div 
+                className="newtransaction-profile-circle" 
+                onClick={() => navigate('/perfil')} 
+                style={{ cursor: 'pointer' }}
+              >
+                P
+              </div>
+
+              {/* Logout */}
+              <button 
+                className="icon-button logout" 
+                title="Sair"
+                onClick={handleLogout}
+              >
+                <LogOut className="icon" />
+              </button>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Conteúdo principal */}
       <div className="main-content">
         <div className="page-header">
           <h1>Dashboard</h1>
         </div>
 
+        {/* Stats */}
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon balance">
-                <DollarSign size={20} />
+                <ArrowUpRight size={20} />
               </div>
               <span className="stat-label">Saldo Atual</span>
             </div>
@@ -213,6 +247,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Chart Section */}
         <div className="chart-section">
           <div className="section-header">
             <h2>Visão Geral Financeira</h2>
@@ -228,6 +263,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Transactions */}
         <div className="transactions-section">
           <div className="section-header">
             <h2>Histórico de movimentações</h2>
