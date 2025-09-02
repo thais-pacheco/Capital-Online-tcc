@@ -1,0 +1,10 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import ObjetivoFinanceiroViewSet
+
+router = DefaultRouter()
+router.register(r'objetivos', ObjetivoFinanceiroViewSet)
+
+urlpatterns = [
+    path('', include(router.urls)),
+]

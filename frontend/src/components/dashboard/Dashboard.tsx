@@ -168,6 +168,7 @@ const Dashboard: React.FC = () => {
               >
                 Objetivos
               </button>
+             
             </nav>
 
             <div className="newtransaction-header-actions">

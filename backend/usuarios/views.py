@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 
 @csrf_exempt
 def cadastro(request):
+    
     if request.method == "POST":
         try:
             data = json.loads(request.body)

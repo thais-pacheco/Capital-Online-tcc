@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PiggyBank, Calendar, Bell, LogOut } from 'lucide-react';
+import { 
+  PiggyBank,
+  Calendar,
+  Bell,
+  LogOut
+} from 'lucide-react';
 import './newtransaction.css';
 
 interface FormData {
   type: 'income' | 'expense';
   description: string;
   amount: string;
-  category: string;
+  category: string; 
   date: string;
   observations: string;
 }
@@ -62,7 +67,7 @@ export default function NewTransaction() {
     };
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+      const response = await fetch('https://capital-online-tcc.onrender.com/api/transacoes/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,9 +88,13 @@ export default function NewTransaction() {
     }
   };
 
+  const handleLogout = () => {
+    navigate('/login'); // depois você pode plugar no seu onLogout
+  };
+
   return (
     <div className="newtransaction-container">
-      {/* Header atualizado */}
+      {/* Header igual ao do Dashboard */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
@@ -95,12 +104,13 @@ export default function NewTransaction() {
                 <span className="logo-text">CAPITAL ONLINE</span>
               </div>
             </div>
-
             <nav className="newtransaction-nav">
               <button className="newtransaction-nav-button" onClick={() => navigate('/dashboard')}>
                 Dashboard
               </button>
-              <button className="newtransaction-nav-button active">Nova movimentação</button>
+              <button className="newtransaction-nav-button active">
+                Nova movimentação
+              </button>
               <button className="newtransaction-nav-button" onClick={() => navigate('/graficos')}>
                 Gráficos
               </button>
@@ -110,24 +120,25 @@ export default function NewTransaction() {
             </nav>
 
             <div className="newtransaction-header-actions">
-              <button className="icon-button" onClick={() => alert('Abrir calendário')}>
+              <button className="icon-button" title="Calendário">
                 <Calendar className="icon" />
               </button>
-              <button className="icon-button" onClick={() => alert('Ver notificações')}>
+              <button className="icon-button" title="Notificações">
                 <Bell className="icon" />
               </button>
-              <div
-                className="newtransaction-profile-circle"
-                onClick={() => navigate('/perfil')}
+
+              <div 
+                className="newtransaction-profile-circle" 
+                onClick={() => navigate('/perfil')} 
+                style={{ cursor: 'pointer' }}
               >
                 P
               </div>
-              <button
-                className="icon-button logout"
-                onClick={() => {
-                  localStorage.clear();
-                  navigate('/login');
-                }}
+
+              <button 
+                className="icon-button logout" 
+                title="Sair"
+                onClick={handleLogout}
               >
                 <LogOut className="icon" />
               </button>
@@ -136,7 +147,7 @@ export default function NewTransaction() {
         </div>
       </header>
 
-      {/* Conteúdo principal */}
+      {/* Conteúdo original mantido */}
       <main className="newtransaction-content">
         <h1 className="newtransaction-title">Nova movimentação</h1>
         <p className="newtransaction-subtitle">Registre uma nova entrada ou saída financeira</p>
@@ -149,7 +160,6 @@ export default function NewTransaction() {
 
         <div className="newtransaction-form-container">
           <form className="newtransaction-form" onSubmit={handleSubmit}>
-            {/* Tipo de movimentação */}
             <label className="transaction-type-label">Tipo de movimentação</label>
             <div className="transaction-type-buttons">
               <button
@@ -184,9 +194,10 @@ export default function NewTransaction() {
               </button>
             </div>
 
-            {/* Campos do formulário */}
             <div className="form-group form-grid-full">
-              <label className="form-label">Descrição <span className="required">*</span></label>
+              <label className="form-label">
+                Descrição <span className="required">*</span>
+              </label>
               <input
                 name="description"
                 type="text"
@@ -199,7 +210,9 @@ export default function NewTransaction() {
 
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">Valor <span className="required">*</span></label>
+                <label className="form-label">
+                  Valor <span className="required">*</span>
+                </label>
                 <input
                   name="amount"
                   type="number"
@@ -211,7 +224,9 @@ export default function NewTransaction() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Categoria <span className="required">*</span></label>
+                <label className="form-label">
+                  Categoria <span className="required">*</span>
+                </label>
                 <select
                   name="category"
                   className="form-select"
@@ -221,7 +236,9 @@ export default function NewTransaction() {
                 >
                   <option value="">Selecione</option>
                   {categories.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.nome}</option>
+                    <option key={cat.id} value={cat.id}>
+                      {cat.nome}
+                    </option>
                   ))}
                 </select>
               </div>

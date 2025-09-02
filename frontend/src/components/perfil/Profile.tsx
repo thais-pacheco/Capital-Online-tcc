@@ -13,20 +13,12 @@ import {
   Bell,
   Eye,
   EyeOff,
-  Trash2,
-  Download,
   LogOut,
   Lock,
   PiggyBank
 } from 'lucide-react';
-import './profile.css';
-
-type PageRoute = 'dashboard' | 'new-transaction' | 'charts' | 'goals' | 'profile';
-
-interface ProfileProps {
-  onNavigate: (page: PageRoute) => void;
-  onLogout: () => void;
-}
+import { useNavigate } from 'react-router-dom';
+import './Profile.css';
 
 interface UserProfile {
   name: string;
@@ -45,9 +37,11 @@ type NotificationKeys =
   | 'goalReminders'
   | 'transactionAlerts';
 
-const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
+const Profile: React.FC = () => {
+  const navigate = useNavigate();
+
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications' | 'data'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'notifications'>('profile');
 
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -125,70 +119,82 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
     });
   };
 
+  const handleLogout = () => {
+    navigate('/login');
+  };
+
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString('pt-BR');
 
   const tabs = [
     { id: 'profile' as const, label: 'Perfil', icon: User },
     { id: 'security' as const, label: 'Segurança', icon: Shield },
-    { id: 'notifications' as const, label: 'Notificações', icon: Bell },
-    { id: 'data' as const, label: 'Dados', icon: Download }
+    { id: 'notifications' as const, label: 'Notificações', icon: Bell }
   ];
 
   return (
     <div className="profile-page">
-      {/* Header igual ao Dashboard */}
+      {/* Header */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
-            {/* Logo */}
             <div className="newtransaction-logo-group">
-              <div className="logo" onClick={() => onNavigate('dashboard')} style={{ cursor: 'pointer' }}>
+              <div
+                className="logo"
+                onClick={() => navigate('/dashboard')}
+                style={{ cursor: 'pointer' }}
+              >
                 <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
                 <span className="logo-text">CAPITAL ONLINE</span>
               </div>
             </div>
 
-            {/* Navegação */}
             <nav className="newtransaction-nav">
               <button
                 className="newtransaction-nav-button"
-                onClick={() => onNavigate('dashboard')}
+                onClick={() => navigate('/dashboard')}
               >
                 Dashboard
               </button>
               <button
                 className="newtransaction-nav-button"
-                onClick={() => onNavigate('new-transaction')}
+                onClick={() => navigate('/nova-movimentacao')}
               >
                 Nova movimentação
               </button>
               <button
                 className="newtransaction-nav-button"
-                onClick={() => onNavigate('charts')}
+                onClick={() => navigate('/graficos')}
               >
                 Gráficos
               </button>
               <button
                 className="newtransaction-nav-button"
-                onClick={() => onNavigate('goals')}
+                onClick={() => navigate('/objetivos')}
               >
                 Objetivos
               </button>
             </nav>
 
-            {/* Ações */}
             <div className="newtransaction-header-actions">
-              <button className="icon-button" title="Calendário">
+              <button
+                className="icon-button"
+                title="Calendário"
+                onClick={() => navigate('/dashboard')}
+              >
                 <Calendar className="icon" />
               </button>
-              <button className="icon-button" title="Notificações">
+              <button
+                className="icon-button"
+                title="Gráficos"
+                onClick={() => navigate('/graficos')}
+              >
                 <Bell className="icon" />
               </button>
 
               <div
                 className="newtransaction-profile-circle"
-                onClick={() => onNavigate('profile')}
+                onClick={() => navigate('/perfil')}
                 style={{ cursor: 'pointer' }}
               >
                 P
@@ -197,7 +203,7 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
               <button
                 className="icon-button logout"
                 title="Sair"
-                onClick={onLogout}
+                onClick={handleLogout}
               >
                 <LogOut className="icon" />
               </button>
@@ -448,33 +454,6 @@ const Profile: React.FC<ProfileProps> = ({ onNavigate, onLogout }) => {
                       </label>
                     </div>
                   ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'data' && (
-              <div>
-                <h2 className="section-title">Dados da Conta</h2>
-                <div className="card card-blue">
-                  <Download className="card-icon" />
-                  <div className="card-body">
-                    <h3>Exportar Dados</h3>
-                    <p>Baixe uma cópia das suas informações pessoais.</p>
-                    <button className="btn btn-blue">
-                      <Download className="icon" /> Exportar
-                    </button>
-                  </div>
-                </div>
-
-                <div className="card card-red">
-                  <Trash2 className="card-icon" />
-                  <div className="card-body">
-                    <h3>Excluir Conta</h3>
-                    <p>Essa ação é irreversível. Todos os seus dados serão apagados.</p>
-                    <button className="btn btn-danger">
-                      <Trash2 className="icon" /> Excluir Conta
-                    </button>
-                  </div>
                 </div>
               </div>
             )}
