@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Auth from "./components/auth/auth";
@@ -7,7 +6,6 @@ import Home from "./components/home/home";
 import NewTransaction from "./components/newtransaction/newtransaction";
 import Objectives from "./components/objectives/objectives";
 import Charts from "./components/charts/charts";
-
 import Profile from "./components/perfil/Profile"; 
 
 const userId = "123";
