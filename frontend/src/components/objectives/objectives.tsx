@@ -7,6 +7,9 @@ import {
   Edit,
   Trash2,
   Plus,
+  Calendar,
+  Bell,
+  LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,8 +35,7 @@ interface GoalsProps {
   userId: string; 
 }
 
-
-const Goals: React.FC<GoalsProps> = ({onLogout }) => {
+const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
@@ -47,6 +49,7 @@ const Goals: React.FC<GoalsProps> = ({onLogout }) => {
   const [loading, setLoading] = useState(true);
 
   const API_URL = 'http://localhost:8000/api/objetivos/';
+  const navigate = useNavigate();
 
   const calculateStatus = (goal: Goal) => {
     const hoje = new Date();
@@ -56,7 +59,7 @@ const Goals: React.FC<GoalsProps> = ({onLogout }) => {
     return 'active';
   };
 
-  async function fetchGoals() {
+  const fetchGoals = async () => {
     setLoading(true);
     try {
       const response = await fetch(API_URL, { credentials: 'include' });
@@ -73,7 +76,7 @@ const Goals: React.FC<GoalsProps> = ({onLogout }) => {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     fetchGoals();
@@ -169,122 +172,90 @@ const Goals: React.FC<GoalsProps> = ({onLogout }) => {
       ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
       : 'R$ 0,00';
 
-      const navigate = useNavigate();
+  const handleLogout = () => {
+    onLogout();
+    navigate('/login');
+  };
+
   return (
     <div className="goals-container">
-     
-     <header className="goals-header">
+      <header className="goals-header">
         <div className="goals-header-inner">
-          <div className="goals-header-flex">
-            <div className="goals-logo-group">
-              <div className="logo">
-                <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
-                <span className="logo-text">CAPITAL ONLINE</span>
-              </div>
-            </div>
-            <nav className="goals-nav">
-              <button className="goals-nav-button" onClick={() => navigate('/dashboard')}>
-                Dashboard
-              </button>
-              <button className="goals-nav-button active">Nova movimentação</button>
-              <button className="goals-nav-button" onClick={() => navigate('/graficos')}>
-                Gráficos
-              </button>
-              <button className="goals-nav-button" onClick={() => navigate('/objetivos')}>
-                Objetivos
-              </button>
-            </nav>
-            <div className="goals-header-actions">
-              <div className="goals-profile-circle">J</div>
-            </div>
+          <div className="logo">
+            <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+            <span className="logo-text">CAPITAL ONLINE</span>
+          </div>
+          <nav className="goals-nav">
+            <button onClick={() => navigate('/dashboard')}>Dashboard</button>
+            <button onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
+            <button onClick={() => navigate('/graficos')}>Gráficos</button>
+            <button className="active" onClick={() => navigate('/objetivos')}>Objetivos</button>
+          </nav>
+          <div className="goals-header-actions">
+            <button className="icon-button" title="Calendário">
+              <Calendar className="icon" />
+            </button>
+            <button className="icon-button" title="Notificações">
+              <Bell className="icon" />
+            </button>
+            <button className="icon-button logout" title="Sair" onClick={handleLogout}>
+              <LogOut className="icon" />
+            </button>
           </div>
         </div>
       </header>
 
-
-      <main className="goals-content" aria-label="Área principal de objetivos">
+      <main className="goals-content">
         <section className="goals-header-section">
           <h1>Meus Objetivos</h1>
           <p>Gerencie seus objetivos financeiros</p>
-
           <button className="goals-new-button" onClick={() => setShowCreateForm(true)}>
             <Plus size={18} /> Novo Objetivo
           </button>
         </section>
 
         {showCreateForm && (
-          <section className="goals-form-container" aria-label={editingGoal ? "Editar objetivo" : "Criar novo objetivo"}>
+          <section className="goals-form-container">
             <h2>{editingGoal ? 'Editar Objetivo' : 'Novo Objetivo'}</h2>
             <form className="goals-form" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="titulo">Título *</label>
-                <input
-                  type="text"
-                  id="titulo"
-                  value={formData.titulo}
-                  onChange={e => handleInputChange('titulo', e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="descricao">Descrição</label>
-                <textarea
-                  id="descricao"
-                  value={formData.descricao}
-                  onChange={e => handleInputChange('descricao', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="valor_necessario">Meta (R$) *</label>
-                <input
-                  type="number"
-                  id="valor_necessario"
-                  value={formData.valor_necessario}
-                  onChange={e => handleInputChange('valor_necessario', e.target.value)}
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="prazo">Prazo *</label>
-                <input
-                  type="date"
-                  id="prazo"
-                  value={formData.prazo}
-                  onChange={e => handleInputChange('prazo', e.target.value)}
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="categoria">Categoria</label>
-                <select
-                  id="categoria"
-                  value={formData.categoria}
-                  onChange={e => handleInputChange('categoria', e.target.value)}
-                >
-                  <option value="">Selecione uma categoria</option>
-                  <option value="educacao">Educação</option>
-                  <option value="lazer">Lazer</option>
-                  <option value="saude">Saúde</option>
-                  <option value="investimento">Investimento</option>
-                  {/* pode adicionar outras categorias aqui */}
-                </select>
-              </div>
-
-              <div className="goals-form-buttons" style={{ gridColumn: 'span 2' }}>
-                <button type="submit" className="goals-submit-button">
-                  {editingGoal ? 'Salvar' : 'Criar'}
-                </button>
-                <button type="button" className="goals-cancel-button" onClick={() => {
-                  setShowCreateForm(false);
-                  setEditingGoal(null);
-                  setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' });
-                }}>
+              <input
+                type="text"
+                placeholder="Título"
+                value={formData.titulo}
+                onChange={e => handleInputChange('titulo', e.target.value)}
+                required
+              />
+              <textarea
+                placeholder="Descrição"
+                value={formData.descricao}
+                onChange={e => handleInputChange('descricao', e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Meta (R$)"
+                value={formData.valor_necessario}
+                onChange={e => handleInputChange('valor_necessario', e.target.value)}
+                required
+              />
+              <input
+                type="date"
+                value={formData.prazo}
+                onChange={e => handleInputChange('prazo', e.target.value)}
+                required
+              />
+              <select
+                value={formData.categoria}
+                onChange={e => handleInputChange('categoria', e.target.value)}
+              >
+                <option value="">Selecione uma categoria</option>
+                <option value="educacao">Educação</option>
+                <option value="lazer">Lazer</option>
+                <option value="saude">Saúde</option>
+                <option value="investimento">Investimento</option>
+              </select>
+              <div className="goals-form-buttons">
+                <button type="submit">{editingGoal ? 'Salvar' : 'Criar'}</button>
+                <button type="button" onClick={() => { setShowCreateForm(false); setEditingGoal(null); setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' }); }}>
                   Cancelar
                 </button>
               </div>
@@ -295,63 +266,33 @@ const Goals: React.FC<GoalsProps> = ({onLogout }) => {
         {loading ? (
           <p>Carregando objetivos...</p>
         ) : goals.length === 0 ? (
-          <section className="goals-empty" aria-label="Nenhum objetivo encontrado">
-            <h3>Nenhum objetivo cadastrado</h3>
-            <p>Crie um objetivo para começar a organizar suas finanças.</p>
-            <button onClick={() => setShowCreateForm(true)}>Criar Objetivo</button>
-          </section>
+          <p>Nenhum objetivo cadastrado</p>
         ) : (
-          <section className="goals-grid" aria-label="Lista de objetivos">
+          <section className="goals-grid">
             {goals.map(goal => {
               const progressPercent = calculateProgress(goal);
-              let statusClass = '';
-              if (goal.status === 'completed') statusClass = 'status-completed';
-              else if (goal.status === 'overdue') statusClass = 'status-overdue';
-              else statusClass = 'status-active';
-
+              let statusClass = goal.status === 'completed' ? 'status-completed' : goal.status === 'overdue' ? 'status-overdue' : 'status-active';
               return (
-                <article key={goal.id} className="goal-card" aria-label={`Objetivo ${goal.titulo}`}>
+                <article key={goal.id} className="goal-card">
                   <header className="goal-card-header">
-                    <div className="goal-status">
-                      {goal.status === 'completed' && <CheckCircle color="#166534" size={20} />}
-                      {goal.status === 'active' && <Clock color="#1e40af" size={20} />}
-                      {goal.status === 'overdue' && <AlertCircle color="#991b1b" size={20} />}
-                      <span className={`goal-status-badge ${statusClass}`}>
-                        {goal.status.charAt(0).toUpperCase() + goal.status.slice(1)}
-                      </span>
-                    </div>
-                    <div className="goal-actions">
-                      <button aria-label="Editar objetivo" onClick={() => handleEdit(goal)}>
-                        <Edit size={18} />
-                      </button>
-                      <button aria-label="Deletar objetivo" className="delete" onClick={() => handleDelete(goal.id)}>
-                        <Trash2 size={18} />
-                      </button>
+                    {goal.status === 'completed' && <CheckCircle color="#166534" size={20} />}
+                    {goal.status === 'active' && <Clock color="#1e40af" size={20} />}
+                    {goal.status === 'overdue' && <AlertCircle color="#991b1b" size={20} />}
+                    <div className={`goal-status-badge ${statusClass}`}>{goal.status.toUpperCase()}</div>
+                    <div>
+                      <button onClick={() => handleEdit(goal)}><Edit size={18} /></button>
+                      <button onClick={() => handleDelete(goal.id)}><Trash2 size={18} /></button>
                     </div>
                   </header>
-
-                  <h3 className="goal-title">{goal.titulo}</h3>
-                  <p className="goal-description">{goal.descricao}</p>
-
+                  <h3>{goal.titulo}</h3>
+                  <p>{goal.descricao}</p>
                   <div className="goal-progress">
-                    <div className="progress-bar-bg" aria-hidden="true">
-                      <div
-                        className={`progress-bar-fill ${
-                          goal.status === 'completed' ? 'progress-fill-completed' : 'progress-fill-active'
-                        }`}
-                        style={{ width: `${progressPercent}%` }}
-                      />
+                    <div className="progress-bar-bg">
+                      <div className={`progress-bar-fill ${statusClass}`} style={{ width: `${progressPercent}%` }} />
                     </div>
-                    <div className="goal-progress-info">
-                      <span>{formatCurrency(goal.valor_atual)}</span>
-                      <span>{formatCurrency(goal.valor)}</span>
+                    <div>
+                      <span>{formatCurrency(goal.valor_atual)}</span> / <span>{formatCurrency(goal.valor)}</span>
                     </div>
-                  </div>
-
-                  <div className="goal-meta">
-                    <span>Prazo: {goal.data_limite}</span>
-                    <span>Criado em: {goal.criado_em.slice(0, 10)}</span>
-                    {goal.categoria && <span>Categoria: {goal.categoria}</span>}
                   </div>
                 </article>
               );
