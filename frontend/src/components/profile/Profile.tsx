@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { User, Lock, Bell, Palette, Shield, Save } from 'lucide-react';
+import { User, Lock, ArrowLeft, PiggyBank } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
 export default function Profile() {
-  // Removendo o useAuth que está causando problema e usando dados mockados
+  const navigate = useNavigate();
+
+  // Dados mockados do usuário
   const user = {
     name: 'João Silva',
     email: 'joao@exemplo.com'
@@ -13,6 +16,8 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
+    phone: '',
+    birthdate: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -33,228 +38,202 @@ export default function Profile() {
 
   const tabs = [
     { id: 'profile', name: 'Perfil', icon: User },
-    { id: 'security', name: 'Segurança', icon: Shield },
-    { id: 'notifications', name: 'Notificações', icon: Bell },
-    { id: 'appearance', name: 'Aparência', icon: Palette },
+    { id: 'security', name: 'Segurança', icon: Lock }
   ];
 
   return (
-    <div className="profile-container">
-      <div>
-        <h1 className="profile-title">Configurações</h1>
-        <p className="profile-subtitle">Gerencie suas preferências e configurações de conta</p>
-      </div>
+    <div className="profile-page">
+      {/* Header importado do Dashboard */}
+      <header className="newtransaction-header">
+        <div className="newtransaction-header-inner">
+          <div className="newtransaction-header-flex">
+            <div className="newtransaction-logo-group">
+              <div className="logo">
+                <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+                <span className="logo-text">CAPITAL ONLINE</span>
+              </div>
+            </div>
+            <nav className="newtransaction-nav">
+              <button
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/dashboard')}
+              >
+                Dashboard
+              </button>
+              <button
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/nova-movimentacao')}
+              >
+                Nova movimentação
+              </button>
+              <button
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/graficos')}
+              >
+                Gráficos
+              </button>
+              <button
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/objetivos')}
+              >
+                Objetivos
+              </button>
+              <button
+                className="newtransaction-nav-button active"
+                onClick={() => navigate('/profile')}
+              >
+                Perfil
+              </button>
+            </nav>
+            <div className="newtransaction-header-actions">
+              <div className="newtransaction-profile-circle">J</div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <div className="profile-grid">
-        <div className="lg:col-span-1">
-          <nav className="sidebar-nav">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`sidebar-btn ${activeTab === tab.id ? 'active' : ''}`}
-                >
-                  <Icon className="sidebar-icon" />
-                  {tab.name}
-                </button>
-              );
-            })}
-          </nav>
+      {/* Conteúdo da página de perfil */}
+      <div className="profile-container">
+        <div className="profile-header">
+          <a href="#" onClick={() => navigate('/dashboard')} className="back-button">
+            <ArrowLeft className="back-icon" />
+            Voltar ao Dashboard
+          </a>
         </div>
 
-        <div className="lg:col-span-3">
-          <div className="content-box">
-            {activeTab === 'profile' && (
-              <div>
-                <h2 className="section-title">Informações do Perfil</h2>
-                <form onSubmit={handleSubmit} className="form-space">
-                  <div className="avatar-container">
-                    <div className="avatar-bg">
-                      <User className="avatar-icon" />
-                    </div>
-                    <div>
-                      <button
-                        type="button"
-                        className="btn-primary"
-                      >
-                        Alterar Foto
-                      </button>
-                      <p className="text-muted">JPG, GIF ou PNG. Máximo 1MB.</p>
-                    </div>
-                  </div>
+        <div>
+          <h1 className="profile-title">Meu perfil</h1>
+          <p className="profile-subtitle">
+            Gerencie suas informações pessoais e configurações da conta.
+          </p>
+        </div>
 
-                  <div>
-                    <label className="form-label">
-                      Nome Completo
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="form-input"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="form-label">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="form-input"
-                    />
-                  </div>
-
-                  <div className="form-actions">
-                    <button
-                      type="submit"
-                      className="btn-save"
-                    >
-                      <Save className="btn-icon" />
-                      Salvar Alterações
-                    </button>
-                  </div>
-                </form>
+        <div className="profile-grid">
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            <nav className="sidebar-nav">
+              <div className="avatar-section">
+                <div className="avatar-circle">J</div>
+                <div className="user-name">Julia Silva</div>
+                <div className="member-since">Membro desde 14/01/2024</div>
               </div>
-            )}
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`sidebar-btn ${activeTab === tab.id ? 'active' : ''}`}
+                  >
+                    <Icon className="sidebar-icon" />
+                    {tab.name}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
 
-            {activeTab === 'security' && (
-              <div>
-                <h2 className="section-title">Segurança</h2>
-                <form onSubmit={handleSubmit} className="form-space">
-                  <div>
-                    <label className="form-label">
-                      Senha Atual
-                    </label>
-                    <input
-                      type="password"
-                      name="currentPassword"
-                      value={formData.currentPassword}
-                      onChange={handleInputChange}
-                      className="form-input"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="form-label">
-                      Nova Senha
-                    </label>
-                    <input
-                      type="password"
-                      name="newPassword"
-                      value={formData.newPassword}
-                      onChange={handleInputChange}
-                      className="form-input"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="form-label">
-                      Confirmar Nova Senha
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="form-input"
-                    />
-                  </div>
-
-                  <div className="form-actions">
-                    <button
-                      type="submit"
-                      className="btn-save"
-                    >
-                      <Lock className="btn-icon" />
-                      Alterar Senha
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {activeTab === 'notifications' && (
-              <div>
-                <h2 className="section-title">Notificações</h2>
-                <div className="form-space">
-                  <div className="toggle-row">
+          {/* Conteúdo */}
+          <div className="lg:col-span-3">
+            <div className="content-box">
+              {activeTab === 'profile' && (
+                <div>
+                  <h2 className="section-title">Informações pessoais</h2>
+                  <form onSubmit={handleSubmit} className="form-space">
                     <div>
-                      <h3 className="toggle-title">Notificações por Email</h3>
-                      <p className="text-muted">Receba atualizações sobre suas transações</p>
+                      <label className="form-label">Nome completo:</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="form-input"
+                      />
                     </div>
-                    <label className="switch">
-                      <input type="checkbox" defaultChecked />
-                      <span className="slider"></span>
-                    </label>
-                  </div>
 
-                  <div className="toggle-row">
                     <div>
-                      <h3 className="toggle-title">Resumos Semanais</h3>
-                      <p className="text-muted">Receba um resumo semanal das suas finanças</p>
+                      <label className="form-label">Telefone:</label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="form-input"
+                      />
                     </div>
-                    <label className="switch">
-                      <input type="checkbox" />
-                      <span className="slider"></span>
-                    </label>
-                  </div>
 
-                  <div className="toggle-row">
                     <div>
-                      <h3 className="toggle-title">Alertas de Orçamento</h3>
-                      <p className="text-muted">Seja notificado quando se aproximar do limite</p>
+                      <label className="form-label">Data de nascimento:</label>
+                      <input
+                        type="date"
+                        name="birthdate"
+                        value={formData.birthdate}
+                        onChange={handleInputChange}
+                        className="form-input"
+                      />
                     </div>
-                    <label className="switch">
-                      <input type="checkbox" defaultChecked />
-                      <span className="slider"></span>
-                    </label>
-                  </div>
+
+                    <div>
+                      <label className="form-label">Email:</label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="form-input"
+                      />
+                    </div>
+                  </form>
                 </div>
-              </div>
-            )}
+              )}
 
-            {activeTab === 'appearance' && (
-              <div>
-                <h2 className="section-title">Aparência</h2>
-                <div className="form-space">
-                  <div>
-                    <h3 className="form-label">Tema</h3>
-                    <div className="theme-grid">
-                      <button className="theme-card active">
-                        <div className="theme-light"></div>
-                        <span className="theme-label active">Claro</span>
-                      </button>
-                      <button className="theme-card">
-                        <div className="theme-dark"></div>
-                        <span className="theme-label">Escuro</span>
-                      </button>
-                      <button className="theme-card">
-                        <div className="theme-auto"></div>
-                        <span className="theme-label">Auto</span>
+              {activeTab === 'security' && (
+                <div>
+                  <h2 className="section-title">Segurança</h2>
+                  <form onSubmit={handleSubmit} className="form-space">
+                    <div>
+                      <label className="form-label">Senha Atual</label>
+                      <input
+                        type="password"
+                        name="currentPassword"
+                        value={formData.currentPassword}
+                        onChange={handleInputChange}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="form-label">Nova Senha</label>
+                      <input
+                        type="password"
+                        name="newPassword"
+                        value={formData.newPassword}
+                        onChange={handleInputChange}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="form-label">Confirmar Nova Senha</label>
+                      <input
+                        type="password"
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        className="form-input"
+                      />
+                    </div>
+
+                    <div className="form-actions">
+                      <button type="submit" className="btn-save">
+                        <Lock className="btn-icon" />
+                        Alterar Senha
                       </button>
                     </div>
-                  </div>
-
-                  <div>
-                    <h3 className="form-label">Cor Principal</h3>
-                    <div className="color-palette">
-                      <button className="color-dot blue active"></button>
-                      <button className="color-dot green"></button>
-                      <button className="color-dot purple"></button>
-                      <button className="color-dot red"></button>
-                      <button className="color-dot yellow"></button>
-                    </div>
-                  </div>
+                  </form>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>
