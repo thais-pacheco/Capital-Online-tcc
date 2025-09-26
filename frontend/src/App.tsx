@@ -1,10 +1,10 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Auth from './components/auth/auth';
 import Dashboard from './components/dashboard/Dashboard';
 import Home from './components/home/home';
 import NewTransaction from './components/newtransaction/newtransaction';
 import Objectives from './components/objectives/objectives';
+import Profile from './components/profile/Profile';
 
 // Definindo o tipo Page centralizado aqui
 type Page = 'dashboard' | 'new-transaction' | 'charts' | 'objetivos';
@@ -18,6 +18,7 @@ function App() {
         <Route path="/objetivos" element={<ObjectivesWrapper />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/nova-movimentacao" element={<NewTransaction />} />
+        <Route path="/profile" element={<Profile />} />
         <Route
           path="/objetivos"
           element={
