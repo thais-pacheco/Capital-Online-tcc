@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, ArrowLeft, PiggyBank } from 'lucide-react';
+import { User, Lock, ArrowLeft, PiggyBank, Calendar, Bell, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
@@ -43,16 +43,19 @@ export default function Profile() {
 
   return (
     <div className="profile-page">
-      {/* Header importado do Dashboard */}
+      {/* ===== Header ===== */}
       <header className="newtransaction-header">
         <div className="newtransaction-header-inner">
           <div className="newtransaction-header-flex">
+            {/* Logo */}
             <div className="newtransaction-logo-group">
               <div className="logo">
                 <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
                 <span className="logo-text">CAPITAL ONLINE</span>
               </div>
             </div>
+
+            {/* Navegação */}
             <nav className="newtransaction-nav">
               <button
                 className="newtransaction-nav-button"
@@ -78,21 +81,26 @@ export default function Profile() {
               >
                 Objetivos
               </button>
-              <button
-                className="newtransaction-nav-button active"
-                onClick={() => navigate('/profile')}
-              >
-                Perfil
-              </button>
             </nav>
+
+            {/* Ações do header */}
             <div className="newtransaction-header-actions">
+              <button className="icon-btn">
+                <Calendar size={20} />
+              </button>
+              <button className="icon-btn">
+                <Bell size={20} />
+              </button>
               <div className="newtransaction-profile-circle">J</div>
+              <button className="icon-btn">
+                <LogOut size={20} />
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Conteúdo da página de perfil */}
+      {/* ===== Conteúdo da página de perfil ===== */}
       <div className="profile-container">
         <div className="profile-header">
           <a href="#" onClick={() => navigate('/dashboard')} className="back-button">
