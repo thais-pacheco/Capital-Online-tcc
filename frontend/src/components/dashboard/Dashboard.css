@@ -41,12 +41,12 @@
 .dashboard .logo-icon {
   width: 48px;
   height: 48px;
-  background: #22c55e;
+  background: transparent;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #22c55e;
 }
 
 .dashboard .logo-icon svg {
