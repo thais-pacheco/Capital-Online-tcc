@@ -28,7 +28,6 @@
   align-items: center;
   justify-content: space-between;
   height: 64px;
-  position: relative;
 }
 
 /* ===== Left: logo + nome ===== */
@@ -61,14 +60,12 @@
   color: #22c55e;
 }
 
-/* ===== Center: navegação centralizada ===== */
+/* ===== Center: navegação ===== */
 .profile-header-center {
   display: flex;
   gap: 24px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  flex: 1;
+  justify-content: center;
 }
 
 .profile-nav-button {
@@ -85,6 +82,7 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .profile-nav-button:hover {

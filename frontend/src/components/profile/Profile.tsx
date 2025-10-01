@@ -45,57 +45,57 @@ export default function Profile() {
     <div className="profile-page">
       {/* ===== Header ===== */}
       <header className="profile-header-bar">
-        <div className="profile-header-inner">
-          <div className="profile-header-flex">
-            {/* Logo */}
-            <div className="profile-logo-group">
-              <div className="profile-logo">
-                <PiggyBank className="profile-logo-icon" style={{ color: '#22c55e' }} />
-                <span className="profile-logo-text">CAPITAL ONLINE</span>
+        <div className="profile-header-container">
+          {/* Logo */}
+          <div className="profile-header-left">
+            <div className="profile-logo">
+              <div className="profile-logo-icon">
+                <PiggyBank size={32} />
               </div>
+              <span className="profile-logo-text">CAPITAL ONLINE</span>
             </div>
+          </div>
 
-            {/* Navegação */}
-            <nav className="profile-nav">
-              <button
-                className="profile-nav-button"
-                onClick={() => navigate('/dashboard')}
-              >
-                Dashboard
-              </button>
-              <button
-                className="profile-nav-button"
-                onClick={() => navigate('/nova-movimentacao')}
-              >
-                Nova movimentação
-              </button>
-              <button
-                className="profile-nav-button"
-                onClick={() => navigate('/graficos')}
-              >
-                Gráficos
-              </button>
-              <button
-                className="profile-nav-button"
-                onClick={() => navigate('/objetivos')}
-              >
-                Objetivos
-              </button>
-            </nav>
+          {/* Navegação */}
+          <div className="profile-header-center">
+            <button
+              className="profile-nav-button"
+              onClick={() => navigate('/dashboard')}
+            >
+              Dashboard
+            </button>
+            <button
+              className="profile-nav-button"
+              onClick={() => navigate('/nova-movimentacao')}
+            >
+              Nova movimentação
+            </button>
+            <button
+              className="profile-nav-button"
+              onClick={() => navigate('/graficos')}
+            >
+              Gráficos
+            </button>
+            <button
+              className="profile-nav-button"
+              onClick={() => navigate('/objetivos')}
+            >
+              Objetivos
+            </button>
+          </div>
 
-            {/* Ações do header */}
-            <div className="profile-header-actions">
-              <button className="icon-btn">
-                <Calendar size={20} />
-              </button>
-              <button className="icon-btn">
-                <Bell size={20} />
-              </button>
-              <div className="profile-circle">J</div>
-              <button className="icon-btn">
-                <LogOut size={20} />
-              </button>
-            </div>
+          {/* Ações do header */}
+          <div className="profile-header-right">
+            <button className="profile-icon-button">
+              <Calendar size={20} />
+            </button>
+            <button className="profile-icon-button">
+              <Bell size={20} />
+            </button>
+            <div className="profile-circle">J</div>
+            <button className="profile-icon-button logout">
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </header>
