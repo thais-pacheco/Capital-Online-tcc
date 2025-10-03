@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PiggyBank } from 'lucide-react';
+import { PiggyBank, Calendar, Bell, LogOut, User } from 'lucide-react';
 import './newtransaction.css';
 
 interface FormData {
@@ -56,7 +56,7 @@ export default function NewTransaction() {
       titulo: formData.description,
       tipo: formData.type === 'income' ? 'entrada' : 'saida',
       valor: parseFloat(formData.amount),
-      categoria: parseInt(formData.category), // **aqui enviamos o ID da categoria (número)**
+      categoria: parseInt(formData.category),
       data: formData.date,
       observacoes: formData.observations,
     };
@@ -85,30 +85,62 @@ export default function NewTransaction() {
 
   return (
     <div className="newtransaction-container">
-      <header className="newtransaction-header">
-        <div className="newtransaction-header-inner">
-          <div className="newtransaction-header-flex">
-            <div className="newtransaction-logo-group">
-              <div className="logo">
-                <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
-                <span className="logo-text">CAPITAL ONLINE</span>
+      {/* Header igual ao do Dashboard */}
+      <header className="header">
+        <div className="header-container">
+          {/* Logo à esquerda */}
+          <div className="header-left">
+            <div className="logo">
+              <div className="logo-icon">
+                <PiggyBank size={20} />
               </div>
+              <span className="logo-text">CAPITAL ONLINE</span>
             </div>
-            <nav className="newtransaction-nav">
-              <button className="newtransaction-nav-button" onClick={() => navigate('/dashboard')}>
-                Dashboard
-              </button>
-              <button className="newtransaction-nav-button active">Nova movimentação</button>
-              <button className="newtransaction-nav-button" onClick={() => navigate('/graficos')}>
-                Gráficos
-              </button>
-              <button className="newtransaction-nav-button" onClick={() => navigate('/objetivos')}>
-                Objetivos
-              </button>
-            </nav>
-            <div className="newtransaction-header-actions">
-              <div className="newtransaction-profile-circle">J</div>
+          </div>
+
+          {/* Navegação centralizada */}
+          <nav className="nav">
+            <button 
+              className="nav-button"
+              onClick={() => navigate('/dashboard')}
+            >
+              Dashboard
+            </button>
+            <button 
+              className="nav-button active"
+              onClick={() => navigate('/nova-movimentacao')}
+            >
+              Nova movimentação
+            </button>
+            <button 
+              className="nav-button"
+              onClick={() => navigate('/graficos')}
+            >
+              Gráficos
+            </button>
+            <button 
+              className="nav-button"
+              onClick={() => navigate('/objetivos')}
+            >
+              Objetivos
+            </button>
+          </nav>
+
+          {/* Ícones à direita */}
+          <div className="header-right">
+            <button className="icon-button">
+              <Calendar size={18} />
+            </button>
+            <button className="icon-button">
+              <Bell size={18} />
+            </button>
+            {/* Ícone de perfil */}
+            <div className="profile-avatar">
+              <User size={18} />
             </div>
+            <button className="icon-button logout">
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </header>

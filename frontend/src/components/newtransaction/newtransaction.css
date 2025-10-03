@@ -1,156 +1,148 @@
 .newtransaction-container {
   min-height: 100vh;
-  background-color: #f9fafb;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-.newtransaction-header {
-  background-color: white;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
-  border-bottom: 1px solid #e5e7eb;
+/* Header igual ao do Dashboard */
+.header {
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.newtransaction-header-inner {
-  max-width: 112rem;
+.header-container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.newtransaction-header-flex {
+  padding: 0 24px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  padding: 1rem 0;
-  height: 4rem;
+  height: 64px;
+  position: relative;
 }
 
-.newtransaction-logo-group {
+.header-left {
   display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  height: 100%;
+  gap: 8px;
 }
 
 .logo-icon {
-  width: 2rem;
-  height: 2rem;
-  color: #22c55e;
-  background-color: transparent;
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border-radius: 12px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  flex-shrink: 0;
-  margin: 0;
-  padding: 0;
+  justify-content: center;
+  color: 22c55e;
+}
+
+.logo-icon svg {
+  width: 32px;
+  height: 32px;
 }
 
 .logo-text {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   color: #111827;
-  line-height: 1;
-  user-select: none;
-  white-space: nowrap;
 }
 
-.newtransaction-nav {
-  display: none;
-  gap: 2rem;
-}
-
-@media(min-width: 768px) {
-  .newtransaction-nav {
-    display: flex;
-  }
-}
-
-.newtransaction-nav-button {
-  background: none;
-  border: none;
-  color: #4b5563;
-  cursor: pointer;
-  transition: color 0.2s;
-  font-size: 1rem;
+/* Navegação Centralizada */
+.nav {
   display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  gap: 24px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
-.newtransaction-nav-button:hover {
-  color: #059669;
-}
-
-.newtransaction-nav-button.active {
-  color: #22c55e;
+.nav-button {
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  font-size: 16px;
   font-weight: 500;
-}
-
-.newtransaction-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.newtransaction-action-button {
-  background: none;
-  border: none;
-  padding: 0.5rem;
+  border-radius: 6px;
   cursor: pointer;
-  color: #4b5563;
-  transition: color 0.2s;
-  font-size: 1.25rem;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
+  line-height: 1;
 }
 
-.newtransaction-action-button:hover {
-  color: #059669;
+.nav-button:hover {
+  color: #22c55e;
+  background: #f0fdf4;
 }
 
-.newtransaction-action-button.logout:hover {
+.nav-button.active {
+  color: #22c55e;
+  background: #f0fdf4;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-button {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+
+.icon-button:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.icon-button.logout:hover {
+  background: #fef2f2;
   color: #dc2626;
 }
 
-.newtransaction-profile-circle {
-  width: 2rem;
-  height: 2rem;
-  background-color: #22c55e;
-  border-radius: 9999px;
-  color: white;
-  font-weight: 500;
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  background: #22c55e;
+  border-radius: 50%;
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: 0.875rem;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
 }
 
+/* Conteúdo Principal */
 .newtransaction-content {
   max-width: 64rem;
   margin: 0 auto;
   padding: 2rem;
-}
-
-.newtransaction-back-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #4b5563;
-  cursor: pointer;
-  transition: color 0.2s;
-  margin-bottom: 2rem;
-  background: none;
-  border: none;
-  font-size: 1rem;
-}
-
-.newtransaction-back-button:hover {
-  color: #059669;
 }
 
 .newtransaction-title {
@@ -463,4 +455,36 @@
 .icon-small {
   width: 1rem;
   height: 1rem;
+}
+
+.error-card {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0 16px;
+  }
+  
+  .nav {
+    display: none;
+  }
+  
+  .newtransaction-content {
+    padding: 24px 16px;
+  }
+  
+  .transaction-type-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
 }
