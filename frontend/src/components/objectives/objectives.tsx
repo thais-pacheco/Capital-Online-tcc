@@ -9,8 +9,7 @@ import {
   Plus,
   Calendar,
   Bell,
-  LogOut,
-  User
+  LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -31,10 +30,12 @@ interface Goal {
 }
 
 interface GoalsProps {
+  onNavigate: (page: Page) => void;
   onLogout: () => void;
+  userId: string; 
 }
 
-const Goals: React.FC<GoalsProps> = ({ onLogout }) => {
+const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
@@ -178,61 +179,27 @@ const Goals: React.FC<GoalsProps> = ({ onLogout }) => {
 
   return (
     <div className="goals-container">
-      {/* Header Padrão para Objetivos */}
-      <header className="objectives-header">
-        <div className="objectives-header-container">
-          {/* Logo à esquerda */}
-          <div className="objectives-header-left">
-            <div className="objectives-logo">
-              <div className="objectives-logo-icon">
-                <PiggyBank size={20} />
-              </div>
-              <span className="objectives-logo-text">CAPITAL ONLINE</span>
-            </div>
+      <header className="goals-header">
+        <div className="goals-header-inner">
+          <div className="logo">
+            <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+            <span className="logo-text">CAPITAL ONLINE</span>
           </div>
-
-          {/* Navegação centralizada */}
-          <nav className="objectives-nav">
-            <button 
-              className="objectives-nav-button"
-              onClick={() => navigate('/dashboard')}
-            >
-              Dashboard
-            </button>
-            <button 
-              className="objectives-nav-button"
-              onClick={() => navigate('/nova-movimentacao')}
-            >
-              Nova movimentação
-            </button>
-            <button 
-              className="objectives-nav-button"
-              onClick={() => navigate('/graficos')}
-            >
-              Gráficos
-            </button>
-            <button 
-              className="objectives-nav-button active"
-              onClick={() => navigate('/objetivos')}
-            >
-              Objetivos
-            </button>
+          <nav className="goals-nav">
+            <button onClick={() => navigate('/dashboard')}>Dashboard</button>
+            <button onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
+            <button onClick={() => navigate('/graficos')}>Gráficos</button>
+            <button className="active" onClick={() => navigate('/objetivos')}>Objetivos</button>
           </nav>
-
-          {/* Ícones à direita */}
-          <div className="objectives-header-right">
-            <button className="objectives-icon-button">
-              <Calendar size={18} />
+          <div className="goals-header-actions">
+            <button className="icon-button" title="Calendário">
+              <Calendar className="icon" />
             </button>
-            <button className="objectives-icon-button">
-              <Bell size={18} />
+            <button className="icon-button" title="Notificações">
+              <Bell className="icon" />
             </button>
-            {/* Ícone de perfil */}
-            <div className="objectives-profile-avatar">
-              <User size={18} />
-            </div>
-            <button className="objectives-icon-button logout" onClick={handleLogout}>
-              <LogOut size={18} />
+            <button className="icon-button logout" title="Sair" onClick={handleLogout}>
+              <LogOut className="icon" />
             </button>
           </div>
         </div>
@@ -287,18 +254,8 @@ const Goals: React.FC<GoalsProps> = ({ onLogout }) => {
                 <option value="investimento">Investimento</option>
               </select>
               <div className="goals-form-buttons">
-                <button type="submit" className="goals-submit-button">
-                  {editingGoal ? 'Salvar' : 'Criar'}
-                </button>
-                <button 
-                  type="button" 
-                  className="goals-cancel-button"
-                  onClick={() => { 
-                    setShowCreateForm(false); 
-                    setEditingGoal(null); 
-                    setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' }); 
-                  }}
-                >
+                <button type="submit">{editingGoal ? 'Salvar' : 'Criar'}</button>
+                <button type="button" onClick={() => { setShowCreateForm(false); setEditingGoal(null); setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' }); }}>
                   Cancelar
                 </button>
               </div>
@@ -309,46 +266,32 @@ const Goals: React.FC<GoalsProps> = ({ onLogout }) => {
         {loading ? (
           <p>Carregando objetivos...</p>
         ) : goals.length === 0 ? (
-          <div className="goals-empty">
-            <h3>Nenhum objetivo cadastrado</h3>
-            <p>Comece criando seu primeiro objetivo financeiro</p>
-            <button className="goals-new-button" onClick={() => setShowCreateForm(true)}>
-              <Plus size={18} /> Criar Primeiro Objetivo
-            </button>
-          </div>
+          <p>Nenhum objetivo cadastrado</p>
         ) : (
           <section className="goals-grid">
             {goals.map(goal => {
               const progressPercent = calculateProgress(goal);
               let statusClass = goal.status === 'completed' ? 'status-completed' : goal.status === 'overdue' ? 'status-overdue' : 'status-active';
-              let progressBarClass = goal.status === 'completed' ? 'progress-fill-completed' : 'progress-fill-active';
-              
               return (
                 <article key={goal.id} className="goal-card">
                   <header className="goal-card-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {goal.status === 'completed' && <CheckCircle color="#166534" size={20} />}
-                      {goal.status === 'active' && <Clock color="#1e40af" size={20} />}
-                      {goal.status === 'overdue' && <AlertCircle color="#991b1b" size={20} />}
-                      <div className={`goal-status-badge ${statusClass}`}>
-                        {goal.status === 'completed' ? 'CONCLUÍDO' : 
-                         goal.status === 'overdue' ? 'ATRASADO' : 'EM ANDAMENTO'}
-                      </div>
-                    </div>
-                    <div className="goal-actions">
+                    {goal.status === 'completed' && <CheckCircle color="#166534" size={20} />}
+                    {goal.status === 'active' && <Clock color="#1e40af" size={20} />}
+                    {goal.status === 'overdue' && <AlertCircle color="#991b1b" size={20} />}
+                    <div className={`goal-status-badge ${statusClass}`}>{goal.status.toUpperCase()}</div>
+                    <div>
                       <button onClick={() => handleEdit(goal)}><Edit size={18} /></button>
-                      <button className="delete" onClick={() => handleDelete(goal.id)}><Trash2 size={18} /></button>
+                      <button onClick={() => handleDelete(goal.id)}><Trash2 size={18} /></button>
                     </div>
                   </header>
-                  <h3 className="goal-title">{goal.titulo}</h3>
-                  <p className="goal-description">{goal.descricao}</p>
+                  <h3>{goal.titulo}</h3>
+                  <p>{goal.descricao}</p>
                   <div className="goal-progress">
                     <div className="progress-bar-bg">
-                      <div className={`progress-bar-fill ${progressBarClass}`} style={{ width: `${progressPercent}%` }} />
+                      <div className={`progress-bar-fill ${statusClass}`} style={{ width: `${progressPercent}%` }} />
                     </div>
-                    <div className="goal-progress-info">
-                      <span>{formatCurrency(goal.valor_atual)}</span> 
-                      <span>{formatCurrency(goal.valor)}</span>
+                    <div>
+                      <span>{formatCurrency(goal.valor_atual)}</span> / <span>{formatCurrency(goal.valor)}</span>
                     </div>
                   </div>
                 </article>

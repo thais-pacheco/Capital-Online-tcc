@@ -1,19 +1,21 @@
-from rest_framework import viewsets
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from .models import Transacao, Categoria
-from .serializers import TransacaoSerializer, CategoriaSerializer
+from rest_framework import viewsets, permissions
+from .models import Categoria, Movimentacao
+from .serializers import CategoriaSerializer, MovimentacaoSerializer
 
 class CategoriaViewSet(viewsets.ModelViewSet):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-class TransacaoViewSet(viewsets.ModelViewSet):
-    queryset = Transacao.objects.all().order_by('-data')
-    serializer_class = TransacaoSerializer
 
-@api_view(['GET'])
-def movimentacoes_list(request):
-    transacoes = Transacao.objects.all().order_by('-data')
-    serializer = TransacaoSerializer(transacoes, many=True)
-    return Response(serializer.data)
+class MovimentacaoViewSet(viewsets.ModelViewSet):
+    serializer_class = MovimentacaoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Cada usuário só vê suas próprias movimentações
+        return Movimentacao.objects.filter(usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        # Salva a movimentação com o usuário logado
+        serializer.save(usuario=self.request.user)

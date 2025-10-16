@@ -1,160 +1,102 @@
-.objectives-header {
-  background: white;
-  border-bottom: 1px solid #e9ecef;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.objectives-header-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  position: relative;
-}
-
-.objectives-header-left {
-  display: flex;
-  align-items: center;
-}
-
-.objectives-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.objectives-logo-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #22c55e;
-}
-
-.objectives-logo-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.objectives-logo-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: #22c55e;
-}
-
-.objectives-nav {
-  display: flex;
-  gap: 24px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.objectives-nav-button {
-  padding: 8px 12px;
-  border: none;
-  background: none;
-  color: #6b7280;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.objectives-nav-button:hover {
-  color: #22c55e;
-  background: #f0fdf4;
-}
-
-.objectives-nav-button.active {
-  color: #22c55e;
-  background: #f0fdf4;
-}
-
-.objectives-header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.objectives-icon-button {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: none;
-  color: #6b7280;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 16px;
-}
-
-.objectives-icon-button:hover {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.objectives-icon-button.logout:hover {
-  background: #fef2f2;
-  color: #dc2626;
-}
-
-.objectives-profile-avatar {
-  width: 36px;
-  height: 36px;
-  background: #22c55e;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-/* Responsive Header */
-@media (max-width: 768px) {
-  .objectives-header-container {
-    padding: 0 16px;
-  }
-  
-  .objectives-nav {
-    display: none;
-  }
-  
-  .objectives-header-right {
-    gap: 8px;
-  }
-  
-  .objectives-icon-button {
-    width: 32px;
-    height: 32px;
-  }
-  
-  .objectives-profile-avatar {
-    width: 32px;
-    height: 32px;
-  }
-}
-
 /* Container geral */
 .goals-container {
   min-height: 100vh;
   background-color: #f9fafb;
+}
+
+/* Header */
+.goals-header {
+  background-color: white;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.goals-header-inner {
+  max-width: 112rem;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 4rem;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-icon {
+  width: 2rem;
+  height: 2rem;
+  color: #22c55e;
+}
+
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Navegação */
+.goals-nav {
+  display: none;
+  gap: 2rem;
+}
+
+@media(min-width: 768px) {
+  .goals-nav {
+    display: flex;
+  }
+}
+
+.goals-nav button {
+  color: #4b5563;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.goals-nav button:hover,
+.goals-nav-button:hover {
+  color: #22c55e;
+}
+
+.goals-nav button.active {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+/* Ações do header */
+.goals-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.goals-header-actions button {
+  padding: 0.5rem;
+  color: #4b5563;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.goals-header-actions button:hover {
+  color: #22c55e;
+}
+
+.goals-header-actions button.logout:hover {
+  color: #dc2626;
 }
 
 /* Conteúdo */
@@ -201,7 +143,6 @@
   align-items: center;
   gap: 0.5rem;
   transition: background-color 0.2s;
-  border: none;
 }
 
 @media(min-width: 640px) {
@@ -366,11 +307,6 @@
 }
 
 /* Ações do card */
-.goal-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
 .goal-actions button {
   padding: 0.25rem;
   color: #9ca3af;

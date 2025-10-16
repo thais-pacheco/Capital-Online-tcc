@@ -8,11 +8,7 @@ import {
   ArrowDownRight,
   BarChart3,
   ChevronDown,
-  PiggyBank,
-  Calendar,
-  Bell,
-  LogOut,
-  User
+  PiggyBank
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
@@ -39,25 +35,44 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
+      const token = localStorage.getItem('token')?.replace(/"/g, '');
+
+      if (!token) {
+        setError('Token não encontrado. Faça login novamente.');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
-        const response = await fetch('http://127.0.0.1:8000/api/transacoes/');
-        
-        if (!response.ok) {
-          throw new Error(`Erro HTTP: ${response.status}`);
+        const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) {
+          throw new Error('Não autorizado. Faça login novamente.');
         }
-        
+
+        if (!response.ok) {
+          throw new Error(`Erro ao carregar: ${response.status}`);
+        }
+
         const data = await response.json();
-        
+
         const validatedTransactions = data.map((t: any) => {
-          const tipo = typeof t.tipo === 'string' 
-            ? t.tipo.toLowerCase().trim() === 'entrada' 
-              ? 'entrada' 
-              : 'saida'
-            : 'saida';
-            
+          const tipo =
+            typeof t.tipo === 'string'
+              ? t.tipo.toLowerCase().trim() === 'entrada'
+                ? 'entrada'
+                : 'saida'
+              : 'saida';
+
           const valor = Math.abs(Number(t.valor));
-          
+
           return {
             id: t.id,
             data: t.data,
@@ -68,11 +83,11 @@ const Dashboard: React.FC = () => {
             observacoes: t.observacoes
           };
         });
-        
+
         setTransactions(validatedTransactions);
         setError('');
-      } catch (err) {
-        setError('Erro ao carregar transações. Tente recarregar a página.');
+      } catch (err: any) {
+        setError(err.message || 'Erro ao carregar transações.');
       } finally {
         setLoading(false);
       }
@@ -82,19 +97,17 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const filteredTransactions = transactions.filter(transaction => {
-    if (!transaction) return false;
-
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
       (transaction.titulo?.toLowerCase() || '').includes(searchLower) ||
       (transaction.categoria?.toString()?.toLowerCase() || '').includes(searchLower);
-    
+
     const matchesType =
-      selectedType === 'all' || 
+      selectedType === 'all' ||
       (selectedType === 'income' ? transaction.tipo === 'entrada' : transaction.tipo === 'saida');
-    
+
     const matchesCategory =
-      selectedCategory === 'all' || 
+      selectedCategory === 'all' ||
       transaction.categoria?.toString() === selectedCategory;
 
     return matchesSearch && matchesType && matchesCategory;
@@ -112,84 +125,62 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="dashboard">
-        <div className="dashboard-loading">
-          <div className="loading-spinner"></div>
-          <p>Carregando transações...</p>
-        </div>
+      <div className="dashboard-loading">
+        <div className="loading-spinner"></div>
+        <p>Carregando transações...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard">
-        <div className="dashboard-error">
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Recarregar</button>
-        </div>
+      <div className="dashboard-error">
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Recarregar</button>
       </div>
     );
   }
 
   return (
     <div className="dashboard">
-      {/* Header */}
-      <header className="header">
-        <div className="header-container">
-          {/* Logo à esquerda */}
-          <div className="header-left">
-            <div className="logo">
-              <div className="logo-icon">
-                <PiggyBank size={20} />
+      <header className="newtransaction-header">
+        <div className="newtransaction-header-inner">
+          <div className="newtransaction-header-flex">
+            <div className="newtransaction-logo-group">
+              <div className="logo">
+                <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+                <span className="logo-text">CAPITAL ONLINE</span>
               </div>
-              <span className="logo-text">CAPITAL ONLINE</span>
             </div>
-          </div>
-
-          {/* Navegação centralizada */}
-          <nav className="nav">
-            <button 
-              className="nav-button active"
-              onClick={() => navigate('/dashboard')}
-            >
-              Dashboard
-            </button>
-            <button 
-              className="nav-button"
-              onClick={() => navigate('/nova-movimentacao')}
-            >
-              Nova movimentação
-            </button>
-            <button 
-              className="nav-button"
-              onClick={() => navigate('/graficos')}
-            >
-              Gráficos
-            </button>
-            <button 
-              className="nav-button"
-              onClick={() => navigate('/objetivos')}
-            >
-              Objetivos
-            </button>
-          </nav>
-
-          {/* Ícones à direita */}
-          <div className="header-right">
-            <button className="icon-button">
-              <Calendar size={18} />
-            </button>
-            <button className="icon-button">
-              <Bell size={18} />
-            </button>
-            {/* Ícone de perfil */}
-            <div className="profile-avatar">
-              <User size={18} />
+            <nav className="newtransaction-nav">
+              <button
+                className="newtransaction-nav-button active"
+                onClick={() => navigate('/dashboard')}
+              >
+                Dashboard
+              </button>
+              <button
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/nova-movimentacao')}
+              >
+                Nova movimentação
+              </button>
+              <button
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/graficos')}
+              >
+                Gráficos
+              </button>
+              <button
+                className="newtransaction-nav-button"
+                onClick={() => navigate('/objetivos')}
+              >
+                Objetivos
+              </button>
+            </nav>
+            <div className="newtransaction-header-actions">
+              <div className="newtransaction-profile-circle">J</div>
             </div>
-            <button className="icon-button logout">
-              <LogOut size={18} />
-            </button>
           </div>
         </div>
       </header>
@@ -297,18 +288,11 @@ const Dashboard: React.FC = () => {
           <div className="table-container">
             <table className="transactions-table">
               <thead>
-                <tr>
-                  <th>DATA</th>
-                  <th>DESCRIÇÃO</th>
-                  <th>OBSERVAÇÕES</th>
-                  <th>VALOR</th>
-                </tr>
+                <tr><th>DATA</th><th>DESCRIÇÃO</th><th>OBSERVAÇÕES</th><th>VALOR</th></tr>
               </thead>
               <tbody>
                 {filteredTransactions.length === 0 ? (
-                  <tr>
-                    <td colSpan={4}>Nenhuma movimentação encontrada.</td>
-                  </tr>
+                  <tr><td colSpan={4}>Nenhuma movimentação encontrada.</td></tr>
                 ) : (
                   filteredTransactions.map((transaction) => (
                     <tr key={transaction.id}>

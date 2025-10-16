@@ -1,13 +1,11 @@
-/* Dashboard.css - CSS escopado para a página de dashboard */
-
-.dashboard { 
+.dashboard {
   min-height: 100vh;
   background-color: #f8f9fa;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
-/* Header Modificado - Escopado para dashboard */
-.dashboard .header {
+/* Header */
+.header {
   background: white;
   border-bottom: 1px solid #e9ecef;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -16,95 +14,81 @@
   z-index: 100;
 }
 
-.dashboard .header-container {
+.header-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   height: 64px;
-  position: relative;
 }
 
-.dashboard .header-left {
+.header-left {
   display: flex;
   align-items: center;
+  gap: 32px;
 }
 
-.dashboard .logo {
+.logo {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.dashboard .logo-icon {
-  width: 48px;
-  height: 48px;
-  background: transparent;
-  border-radius: 12px;
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: #22c55e;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #22c55e;
+  color: white;
 }
 
-.dashboard .logo-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.dashboard .logo-text {
+.logo-text {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   color: #111827;
 }
 
-/* Navegação Centralizada */
-.dashboard .nav {
+.nav {
   display: flex;
-  gap: 24px;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  gap: 8px;
 }
 
-.dashboard .nav-button {
-  padding: 8px 12px;
+.nav-button {
+  padding: 8px 16px;
   border: none;
   background: none;
   color: #6b7280;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
 }
 
-.dashboard .nav-button:hover {
+.nav-button:hover {
   color: #22c55e;
   background: #f0fdf4;
 }
 
-.dashboard .nav-button.active {
-  color: #22c55e;
+.nav-button.active {
+  color: #10b981;
   background: #f0fdf4;
 }
 
-.dashboard .header-right {
+.header-right {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.dashboard .icon-button {
-  width: 36px;
-  height: 36px;
+.icon-button {
+  width: 40px;
+  height: 40px;
   border: none;
   background: none;
   color: #6b7280;
@@ -114,22 +98,21 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 16px;
 }
 
-.dashboard .icon-button:hover {
+.icon-button:hover {
   background: #f3f4f6;
   color: #374151;
 }
 
-.dashboard .icon-button.logout:hover {
+.icon-button.logout:hover {
   background: #fef2f2;
   color: #dc2626;
 }
 
-.dashboard .profile-avatar {
-  width: 36px;
-  height: 36px;
+.profile-avatar {
+  width: 32px;
+  height: 32px;
   background: #22c55e;
   border-radius: 50%;
   display: flex;
@@ -140,66 +123,18 @@
   font-size: 14px;
 }
 
-/* Loading e Error States */
-.dashboard .dashboard-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: 16px;
-}
-
-.dashboard .loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #e5e7eb;
-  border-top: 4px solid #22c55e;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.dashboard .dashboard-error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  gap: 16px;
-}
-
-.dashboard .dashboard-error button {
-  padding: 12px 24px;
-  background: #22c55e;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s;
-}
-
-.dashboard .dashboard-error button:hover {
-  background: #16a34a;
-}
-
 /* Main Content */
-.dashboard .main-content {
+.main-content {
   max-width: 1200px;
   margin: 0 auto;
   padding: 32px 24px;
 }
 
-.dashboard .page-header {
+.page-header {
   margin-bottom: 32px;
 }
 
-.dashboard .page-header h1 {
+.page-header h1 {
   font-size: 32px;
   font-weight: 700;
   color: #111827;
@@ -207,14 +142,14 @@
 }
 
 /* Stats Grid */
-.dashboard .stats-grid {
+.stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
   margin-bottom: 32px;
 }
 
-.dashboard .stat-card {
+.stat-card {
   background: white;
   padding: 24px;
   border-radius: 12px;
@@ -223,19 +158,19 @@
   transition: all 0.2s;
 }
 
-.dashboard .stat-card:hover {
+.stat-card:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transform: translateY(-1px);
 }
 
-.dashboard .stat-header {
+.stat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
 
-.dashboard .stat-icon {
+.stat-icon {
   width: 48px;
   height: 48px;
   border-radius: 12px;
@@ -245,32 +180,32 @@
   color: white;
 }
 
-.dashboard .stat-icon.balance {
+.stat-icon.balance {
   background: #22c55e;
 }
 
-.dashboard .stat-icon.income {
+.stat-icon.income {
   background: #22c55e;
 }
 
-.dashboard .stat-icon.expense {
+.stat-icon.expense {
   background: #dc2626;
 }
 
-.dashboard .stat-label {
+.stat-label {
   font-size: 14px;
   color: #6b7280;
   font-weight: 500;
 }
 
-.dashboard .stat-value {
+.stat-value {
   font-size: 28px;
   font-weight: 700;
   color: #111827;
 }
 
 /* Chart Section */
-.dashboard .chart-section {
+.chart-section {
   background: white;
   padding: 24px;
   border-radius: 12px;
@@ -279,18 +214,18 @@
   margin-bottom: 32px;
 }
 
-.dashboard .section-header {
+.section-header {
   margin-bottom: 24px;
 }
 
-.dashboard .section-header h2 {
+.section-header h2 {
   font-size: 20px;
   font-weight: 600;
   color: #111827;
   margin: 0;
 }
 
-.dashboard .chart-placeholder {
+.chart-placeholder {
   height: 200px;
   display: flex;
   flex-direction: column;
@@ -300,23 +235,23 @@
   text-align: center;
 }
 
-.dashboard .chart-icon {
+.chart-icon {
   color: #22c55e;
   margin-bottom: 16px;
 }
 
-.dashboard .chart-text p {
+.chart-text p {
   font-size: 16px;
   margin: 0 0 8px 0;
 }
 
-.dashboard .chart-text small {
+.chart-text small {
   font-size: 14px;
   color: #9ca3af;
 }
 
 /* Transactions Section */
-.dashboard .transactions-section {
+.transactions-section {
   background: white;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
@@ -324,19 +259,19 @@
   overflow: hidden;
 }
 
-.dashboard .transactions-section .section-header {
+.transactions-section .section-header {
   padding: 24px 24px 0;
 }
 
 /* Filters */
-.dashboard .filters {
+.filters {
   display: flex;
   gap: 16px;
   padding: 0 24px 24px;
   flex-wrap: wrap;
 }
 
-.dashboard .search-input {
+.search-input {
   flex: 1;
   min-width: 300px;
   position: relative;
@@ -344,14 +279,14 @@
   align-items: center;
 }
 
-.dashboard .search-input svg {
+.search-input svg {
   position: absolute;
   left: 12px;
   color: #9ca3af;
   z-index: 1;
 }
 
-.dashboard .search-input input {
+.search-input input {
   width: 100%;
   padding: 12px 12px 12px 40px;
   border: 1px solid #d1d5db;
@@ -361,18 +296,18 @@
   transition: all 0.2s;
 }
 
-.dashboard .search-input input:focus {
+.search-input input:focus {
   outline: none;
   border-color: #22c55e;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-.dashboard .select-wrapper {
+.select-wrapper {
   position: relative;
   min-width: 180px;
 }
 
-.dashboard .select-wrapper select {
+.select-wrapper select {
   width: 100%;
   padding: 12px 40px 12px 16px;
   border: 1px solid #d1d5db;
@@ -384,13 +319,13 @@
   transition: all 0.2s;
 }
 
-.dashboard .select-wrapper select:focus {
+.select-wrapper select:focus {
   outline: none;
   border-color: #22c55e;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-.dashboard .select-wrapper svg {
+.select-wrapper svg {
   position: absolute;
   right: 12px;
   top: 50%;
@@ -400,16 +335,16 @@
 }
 
 /* Table */
-.dashboard .table-container {
+.table-container {
   overflow-x: auto;
 }
 
-.dashboard .transactions-table {
+.transactions-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.dashboard .transactions-table th {
+.transactions-table th {
   background: #f9fafb;
   padding: 16px 24px;
   text-align: left;
@@ -421,24 +356,24 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.dashboard .transactions-table td {
+.transactions-table td {
   padding: 16px 24px;
   border-bottom: 1px solid #f3f4f6;
   font-size: 14px;
   color: #374151;
 }
 
-.dashboard .transactions-table tr:hover {
+.transactions-table tr:hover {
   background: #f9fafb;
 }
 
-.dashboard .transaction-description {
+.transaction-description {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.dashboard .transaction-icon {
+.transaction-icon {
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -448,58 +383,58 @@
   color: white;
 }
 
-.dashboard .transaction-icon.income {
+.transaction-icon.income {
   background: #22c55e;
 }
 
-.dashboard .transaction-icon.expense {
+.transaction-icon.expense {
   background: #dc2626;
 }
 
-.dashboard .amount {
+.amount {
   font-weight: 600;
 }
 
-.dashboard .amount.income {
+.amount.income {
   color: #22c55e;
 }
 
-.dashboard .amount.expense {
+.amount.expense {
   color: #dc2626;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .dashboard .header-container {
+  .header-container {
     padding: 0 16px;
   }
   
-  .dashboard .nav {
+  .nav {
     display: none;
   }
   
-  .dashboard .main-content {
+  .main-content {
     padding: 24px 16px;
   }
   
-  .dashboard .stats-grid {
+  .stats-grid {
     grid-template-columns: 1fr;
   }
   
-  .dashboard .filters {
+  .filters {
     flex-direction: column;
   }
   
-  .dashboard .search-input {
+  .search-input {
     min-width: auto;
   }
   
-  .dashboard .select-wrapper {
+  .select-wrapper {
     min-width: auto;
   }
   
-  .dashboard .transactions-table th,
-  .dashboard .transactions-table td {
+  .transactions-table th,
+  .transactions-table td {
     padding: 12px 16px;
   }
 }

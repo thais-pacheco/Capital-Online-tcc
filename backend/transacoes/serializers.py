@@ -1,29 +1,13 @@
 from rest_framework import serializers
-from .models import Transacao, Categoria
+from .models import Categoria, Movimentacao
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Categoria
         fields = ['id', 'nome', 'tipo']
 
-class TransacaoSerializer(serializers.ModelSerializer):
-    categoria_nome = serializers.CharField(source='categoria.nome', read_only=True)
-    
+class MovimentacaoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Transacao
-        fields = ['id', 'titulo', 'valor', 'tipo', 'categoria', 'categoria_nome', 'data', 'observacoes']
-        extra_kwargs = {
-            'categoria': {'write_only': True}
-        }
-    
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        return {
-            'id': representation['id'],
-            'data': representation['data'],
-            'titulo': representation['titulo'],
-            'categoria': representation['categoria_nome'],
-            'valor': float(instance.valor),
-            'tipo': instance.tipo,
-            'observacoes': representation['observacoes'] or ''
-        }
+        model = Movimentacao
+        fields = ['id', 'usuario', 'categoria', 'tipo', 'descricao', 'valor', 'data_movimentacao', 'observacoes', 'criado_em', 'atualizado_em']
+        read_only_fields = ['usuario', 'criado_em', 'atualizado_em']

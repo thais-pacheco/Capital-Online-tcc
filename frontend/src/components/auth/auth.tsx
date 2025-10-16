@@ -6,14 +6,14 @@ import './auth.css';
 interface FormData {
   nome?: string;
   email: string;
-  senha: string;
+  password: string;
   confirmPassword?: string;
 }
 
 interface FormErrors {
   nome?: string;
   email?: string;
-  senha?: string;
+  password?: string;
   confirmPassword?: string;
 }
 
@@ -24,7 +24,7 @@ const Auth: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     nome: '',
     email: '',
-    senha: '',
+    password: '',
     confirmPassword: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -45,11 +45,11 @@ const Auth: React.FC = () => {
       newErrors.email = 'Email inválido';
     }
 
-    if (!formData.senha || formData.senha.length < 6) {
-      newErrors.senha = 'Senha deve ter pelo menos 6 caracteres';
+    if (!formData.password || formData.password.length < 6) {
+      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
     }
 
-    if (!isLogin && formData.senha !== formData.confirmPassword) {
+    if (!isLogin && formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Senhas não coincidem';
     }
 
@@ -67,35 +67,38 @@ const Auth: React.FC = () => {
     setLoading(true);
 
     try {
-      const endpoint = isLogin ? '/auth/login/' : '/auth/cadastro/';
+      const endpoint = isLogin ? '/login/' : '/register/';
+      
+      // 🔑 Correção: enviar campo 'password' para o backend
       const payload = isLogin
-        ? { email: formData.email, senha: formData.senha }
-        : { nome: formData.nome, email: formData.email, senha: formData.senha };
+        ? { email: formData.email, password: formData.password }
+        : { nome: formData.nome, email: formData.email, password: formData.password };
 
-      const response = await fetch(`http://localhost:8000${endpoint}`, {
+      const response = await fetch(`http://127.0.0.1:8000/auth${endpoint}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        credentials: 'include', // caso o backend use cookies (ajuste se não usar)
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setServerMessage(data.success || 'Sucesso!');
+        if (data.token) localStorage.setItem('token', data.token);
+        if (data.usuario) localStorage.setItem('usuario', JSON.stringify(data.usuario));
+
+        setServerMessage(isLogin ? 'Login realizado com sucesso!' : 'Conta criada com sucesso!');
         setServerMessageIsError(false);
 
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+        setTimeout(() => navigate('/dashboard'), 1000);
       } else {
-        setServerMessage(data.error || 'Erro inesperado.');
+        const firstErrorArray = Object.values(data)[0] as string[] | undefined;
+        const errorMsg = data.detail || data.error || firstErrorArray?.[0] || 'Erro inesperado.';
+        setServerMessage(errorMsg);
         setServerMessageIsError(true);
       }
-    } catch (error) {
-      setServerMessage('Erro na conexão.');
+    } catch (err) {
+      console.error(err);
+      setServerMessage('Erro na conexão com o servidor.');
       setServerMessageIsError(true);
     } finally {
       setLoading(false);
@@ -104,18 +107,9 @@ const Auth: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
 
-    if (errors[name as keyof FormErrors]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: undefined,
-      }));
-    }
-
+    if (errors[name as keyof FormErrors]) setErrors(prev => ({ ...prev, [name]: undefined }));
     if (serverMessage) {
       setServerMessage('');
       setServerMessageIsError(false);
@@ -124,12 +118,7 @@ const Auth: React.FC = () => {
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
-    setFormData({
-      nome: '',
-      email: '',
-      senha: '',
-      confirmPassword: '',
-    });
+    setFormData({ nome: '', email: '', password: '', confirmPassword: '' });
     setErrors({});
     setServerMessage('');
     setServerMessageIsError(false);
@@ -151,7 +140,6 @@ const Auth: React.FC = () => {
             <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
             <span className="logo-text">Capital Online</span>
           </div>
-
           <div className="tagline">
             <TrendingUp className="tagline-icon" />
             <span>Gerencie suas finanças com inteligência</span>
@@ -160,18 +148,10 @@ const Auth: React.FC = () => {
 
         <div className="auth-form-container">
           <div className="auth-toggle">
-            <button
-              type="button"
-              className={`toggle-btn ${isLogin ? 'active' : ''}`}
-              onClick={() => isLogin || toggleMode()}
-            >
+            <button type="button" className={`toggle-btn ${isLogin ? 'active' : ''}`} onClick={() => isLogin || toggleMode()}>
               Entrar
             </button>
-            <button
-              type="button"
-              className={`toggle-btn ${!isLogin ? 'active' : ''}`}
-              onClick={() => !isLogin || toggleMode()}
-            >
+            <button type="button" className={`toggle-btn ${!isLogin ? 'active' : ''}`} onClick={() => !isLogin || toggleMode()}>
               Cadastrar
             </button>
           </div>
@@ -222,23 +202,18 @@ const Auth: React.FC = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="senha"
-                  name="senha"
-                  value={formData.senha}
+                  name="password" // ✅ nome do campo corrigido
+                  value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Digite sua senha"
-                  className={errors.senha ? 'error' : ''}
-                  autoComplete={isLogin ? "current-password" : "new-password"}
+                  className={errors.password ? 'error' : ''}
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
                 />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                >
+                <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                   {showPassword ? <EyeOff /> : <Eye />}
                 </button>
               </div>
-              {errors.senha && <span className="error-message">{errors.senha}</span>}
+              {errors.password && <span className="error-message">{errors.password}</span>}
             </div>
 
             {!isLogin && (
@@ -256,12 +231,7 @@ const Auth: React.FC = () => {
                     className={errors.confirmPassword ? 'error' : ''}
                     autoComplete="new-password"
                   />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    tabIndex={-1}
-                  >
+                  <button type="button" className="password-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)} tabIndex={-1}>
                     {showConfirmPassword ? <EyeOff /> : <Eye />}
                   </button>
                 </div>
@@ -274,15 +244,7 @@ const Auth: React.FC = () => {
             </button>
 
             {serverMessage && (
-              <div
-                style={{
-                  marginTop: 12,
-                  color: serverMessageIsError ? 'red' : 'green',
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                }}
-                role="alert"
-              >
+              <div style={{ marginTop: 12, color: serverMessageIsError ? 'red' : 'green', fontWeight: 'bold', textAlign: 'center' }}>
                 {serverMessage}
               </div>
             )}
