@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PiggyBank } from 'lucide-react';
+import { PiggyBank, Calendar, Bell, LogOut, User } from 'lucide-react';
 import './newtransaction.css';
 
 interface FormData {
@@ -10,12 +10,6 @@ interface FormData {
   category: string;
   date: string;
   observations: string;
-}
-
-interface Categoria {
-  id: number;
-  nome: string;
-  tipo: 'entrada' | 'saida';
 }
 
 export default function NewTransaction() {
@@ -28,62 +22,27 @@ export default function NewTransaction() {
     observations: '',
   });
 
-  const [categories, setCategories] = useState<Categoria[]>([]);
+  const [categories, setCategories] = useState<{ id: number; nome: string; tipo: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
-  const token = localStorage.getItem('token')?.replace(/"/g, ''); // remove aspas extras
-
-  // Redireciona se não estiver autenticado
   useEffect(() => {
-    if (!token) {
-      setErrorMessage('Usuário não autenticado.');
-      navigate('/login');
-    }
-  }, [token, navigate]);
-
-  // Carrega categorias
-  useEffect(() => {
-    if (!token) return;
-
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('http://127.0.0.1:8000/api/categorias/', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (res.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/login');
-          return;
-        }
-
-        if (!res.ok) throw new Error('Erro ao carregar categorias');
-
-        const data = await res.json();
-        const results = Array.isArray(data) ? data : data.results || [];
-
-        // filtra categorias pelo tipo de movimentação
-        const filtered = results.filter((cat: Categoria) =>
+    fetch('http://127.0.0.1:8000/api/categorias/')
+      .then(res => res.json())
+      .then(data => {
+        const filtered = data.filter((cat: any) =>
           formData.type === 'income' ? cat.tipo === 'entrada' : cat.tipo === 'saida'
         );
         setCategories(filtered);
-      } catch (err) {
-        console.error(err);
-        setErrorMessage('Erro ao carregar categorias.');
-      }
-    };
+      })
+      .catch(err => {
+        console.error('Erro ao carregar categorias', err);
+        setErrorMessage('Erro ao carregar categorias');
+      });
+  }, [formData.type]);
 
-    fetchCategories();
-  }, [formData.type, token, navigate]);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -93,18 +52,12 @@ export default function NewTransaction() {
     setLoading(true);
     setErrorMessage('');
 
-    if (!token) {
-      setErrorMessage('Usuário não autenticado.');
-      setLoading(false);
-      return;
-    }
-
     const payload = {
-      descricao: formData.description,
+      titulo: formData.description,
       tipo: formData.type === 'income' ? 'entrada' : 'saida',
       valor: parseFloat(formData.amount),
       categoria: parseInt(formData.category),
-      data_movimentacao: formData.date || new Date().toISOString(),
+      data: formData.date,
       observacoes: formData.observations,
     };
 
@@ -113,57 +66,80 @@ export default function NewTransaction() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
-      if (response.status === 401) {
-        localStorage.removeItem('token');
-        navigate('/login');
-        return;
-      }
-
-      if (!response.ok) {
+      if (response.ok) {
+        navigate('/dashboard');
+      } else {
         const error = await response.json();
         setErrorMessage('Erro ao salvar: ' + JSON.stringify(error));
-      } else {
-        navigate('/dashboard');
       }
     } catch (err) {
-      console.error(err);
       setErrorMessage('Erro ao conectar com o servidor.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    navigate('/');
+  };
+
   return (
     <div className="newtransaction-container">
-      <header className="newtransaction-header">
-        <div className="newtransaction-header-inner">
-          <div className="newtransaction-header-flex">
-            <div className="newtransaction-logo-group">
-              <div className="logo">
-                <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
-                <span className="logo-text">CAPITAL ONLINE</span>
-              </div>
+      <header className="header">
+        <div className="header-container">
+          <div className="header-left">
+            <div className="logo">
+              <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+              <span className="logo-text">CAPITAL ONLINE</span>
             </div>
-            <nav className="newtransaction-nav">
-              <button className="newtransaction-nav-button" onClick={() => navigate('/dashboard')}>
-                Dashboard
-              </button>
-              <button className="newtransaction-nav-button active">Nova movimentação</button>
-              <button className="newtransaction-nav-button" onClick={() => navigate('/graficos')}>
-                Gráficos
-              </button>
-              <button className="newtransaction-nav-button" onClick={() => navigate('/objetivos')}>
-                Objetivos
-              </button>
-            </nav>
-            <div className="newtransaction-header-actions">
-              <div className="newtransaction-profile-circle">J</div>
+          </div>
+
+          <nav className="nav">
+            <button
+              className="nav-button"
+              onClick={() => navigate('/dashboard')}
+            >
+              Dashboard
+            </button>
+            <button
+              className="nav-button active"
+              onClick={() => navigate('/nova-movimentacao')}
+            >
+              Nova movimentação
+            </button>
+            <button
+              className="nav-button"
+              onClick={() => navigate('/graficos')}
+            >
+              Gráficos
+            </button>
+            <button
+              className="nav-button"
+              onClick={() => navigate('/objetivos')}
+            >
+              Objetivos
+            </button>
+          </nav>
+
+          <div className="header-right">
+            <button className="icon-button">
+              <Calendar size={18} />
+            </button>
+            <button className="icon-button">
+              <Bell size={18} />
+            </button>
+            <div className="profile-avatar">
+              <User size={18} />
             </div>
+            <button className="icon-button logout" onClick={handleLogout}>
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </header>
@@ -187,19 +163,37 @@ export default function NewTransaction() {
                 className={`transaction-type-button ${formData.type === 'income' ? 'income' : ''}`}
                 onClick={() => setFormData(prev => ({ ...prev, type: 'income' }))}
               >
-                ↗ Entrada
+                <div className="transaction-type-button-content">
+                  <div className="transaction-type-icon-container">
+                    <span className="transaction-type-icon">↗</span>
+                  </div>
+                  <div className="transaction-type-text">
+                    <span className="transaction-type-text-title">Entrada</span>
+                    <span className="transaction-type-text-subtitle">Ex: salário, vendas, etc.</span>
+                  </div>
+                </div>
               </button>
               <button
                 type="button"
                 className={`transaction-type-button ${formData.type === 'expense' ? 'expense' : ''}`}
                 onClick={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
               >
-                ↙ Saída
+                <div className="transaction-type-button-content">
+                  <div className="transaction-type-icon-container">
+                    <span className="transaction-type-icon">↙</span>
+                  </div>
+                  <div className="transaction-type-text">
+                    <span className="transaction-type-text-title">Saída</span>
+                    <span className="transaction-type-text-subtitle">Ex: gastos, compras, etc.</span>
+                  </div>
+                </div>
               </button>
             </div>
 
             <div className="form-group form-grid-full">
-              <label className="form-label">Descrição *</label>
+              <label className="form-label">
+                Descrição <span className="required">*</span>
+              </label>
               <input
                 name="description"
                 type="text"
@@ -212,7 +206,9 @@ export default function NewTransaction() {
 
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">Valor *</label>
+                <label className="form-label">
+                  Valor <span className="required">*</span>
+                </label>
                 <input
                   name="amount"
                   type="number"
@@ -224,7 +220,9 @@ export default function NewTransaction() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Categoria *</label>
+                <label className="form-label">
+                  Categoria <span className="required">*</span>
+                </label>
                 <select
                   name="category"
                   className="form-select"
@@ -271,16 +269,7 @@ export default function NewTransaction() {
               <button
                 type="button"
                 className="btn-secondary"
-                onClick={() =>
-                  setFormData({
-                    type: 'income',
-                    description: '',
-                    amount: '',
-                    category: '',
-                    date: '',
-                    observations: '',
-                  })
-                }
+                onClick={() => navigate('/dashboard')}
               >
                 Limpar Formulário
               </button>
