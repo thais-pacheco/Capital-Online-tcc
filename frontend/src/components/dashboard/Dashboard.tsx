@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CalendarPopup from '../calendario/CalendarPopup';
+import NotificationsPopup from '../notificacoes/NotificationsPopup';
 import './Dashboard.css';
 
 interface Transaction {
@@ -38,6 +39,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
@@ -212,7 +214,7 @@ const Dashboard: React.FC = () => {
             <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
               <Calendar size={18} />
             </button>
-            <button className="icon-button">
+            <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
               <Bell size={18} />
             </button>
             <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
@@ -377,6 +379,11 @@ const Dashboard: React.FC = () => {
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         userEmail={userEmail}
+      />
+
+      <NotificationsPopup 
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
       />
     </div>
   );
