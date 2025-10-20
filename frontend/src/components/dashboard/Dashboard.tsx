@@ -8,9 +8,15 @@ import {
   ArrowDownRight,
   BarChart3,
   ChevronDown,
-  PiggyBank
+  PiggyBank,
+  Calendar,
+  Bell,
+  LogOut,
+  User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CalendarPopup from '../calendario/CalendarPopup';
+import NotificationsPopup from '../notificacoes/NotificationsPopup';
 import './Dashboard.css';
 
 interface Transaction {
@@ -32,10 +38,23 @@ const Dashboard: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     const fetchTransactions = async () => {
       const token = localStorage.getItem('token')?.replace(/"/g, '');
+      const storedUser = localStorage.getItem('usuario');
+
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          setUserEmail(user.email || '');
+        } catch (e) {
+          console.error('Erro ao parse do usuário:', e);
+        }
+      }
 
       if (!token) {
         setError('Token não encontrado. Faça login novamente.');
@@ -97,6 +116,8 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const filteredTransactions = transactions.filter(transaction => {
+    if (!transaction) return false;
+
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
       (transaction.titulo?.toLowerCase() || '').includes(searchLower) ||
@@ -123,64 +144,85 @@ const Dashboard: React.FC = () => {
 
   const totalBalance = totalIncome - totalExpenses;
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    navigate('/');
+  };
+
   if (loading) {
     return (
-      <div className="dashboard-loading">
-        <div className="loading-spinner"></div>
-        <p>Carregando transações...</p>
+      <div className="dashboard">
+        <div className="dashboard-loading">
+          <div className="loading-spinner"></div>
+          <p>Carregando transações...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard-error">
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Recarregar</button>
+      <div className="dashboard">
+        <div className="dashboard-error">
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>Recarregar</button>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="dashboard">
-      <header className="newtransaction-header">
-        <div className="newtransaction-header-inner">
-          <div className="newtransaction-header-flex">
-            <div className="newtransaction-logo-group">
-              <div className="logo">
-                <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
-                <span className="logo-text">CAPITAL ONLINE</span>
-              </div>
+      <header className="header">
+        <div className="header-container">
+          <div className="header-left">
+            <div className="logo">
+              <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+              <span className="logo-text">CAPITAL ONLINE</span>
             </div>
-            <nav className="newtransaction-nav">
-              <button
-                className="newtransaction-nav-button active"
-                onClick={() => navigate('/dashboard')}
-              >
-                Dashboard
-              </button>
-              <button
-                className="newtransaction-nav-button"
-                onClick={() => navigate('/nova-movimentacao')}
-              >
-                Nova movimentação
-              </button>
-              <button
-                className="newtransaction-nav-button"
-                onClick={() => navigate('/graficos')}
-              >
-                Gráficos
-              </button>
-              <button
-                className="newtransaction-nav-button"
-                onClick={() => navigate('/objetivos')}
-              >
-                Objetivos
-              </button>
-            </nav>
-            <div className="newtransaction-header-actions">
-              <div className="newtransaction-profile-circle">J</div>
+          </div>
+
+          <nav className="nav">
+            <button
+              className="nav-button active"
+              onClick={() => navigate('/dashboard')}
+            >
+              Dashboard
+            </button>
+            <button
+              className="nav-button"
+              onClick={() => navigate('/nova-movimentacao')}
+            >
+              Nova movimentação
+            </button>
+            <button
+              className="nav-button"
+              onClick={() => navigate('/graficos')}
+            >
+              Gráficos
+            </button>
+            <button
+              className="nav-button"
+              onClick={() => navigate('/objetivos')}
+            >
+              Objetivos
+            </button>
+          </nav>
+
+          <div className="header-right">
+            <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
+              <Calendar size={18} />
+            </button>
+            <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
+              <Bell size={18} />
+            </button>
+            <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+              <User size={18} />
             </div>
+            <button className="icon-button logout" onClick={handleLogout}>
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </header>
@@ -288,11 +330,18 @@ const Dashboard: React.FC = () => {
           <div className="table-container">
             <table className="transactions-table">
               <thead>
-                <tr><th>DATA</th><th>DESCRIÇÃO</th><th>OBSERVAÇÕES</th><th>VALOR</th></tr>
+                <tr>
+                  <th>DATA</th>
+                  <th>DESCRIÇÃO</th>
+                  <th>OBSERVAÇÕES</th>
+                  <th>VALOR</th>
+                </tr>
               </thead>
               <tbody>
                 {filteredTransactions.length === 0 ? (
-                  <tr><td colSpan={4}>Nenhuma movimentação encontrada.</td></tr>
+                  <tr>
+                    <td colSpan={4}>Nenhuma movimentação encontrada.</td>
+                  </tr>
                 ) : (
                   filteredTransactions.map((transaction) => (
                     <tr key={transaction.id}>
@@ -325,6 +374,17 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <CalendarPopup 
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        userEmail={userEmail}
+      />
+
+      <NotificationsPopup 
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+      />
     </div>
   );
 };
