@@ -202,7 +202,7 @@ const Dashboard: React.FC = () => {
             <button className="icon-button">
               <Bell size={18} />
             </button>
-            <div className="profile-avatar">
+            <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
               <User size={18} />
             </div>
             <button className="icon-button logout" onClick={handleLogout}>
