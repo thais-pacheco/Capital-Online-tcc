@@ -15,6 +15,7 @@ import {
   User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CalendarPopup from '../calendario/CalendarPopup';
 import './Dashboard.css';
 
 interface Transaction {
@@ -36,10 +37,22 @@ const Dashboard: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   useEffect(() => {
     const fetchTransactions = async () => {
       const token = localStorage.getItem('token')?.replace(/"/g, '');
+      const storedUser = localStorage.getItem('usuario');
+
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          setUserEmail(user.email || '');
+        } catch (e) {
+          console.error('Erro ao parse do usuário:', e);
+        }
+      }
 
       if (!token) {
         setError('Token não encontrado. Faça login novamente.');
@@ -196,7 +209,7 @@ const Dashboard: React.FC = () => {
           </nav>
 
           <div className="header-right">
-            <button className="icon-button">
+            <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
               <Calendar size={18} />
             </button>
             <button className="icon-button">
@@ -359,6 +372,12 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <CalendarPopup 
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        userEmail={userEmail}
+      />
     </div>
   );
 };
