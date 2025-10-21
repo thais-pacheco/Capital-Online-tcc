@@ -13,9 +13,7 @@ class MovimentacaoViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Cada usuário só vê suas próprias movimentações
         return Movimentacao.objects.filter(usuario=self.request.user)
 
     def perform_create(self, serializer):
-        # Salva a movimentação com o usuário logado
         serializer.save(usuario=self.request.user)
