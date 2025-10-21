@@ -1,6 +1,6 @@
-//1
-import React, { useState, useEffect } from 'react'; 
-import { 
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
   PiggyBank,
   Clock,
   AlertCircle,
@@ -10,33 +10,24 @@ import {
   Plus,
   Calendar,
   Bell,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-
 import './objectives.css';
-
-export type Page = 'dashboard' | 'new-transaction' | 'charts' | 'objetivos';
 
 interface Goal {
   id: number;
   titulo: string;
   descricao: string;
-  valor: number;          
-  valor_atual: number;    
-  data_limite: string;    
+  valor: number;
+  valor_atual: number;
+  data_limite: string;
   criado_em: string;
-  categoria?: string;    
+  categoria?: string;
   status: 'active' | 'completed' | 'overdue';
 }
 
-interface GoalsProps {
-  onNavigate: (page: Page) => void;
-  onLogout: () => void;
-  userId: string; 
-}
-
-const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
+export default function Goals() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
@@ -48,10 +39,20 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
   });
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const API_URL = 'http://localhost:8000/api/objetivos/';
   const navigate = useNavigate();
+  const token = localStorage.getItem('token')?.replace(/"/g, '');
 
+  // 🔐 Verifica autenticação
+  useEffect(() => {
+    if (!token) {
+      setErrorMessage('Usuário não autenticado.');
+      navigate('/login');
+    }
+  }, [token, navigate]);
+
+  // Calcula o status do objetivo
   const calculateStatus = (goal: Goal) => {
     const hoje = new Date();
     const prazo = new Date(goal.data_limite);
@@ -60,20 +61,37 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
     return 'active';
   };
 
+  // 📦 Busca objetivos do backend
   const fetchGoals = async () => {
+    if (!token) return;
+
     setLoading(true);
     try {
-      const response = await fetch(API_URL, { credentials: 'include' });
+      const response = await fetch('http://127.0.0.1:8000/api/objetivos/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+        return;
+      }
+
       if (!response.ok) throw new Error('Erro ao buscar objetivos');
+
       const data = await response.json();
-      const withStatus = data.map((goal: any) => ({
+      const results = Array.isArray(data) ? data : data.results || [];
+      const withStatus = results.map((goal: any) => ({
         ...goal,
         status: calculateStatus(goal),
       }));
       setGoals(withStatus);
     } catch (error) {
-      alert('Erro ao carregar objetivos do servidor.');
       console.error(error);
+      setErrorMessage('Erro ao carregar objetivos do servidor.');
     } finally {
       setLoading(false);
     }
@@ -81,14 +99,21 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
 
   useEffect(() => {
     fetchGoals();
-  }, []);
+  }, [token]);
 
+  // ✏️ Atualiza campos do formulário
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // 💾 Salva ou atualiza objetivo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!token) {
+      setErrorMessage('Usuário não autenticado.');
+      return;
+    }
 
     if (!formData.titulo || !formData.valor_necessario || !formData.prazo) {
       alert('Preencha todos os campos obrigatórios');
@@ -107,19 +132,29 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
     try {
       let response;
       if (editingGoal) {
-        response = await fetch(`${API_URL}${editingGoal.id}/`, {
+        response = await fetch(`http://127.0.0.1:8000/api/objetivos/${editingGoal.id}/`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
       } else {
-        response = await fetch(API_URL, {
+        response = await fetch('http://127.0.0.1:8000/api/objetivos/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
+      }
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+        return;
       }
 
       if (!response.ok) throw new Error('Erro ao salvar objetivo');
@@ -130,27 +165,43 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
       setEditingGoal(null);
       setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' });
     } catch (error) {
-      alert('Falha ao salvar objetivo.');
       console.error(error);
+      alert('Falha ao salvar objetivo.');
     }
   };
 
+  // 🗑️ Delete objetivo
   const handleDelete = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja deletar este objetivo?')) return;
 
+    if (!token) {
+      setErrorMessage('Usuário não autenticado.');
+      return;
+    }
+
     try {
-      const response = await fetch(`${API_URL}${id}/`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/objetivos/${id}/`, {
         method: 'DELETE',
-        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+        return;
+      }
+
       if (!response.ok) throw new Error('Erro ao deletar objetivo');
       await fetchGoals();
     } catch (error) {
-      alert('Falha ao deletar objetivo.');
       console.error(error);
+      alert('Falha ao deletar objetivo.');
     }
   };
 
+  // ✏️ Editar objetivo
   const handleEdit = (goal: Goal) => {
     setEditingGoal(goal);
     setFormData({
@@ -163,19 +214,23 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
     setShowCreateForm(true);
   };
 
+  // 📊 Calcula progresso
   const calculateProgress = (goal: Goal) => {
     if (goal.valor === 0) return 0;
     return Math.min(100, (goal.valor_atual / goal.valor) * 100);
   };
 
+  // 💰 Formata moeda
   const formatCurrency = (value: number | undefined) =>
     typeof value === 'number'
       ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
       : 'R$ 0,00';
 
+  // 🚪 Logout
   const handleLogout = () => {
-    onLogout();
-    navigate('/login');
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
+    navigate('/');
   };
 
   return (
@@ -188,25 +243,34 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
           </div>
           <nav className="goals-nav">
             <button onClick={() => navigate('/dashboard')}>Dashboard</button>
-            <button onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
+            <button onClick={() => navigate('/nova-transacao')}>Nova movimentação</button>
             <button onClick={() => navigate('/graficos')}>Gráficos</button>
-            <button className="active" onClick={() => navigate('/objetivos')}>Objetivos</button>
+            <button className="active">Objetivos</button>
           </nav>
           <div className="goals-header-actions">
             <button className="icon-button" title="Calendário">
-              <Calendar className="icon" />
+              <Calendar size={18} />
             </button>
             <button className="icon-button" title="Notificações">
-              <Bell className="icon" />
+              <Bell size={18} />
             </button>
+            <div className="profile-avatar">
+              <User size={18} />
+            </div>
             <button className="icon-button logout" title="Sair" onClick={handleLogout}>
-              <LogOut className="icon" />
+              <LogOut size={18} />
             </button>
           </div>
         </div>
       </header>
 
       <main className="goals-content">
+        {errorMessage && (
+          <div className="error-card" style={{ color: 'red', marginBottom: '1rem' }}>
+            {errorMessage}
+          </div>
+        )}
+
         <section className="goals-header-section">
           <h1>Meus Objetivos</h1>
           <p>Gerencie seus objetivos financeiros</p>
@@ -233,6 +297,7 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
               />
               <input
                 type="number"
+                step="0.01"
                 placeholder="Meta (R$)"
                 value={formData.valor_necessario}
                 onChange={e => handleInputChange('valor_necessario', e.target.value)}
@@ -249,14 +314,23 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
                 onChange={e => handleInputChange('categoria', e.target.value)}
               >
                 <option value="">Selecione uma categoria</option>
-                <option value="educacao">Educação</option>
-                <option value="lazer">Lazer</option>
-                <option value="saude">Saúde</option>
                 <option value="investimento">Investimento</option>
+                <option value="compra">Compra</option>
+                <option value="viagem">Viagem</option>
+                <option value="educacao">Educação</option>
+                <option value="emergencia">Emergência</option>
+                <option value="outro">Outro</option>
               </select>
               <div className="goals-form-buttons">
                 <button type="submit">{editingGoal ? 'Salvar' : 'Criar'}</button>
-                <button type="button" onClick={() => { setShowCreateForm(false); setEditingGoal(null); setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' }); }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setEditingGoal(null);
+                    setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' });
+                  }}
+                >
                   Cancelar
                 </button>
               </div>
@@ -272,24 +346,38 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
           <section className="goals-grid">
             {goals.map(goal => {
               const progressPercent = calculateProgress(goal);
-              let statusClass = goal.status === 'completed' ? 'status-completed' : goal.status === 'overdue' ? 'status-overdue' : 'status-active';
+              let statusClass =
+                goal.status === 'completed'
+                  ? 'status-completed'
+                  : goal.status === 'overdue'
+                  ? 'status-overdue'
+                  : 'status-active';
               return (
                 <article key={goal.id} className="goal-card">
                   <header className="goal-card-header">
                     {goal.status === 'completed' && <CheckCircle color="#166534" size={20} />}
                     {goal.status === 'active' && <Clock color="#1e40af" size={20} />}
                     {goal.status === 'overdue' && <AlertCircle color="#991b1b" size={20} />}
-                    <div className={`goal-status-badge ${statusClass}`}>{goal.status.toUpperCase()}</div>
+                    <div className={`goal-status-badge ${statusClass}`}>
+                      {goal.status === 'completed' ? 'CONCLUÍDO' : goal.status === 'overdue' ? 'ATRASADO' : 'ATIVO'}
+                    </div>
                     <div>
-                      <button onClick={() => handleEdit(goal)}><Edit size={18} /></button>
-                      <button onClick={() => handleDelete(goal.id)}><Trash2 size={18} /></button>
+                      <button onClick={() => handleEdit(goal)}>
+                        <Edit size={18} />
+                      </button>
+                      <button onClick={() => handleDelete(goal.id)}>
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   </header>
                   <h3>{goal.titulo}</h3>
                   <p>{goal.descricao}</p>
                   <div className="goal-progress">
                     <div className="progress-bar-bg">
-                      <div className={`progress-bar-fill ${statusClass}`} style={{ width: `${progressPercent}%` }} />
+                      <div
+                        className={`progress-bar-fill ${statusClass}`}
+                        style={{ width: `${progressPercent}%` }}
+                      />
                     </div>
                     <div>
                       <span>{formatCurrency(goal.valor_atual)}</span> / <span>{formatCurrency(goal.valor)}</span>
@@ -303,6 +391,4 @@ const Goals: React.FC<GoalsProps> = ({ onLogout, onNavigate, userId }) => {
       </main>
     </div>
   );
-};
-
-export default Goals;
+}
