@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PiggyBank, Calendar, Bell, LogOut, User } from 'lucide-react';
 import './newtransaction.css';
-import type { Page } from '../../types';
 
 interface FormData {
   type: 'income' | 'expense';
@@ -18,37 +18,30 @@ interface Categoria {
   tipo: 'entrada' | 'saida';
 }
 
-// === Props para NewTransaction ===
-interface NewTransactionProps {
-  onNavigate: (page: Page) => void;
-  onLogout: () => void;
-}
-
-const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout }) => {
+export default function NewTransaction() {
   const [formData, setFormData] = useState<FormData>({
     type: 'income',
     description: '',
     amount: '',
     category: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0], // ✅ Data padrão = hoje
     observations: '',
   });
 
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
 
   const token = localStorage.getItem('token')?.replace(/"/g, '');
 
-  // 🔐 Verifica autenticação
   useEffect(() => {
     if (!token) {
       setErrorMessage('Usuário não autenticado.');
-      onNavigate('dashboard'); // ou 'login', se estiver incluído no tipo Page
+      navigate('/login');
     }
-  }, [token, onNavigate]);
+  }, [token, navigate]);
 
-  // 📦 Carrega categorias filtradas por tipo (entrada/saída)
   useEffect(() => {
     if (!token) return;
 
@@ -56,14 +49,14 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
       try {
         const res = await fetch('http://127.0.0.1:8000/api/categorias/', {
           headers: {
-            Authorization: `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
 
         if (res.status === 401) {
           localStorage.removeItem('token');
-          onNavigate('dashboard'); // ou 'login'
+          navigate('/login');
           return;
         }
 
@@ -84,9 +77,8 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
     };
 
     fetchCategories();
-  }, [formData.type, token, onNavigate]);
+  }, [formData.type, token, navigate]);
 
-  // ✏️ Atualiza campos do formulário
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -94,7 +86,6 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 💾 Envia os dados da movimentação
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -106,28 +97,33 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
       return;
     }
 
+    // ✅ CORREÇÃO 1: Multiplicar por 100 para salvar em centavos
+    // ✅ CORREÇÃO 2: Garantir que description não esteja vazio
+    // ✅ CORREÇÃO 3: Data sempre no formato correto
     const payload = {
-      descricao: formData.description,
+      descricao: formData.description.trim(),
       tipo: formData.type === 'income' ? 'entrada' : 'saida',
-      valor: parseFloat(formData.amount),
+      valor: parseFloat(formData.amount) * 100, // ✅ Converter para centavos
       categoria: parseInt(formData.category),
-      data_movimentacao: formData.date || new Date().toISOString(),
-      observacoes: formData.observations,
+      data_movimentacao: formData.date || new Date().toISOString().split('T')[0],
+      observacoes: formData.observations.trim(),
     };
+
+    console.log('📤 Enviando payload:', payload); // Debug
 
     try {
       const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        onNavigate('dashboard'); // ou 'login'
+        navigate('/login');
         return;
       }
 
@@ -135,7 +131,9 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
         const error = await response.json();
         setErrorMessage('Erro ao salvar: ' + JSON.stringify(error));
       } else {
-        onNavigate('dashboard');
+        const result = await response.json();
+        console.log('✅ Transação criada:', result); // Debug
+        navigate('/dashboard');
       }
     } catch (err) {
       console.error(err);
@@ -145,11 +143,10 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
     }
   };
 
-  // 🚪 Logout
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
-    onLogout();
+    navigate('/');
   };
 
   return (
@@ -164,14 +161,14 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
           </div>
 
           <nav className="nav">
-            <button className="nav-button" onClick={() => onNavigate('dashboard')}>
+            <button className="nav-button" onClick={() => navigate('/dashboard')}>
               Dashboard
             </button>
             <button className="nav-button active">Nova movimentação</button>
-            <button className="nav-button" onClick={() => onNavigate('charts')}>
+            <button className="nav-button" onClick={() => navigate('/graficos')}>
               Gráficos
             </button>
-            <button className="nav-button" onClick={() => onNavigate('objetivos')}>
+            <button className="nav-button" onClick={() => navigate('/objetivos')}>
               Objetivos
             </button>
           </nav>
@@ -195,9 +192,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
 
       <main className="newtransaction-content">
         <h1 className="newtransaction-title">Nova movimentação</h1>
-        <p className="newtransaction-subtitle">
-          Registre uma nova entrada ou saída financeira
-        </p>
+        <p className="newtransaction-subtitle">Registre uma nova entrada ou saída financeira</p>
 
         {errorMessage && (
           <div className="error-card" style={{ color: 'red', marginBottom: '1rem' }}>
@@ -234,19 +229,23 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                 value={formData.description}
                 onChange={handleChange}
                 required
+                placeholder="Ex: Venda de produto"
               />
             </div>
 
             <div className="form-grid">
               <div className="form-group">
-                <label className="form-label">Valor *</label>
+                <label className="form-label">Valor (R$) *</label>
                 <input
                   name="amount"
                   type="number"
+                  step="0.01"
+                  min="0"
                   className="form-input"
                   value={formData.amount}
                   onChange={handleChange}
                   required
+                  placeholder="0,00"
                 />
               </div>
 
@@ -269,13 +268,14 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
               </div>
 
               <div className="form-group">
-                <label className="form-label">Data</label>
+                <label className="form-label">Data *</label>
                 <input
                   name="date"
                   type="date"
                   className="form-input"
                   value={formData.date}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
@@ -288,6 +288,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                 value={formData.observations}
                 onChange={handleChange}
                 rows={4}
+                placeholder="Informações adicionais (opcional)"
               />
             </div>
 
@@ -304,7 +305,7 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
                     description: '',
                     amount: '',
                     category: '',
-                    date: '',
+                    date: new Date().toISOString().split('T')[0],
                     observations: '',
                   })
                 }
@@ -317,6 +318,4 @@ const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout })
       </main>
     </div>
   );
-};
-
-export default NewTransaction;
+}

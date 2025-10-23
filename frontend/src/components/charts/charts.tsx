@@ -6,7 +6,7 @@ import {
   TrendingDown,
   LogOut,
   Bell,
-  User, 
+  User
 } from 'lucide-react';
 import type { Page } from '../../types';
 import './charts.css';
@@ -23,9 +23,9 @@ interface ChartsProps {
 }
 
 const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('month');
 
-  // Aqui você pode substituir por dados reais de transações
+  // Dados de exemplo, substitua pelo fetch das últimas transações
   const chartData: Transaction[] = [
     { month: 'Jan', income: 45000, expense: 32000 },
     { month: 'Fev', income: 52000, expense: 38000 },
@@ -41,58 +41,31 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
     <div className="charts-container">
       {/* Header */}
       <header className="charts-header">
-  <div className="charts-header-inner">
-    <div className="charts-header-left">
-      <div className="charts-logo">
-        <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
-        <span className="charts-title">CAPITAL ONLINE</span>
-      </div>
-    </div>
+        <div className="charts-header-inner">
+          <div className="charts-header-left">
+            <div className="charts-logo">
+              <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+              <span className="charts-title">CAPITAL ONLINE</span>
+            </div>
+          </div>
 
-    <nav className="charts-nav">
-      <button
-        className="nav-button"
-        onClick={() => onNavigate('dashboard')}
-      >
-        Dashboard
-      </button>
-      <button
-        className="nav-button"
-        onClick={() => onNavigate('new-transaction')}
-      >
-        Nova movimentação
-      </button>
-      <button className="nav-button active">
-        Gráficos
-      </button>
-      <button
-        className="nav-button"
-        onClick={() => onNavigate('objetivos')}
-      >
-        Objetivos
-      </button>
-    </nav>
+          <nav className="charts-nav">
+            <button className="nav-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
+            <button className="nav-button" onClick={() => onNavigate('new-transaction')}>Nova movimentação</button>
+            <button className="nav-button active">Gráficos</button>
+            <button className="nav-button" onClick={() => onNavigate('objetivos')}>Objetivos</button>
+          </nav>
 
-    <div className="charts-header-right">
-      <button className="icon-button" title="Calendário">
-        <Calendar size={18} />
-      </button>
-      <button className="icon-button" title="Notificações">
-        <Bell size={18} />
-      </button>
-      <div
-        className="profile-avatar"
-        style={{ cursor: 'pointer' }}
-        onClick={() => onNavigate('profile')}
-      >
-        <User size={18} />
-      </div>
-      <button className="icon-button logout" onClick={onLogout}>
-        <LogOut size={18} />
-      </button>
-    </div>
-  </div>
-</header>
+          <div className="charts-header-right">
+            <button className="icon-button" title="Calendário"><Calendar size={18} /></button>
+            <button className="icon-button" title="Notificações"><Bell size={18} /></button>
+            <div className="profile-avatar" style={{ cursor: 'pointer' }} onClick={() => onNavigate('profile')}>
+              <User size={18} />
+            </div>
+            <button className="icon-button logout" onClick={onLogout}><LogOut size={18} /></button>
+          </div>
+        </div>
+      </header>
 
       <main className="charts-main">
         {/* Page header */}
@@ -104,23 +77,17 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
         {/* Stats cards */}
         <div className="charts-stats-grid">
           <div className="charts-stats-card">
-            <div className="icon-wrapper green">
-              <PiggyBank size={24} />
-            </div>
+            <div className="icon-wrapper green"><PiggyBank size={24} /></div>
             <span>Saldo Atual</span>
             <strong>2.000</strong>
           </div>
           <div className="charts-stats-card">
-            <div className="icon-wrapper green">
-              <TrendingUp size={24} />
-            </div>
+            <div className="icon-wrapper green"><TrendingUp size={24} /></div>
             <span>Entradas</span>
             <strong>10.000</strong>
           </div>
           <div className="charts-stats-card">
-            <div className="icon-wrapper red">
-              <TrendingDown size={24} />
-            </div>
+            <div className="icon-wrapper red"><TrendingDown size={24} /></div>
             <span>Saídas</span>
             <strong>8.000</strong>
           </div>
@@ -154,33 +121,23 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
         <div className="charts-graph-card">
           <h2>Visão Geral Financeira</h2>
           <div className="charts-graph">
-            {/* Y-axis */}
             <div className="charts-y-axis">
-              {[70000,60000,50000,40000,30000,20000,10000,0].map((val) => (
+              {[70000,60000,50000,40000,30000,20000,10000,0].map(val => (
                 <span key={val}>{val}</span>
               ))}
             </div>
-            {/* Bars */}
+
             <div className="charts-bars">
               {chartData.map((data, index) => (
                 <div key={index} className="charts-bar-column">
-                  <div 
-                    className="charts-bar income" 
-                    style={{ height: `${(data.income/maxValue)*100}%` }}
-                    title={`R$ ${(data.income/100).toLocaleString('pt-BR')}`}
-                  ></div>
-                  <div 
-                    className="charts-bar expense" 
-                    style={{ height: `${(data.expense/maxValue)*100}%` }}
-                    title={`R$ ${(data.expense/100).toLocaleString('pt-BR')}`}
-                  ></div>
+                  <div className="charts-bar income" style={{ height: `${(data.income/maxValue)*100}%` }} title={`R$ ${(data.income/100).toLocaleString('pt-BR')}`}></div>
+                  <div className="charts-bar expense" style={{ height: `${(data.expense/maxValue)*100}%` }} title={`R$ ${(data.expense/100).toLocaleString('pt-BR')}`}></div>
                   <span className="month-label">{data.month}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Legend */}
           <div className="charts-legend">
             <div><div className="income-color"></div><span>Entradas</span></div>
             <div><div className="expense-color"></div><span>Saídas</span></div>

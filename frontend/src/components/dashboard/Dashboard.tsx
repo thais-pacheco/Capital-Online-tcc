@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import {
   TrendingUp,
   TrendingDown,
-  DollarSign,
   Search,
   ArrowUpRight,
   ArrowDownRight,
@@ -31,6 +30,8 @@ interface Transaction {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+
+  console.log('🚀 Dashboard montado!');
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,6 +65,7 @@ const Dashboard: React.FC = () => {
 
       try {
         setLoading(true);
+        console.log('🔄 Buscando transações da API...');
         const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
           method: 'GET',
           headers: {
@@ -81,8 +83,15 @@ const Dashboard: React.FC = () => {
         }
 
         const data = await response.json();
+        console.log('📦 Dados brutos recebidos:', data);
 
         const validatedTransactions = data.map((t: any) => {
+          console.log('🔍 Transação recebida da API:', t);
+          console.log('📝 Campo descricao:', t.descricao);
+          console.log('📝 Campo titulo:', t.titulo);
+          console.log('📅 Campo data_movimentacao:', t.data_movimentacao);
+          console.log('📅 Campo data:', t.data);
+          
           const tipo =
             typeof t.tipo === 'string'
               ? t.tipo.toLowerCase().trim() === 'entrada'
@@ -92,15 +101,20 @@ const Dashboard: React.FC = () => {
 
           const valor = Math.abs(Number(t.valor));
 
-          return {
+          const transacao = {
             id: t.id,
-            data: t.data,
-            titulo: t.titulo || 'Sem título',
+            data: t.data_movimentacao || t.data || new Date().toISOString().split('T')[0],
+            titulo: t.descricao || t.titulo || 'Movimentação',
             categoria: Number(t.categoria) || 0,
             valor: valor,
             tipo: tipo,
             observacoes: t.observacoes
           };
+          
+          console.log('✅ Transação processada:', transacao);
+          console.log('---');
+          
+          return transacao;
         });
 
         setTransactions(validatedTransactions);
@@ -219,13 +233,27 @@ const Dashboard: React.FC = () => {
       <div className="main-content">
         <div className="page-header">
           <h1>Dashboard</h1>
+          <button 
+            onClick={() => window.location.reload()} 
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#22c55e',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
+          >
+            🔄 Recarregar Dados
+          </button>
         </div>
 
         <div className="stats-grid">
           <div className="stat-card">
             <div className="stat-header">
               <div className="stat-icon balance">
-                <DollarSign size={20} />
+                <ArrowUpRight size={20} />
               </div>
               <span className="stat-label">Saldo Atual</span>
             </div>
@@ -263,14 +291,75 @@ const Dashboard: React.FC = () => {
           <div className="section-header">
             <h2>Visão Geral Financeira</h2>
           </div>
-          <div className="chart-placeholder">
-            <div className="chart-icon">
-              <BarChart3 size={48} />
-            </div>
-            <div className="chart-text">
-              <p>Gráfico de desempenho financeiro</p>
-              <small>Clique em detalhes para gráficos</small>
-            </div>
+          <div className="chart-container">
+            {transactions.length === 0 ? (
+              <div className="chart-placeholder">
+                <div className="chart-icon">
+                  <BarChart3 size={48} />
+                </div>
+                <div className="chart-text">
+                  <p>Nenhuma transação para exibir</p>
+                  <small>Adicione movimentações para ver o gráfico</small>
+                </div>
+              </div>
+            ) : (
+              <div className="bar-chart">
+                <div className="chart-bars">
+                  {(() => {
+                    const monthlyData = transactions.reduce((acc: any, t) => {
+                      const date = new Date(t.data);
+                      if (isNaN(date.getTime())) return acc;
+                      
+                      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                      const monthLabel = date.toLocaleDateString('pt-BR', { month: 'short' });
+                      
+                      if (!acc[monthKey]) {
+                        acc[monthKey] = { month: monthLabel, income: 0, expense: 0 };
+                      }
+                      
+                      if (t.tipo === 'entrada') {
+                        acc[monthKey].income += t.valor;
+                      } else {
+                        acc[monthKey].expense += t.valor;
+                      }
+                      
+                      return acc;
+                    }, {});
+
+                    const chartData = Object.values(monthlyData).slice(-6);
+                    const maxValue = Math.max(...chartData.map((d: any) => Math.max(d.income, d.expense)));
+
+                    return chartData.map((data: any, index: number) => (
+                      <div key={index} className="bar-group">
+                        <div className="bars">
+                          <div 
+                            className="bar income-bar" 
+                            style={{ height: `${maxValue > 0 ? (data.income / maxValue) * 100 : 0}%` }}
+                            title={`Entradas: R$ ${(data.income / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                          ></div>
+                          <div 
+                            className="bar expense-bar" 
+                            style={{ height: `${maxValue > 0 ? (data.expense / maxValue) * 100 : 0}%` }}
+                            title={`Saídas: R$ ${(data.expense / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`}
+                          ></div>
+                        </div>
+                        <span className="bar-label">{data.month}</span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+                <div className="chart-legend">
+                  <div className="legend-item">
+                    <span className="legend-color income"></span>
+                    <span>Entradas</span>
+                  </div>
+                  <div className="legend-item">
+                    <span className="legend-color expense"></span>
+                    <span>Saídas</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -334,7 +423,7 @@ const Dashboard: React.FC = () => {
                 ) : (
                   filteredTransactions.map((transaction) => (
                     <tr key={transaction.id}>
-                      <td>{new Date(transaction.data).toLocaleDateString('pt-BR')}</td>
+                      <td>{transaction.data && !isNaN(new Date(transaction.data).getTime()) ? new Date(transaction.data).toLocaleDateString('pt-BR') : 'Data inválida'}</td>
                       <td>
                         <div className="transaction-description">
                           <div className={`transaction-icon ${transaction.tipo === 'entrada' ? 'income' : 'expense'}`}>
@@ -344,7 +433,7 @@ const Dashboard: React.FC = () => {
                               <TrendingDown size={16} />
                             )}
                           </div>
-                          <span>{transaction.titulo}</span>
+                          <span>{transaction.titulo || 'Sem título'}</span>
                         </div>
                       </td>
                       <td>{transaction.observacoes || '--'}</td>
