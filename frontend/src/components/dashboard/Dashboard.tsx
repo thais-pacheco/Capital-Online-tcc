@@ -150,17 +150,6 @@ const Dashboard: React.FC = () => {
     navigate('/');
   };
 
-  if (loading) {
-    return (
-      <div className="dashboard">
-        <div className="dashboard-loading">
-          <div className="loading-spinner"></div>
-          <p>Carregando transações...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="dashboard">

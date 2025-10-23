@@ -1,1 +1,1 @@
-export type Page = 'dashboard' | 'new-transaction' | 'charts' | 'goals';
+export type Page = 'dashboard' | 'new-transaction' | 'charts' | 'profile' |'objetivos'  | 'nova-transacao';

@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'usuarios',
     'transacoes',
     "objetivos",
+    'graficos',
 ]
 
 AUTH_USER_MODEL = 'usuarios.Usuario'

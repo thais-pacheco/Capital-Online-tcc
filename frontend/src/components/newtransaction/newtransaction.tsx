@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PiggyBank, Calendar, Bell, LogOut, User } from 'lucide-react';
 import './newtransaction.css';
+import type { Page } from '../../types';
 
 interface FormData {
   type: 'income' | 'expense';
@@ -18,7 +18,13 @@ interface Categoria {
   tipo: 'entrada' | 'saida';
 }
 
-export default function NewTransaction() {
+// === Props para NewTransaction ===
+interface NewTransactionProps {
+  onNavigate: (page: Page) => void;
+  onLogout: () => void;
+}
+
+const NewTransaction: React.FC<NewTransactionProps> = ({ onNavigate, onLogout }) => {
   const [formData, setFormData] = useState<FormData>({
     type: 'income',
     description: '',
@@ -31,7 +37,6 @@ export default function NewTransaction() {
   const [categories, setCategories] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();
 
   const token = localStorage.getItem('token')?.replace(/"/g, '');
 
@@ -39,9 +44,9 @@ export default function NewTransaction() {
   useEffect(() => {
     if (!token) {
       setErrorMessage('Usuário não autenticado.');
-      navigate('/login');
+      onNavigate('dashboard'); // ou 'login', se estiver incluído no tipo Page
     }
-  }, [token, navigate]);
+  }, [token, onNavigate]);
 
   // 📦 Carrega categorias filtradas por tipo (entrada/saída)
   useEffect(() => {
@@ -51,14 +56,14 @@ export default function NewTransaction() {
       try {
         const res = await fetch('http://127.0.0.1:8000/api/categorias/', {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
 
         if (res.status === 401) {
           localStorage.removeItem('token');
-          navigate('/login');
+          onNavigate('dashboard'); // ou 'login'
           return;
         }
 
@@ -79,7 +84,7 @@ export default function NewTransaction() {
     };
 
     fetchCategories();
-  }, [formData.type, token, navigate]);
+  }, [formData.type, token, onNavigate]);
 
   // ✏️ Atualiza campos do formulário
   const handleChange = (
@@ -115,14 +120,14 @@ export default function NewTransaction() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        navigate('/login');
+        onNavigate('dashboard'); // ou 'login'
         return;
       }
 
@@ -130,7 +135,7 @@ export default function NewTransaction() {
         const error = await response.json();
         setErrorMessage('Erro ao salvar: ' + JSON.stringify(error));
       } else {
-        navigate('/dashboard');
+        onNavigate('dashboard');
       }
     } catch (err) {
       console.error(err);
@@ -144,7 +149,7 @@ export default function NewTransaction() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
-    navigate('/');
+    onLogout();
   };
 
   return (
@@ -159,14 +164,14 @@ export default function NewTransaction() {
           </div>
 
           <nav className="nav">
-            <button className="nav-button" onClick={() => navigate('/dashboard')}>
+            <button className="nav-button" onClick={() => onNavigate('dashboard')}>
               Dashboard
             </button>
             <button className="nav-button active">Nova movimentação</button>
-            <button className="nav-button" onClick={() => navigate('/graficos')}>
+            <button className="nav-button" onClick={() => onNavigate('charts')}>
               Gráficos
             </button>
-            <button className="nav-button" onClick={() => navigate('/objetivos')}>
+            <button className="nav-button" onClick={() => onNavigate('objetivos')}>
               Objetivos
             </button>
           </nav>
@@ -190,7 +195,9 @@ export default function NewTransaction() {
 
       <main className="newtransaction-content">
         <h1 className="newtransaction-title">Nova movimentação</h1>
-        <p className="newtransaction-subtitle">Registre uma nova entrada ou saída financeira</p>
+        <p className="newtransaction-subtitle">
+          Registre uma nova entrada ou saída financeira
+        </p>
 
         {errorMessage && (
           <div className="error-card" style={{ color: 'red', marginBottom: '1rem' }}>
@@ -310,4 +317,6 @@ export default function NewTransaction() {
       </main>
     </div>
   );
-}
+};
+
+export default NewTransaction;

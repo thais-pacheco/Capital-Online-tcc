@@ -1,19 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  PiggyBank,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  Edit,
-  Trash2,
-  Plus,
-  Calendar,
-  Bell,
-  LogOut,
-  User
-} from 'lucide-react';
+import { PiggyBank, Calendar, Bell, LogOut, User, Clock, AlertCircle, CheckCircle, Edit, Trash2, Plus } from 'lucide-react';
 import './objectives.css';
+import type { Page } from '../../types';
+
+
 
 interface Goal {
   id: number;
@@ -26,8 +16,13 @@ interface Goal {
   categoria?: string;
   status: 'active' | 'completed' | 'overdue';
 }
+interface GoalsProps {
+  onNavigate: (page: Page) => void;
+  onLogout: () => void;
+}
 
-export default function Goals() {
+
+const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
@@ -41,18 +36,16 @@ export default function Goals() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const navigate = useNavigate();
   const token = localStorage.getItem('token')?.replace(/"/g, '');
 
-  // 🔐 Verifica autenticação
+
   useEffect(() => {
     if (!token) {
       setErrorMessage('Usuário não autenticado.');
-      navigate('/login');
+      onNavigate('dashboard');
     }
-  }, [token, navigate]);
+  }, [token, onNavigate]);
 
-  // Calcula o status do objetivo
   const calculateStatus = (goal: Goal) => {
     const hoje = new Date();
     const prazo = new Date(goal.data_limite);
@@ -61,10 +54,9 @@ export default function Goals() {
     return 'active';
   };
 
-  // 📦 Busca objetivos do backend
+  // Busca objetivos
   const fetchGoals = async () => {
     if (!token) return;
-
     setLoading(true);
     try {
       const response = await fetch('http://127.0.0.1:8000/api/objetivos/', {
@@ -76,7 +68,7 @@ export default function Goals() {
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        navigate('/login');
+        onNavigate('dashboard');
         return;
       }
 
@@ -101,15 +93,12 @@ export default function Goals() {
     fetchGoals();
   }, [token]);
 
-  // ✏️ Atualiza campos do formulário
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  // 💾 Salva ou atualiza objetivo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!token) {
       setErrorMessage('Usuário não autenticado.');
       return;
@@ -153,14 +142,13 @@ export default function Goals() {
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        navigate('/login');
+        onNavigate('dashboard');
         return;
       }
 
       if (!response.ok) throw new Error('Erro ao salvar objetivo');
 
       await fetchGoals();
-
       setShowCreateForm(false);
       setEditingGoal(null);
       setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' });
@@ -170,26 +158,19 @@ export default function Goals() {
     }
   };
 
-  // 🗑️ Delete objetivo
   const handleDelete = async (id: number) => {
     if (!window.confirm('Tem certeza que deseja deletar este objetivo?')) return;
-
-    if (!token) {
-      setErrorMessage('Usuário não autenticado.');
-      return;
-    }
+    if (!token) return;
 
     try {
       const response = await fetch(`http://127.0.0.1:8000/api/objetivos/${id}/`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (response.status === 401) {
         localStorage.removeItem('token');
-        navigate('/login');
+        onNavigate('dashboard');
         return;
       }
 
@@ -201,7 +182,6 @@ export default function Goals() {
     }
   };
 
-  // ✏️ Editar objetivo
   const handleEdit = (goal: Goal) => {
     setEditingGoal(goal);
     setFormData({
@@ -214,23 +194,17 @@ export default function Goals() {
     setShowCreateForm(true);
   };
 
-  // 📊 Calcula progresso
-  const calculateProgress = (goal: Goal) => {
-    if (goal.valor === 0) return 0;
-    return Math.min(100, (goal.valor_atual / goal.valor) * 100);
-  };
+  const calculateProgress = (goal: Goal) =>
+    goal.valor === 0 ? 0 : Math.min(100, (goal.valor_atual / goal.valor) * 100);
 
-  // 💰 Formata moeda
   const formatCurrency = (value: number | undefined) =>
     typeof value === 'number'
       ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
       : 'R$ 0,00';
 
-  // 🚪 Logout
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    navigate('/');
+    onLogout();
   };
 
   return (
@@ -242,34 +216,22 @@ export default function Goals() {
             <span className="logo-text">CAPITAL ONLINE</span>
           </div>
           <nav className="goals-nav">
-            <button onClick={() => navigate('/dashboard')}>Dashboard</button>
-            <button onClick={() => navigate('/nova-transacao')}>Nova movimentação</button>
-            <button onClick={() => navigate('/graficos')}>Gráficos</button>
+            <button onClick={() => onNavigate('dashboard')}>Dashboard</button>
+            <button onClick={() => onNavigate('nova-transacao')}>Nova movimentação</button>
+            <button onClick={() => onNavigate('charts')}>Gráficos</button>
             <button className="active">Objetivos</button>
           </nav>
           <div className="goals-header-actions">
-            <button className="icon-button" title="Calendário">
-              <Calendar size={18} />
-            </button>
-            <button className="icon-button" title="Notificações">
-              <Bell size={18} />
-            </button>
-            <div className="profile-avatar">
-              <User size={18} />
-            </div>
-            <button className="icon-button logout" title="Sair" onClick={handleLogout}>
-              <LogOut size={18} />
-            </button>
+            <button className="icon-button" title="Calendário"><Calendar size={18} /></button>
+            <button className="icon-button" title="Notificações"><Bell size={18} /></button>
+            <div className="profile-avatar"><User size={18} /></div>
+            <button className="icon-button logout" title="Sair" onClick={handleLogout}><LogOut size={18} /></button>
           </div>
         </div>
       </header>
 
       <main className="goals-content">
-        {errorMessage && (
-          <div className="error-card" style={{ color: 'red', marginBottom: '1rem' }}>
-            {errorMessage}
-          </div>
-        )}
+        {errorMessage && <div className="error-card">{errorMessage}</div>}
 
         <section className="goals-header-section">
           <h1>Meus Objetivos</h1>
@@ -362,22 +324,15 @@ export default function Goals() {
                       {goal.status === 'completed' ? 'CONCLUÍDO' : goal.status === 'overdue' ? 'ATRASADO' : 'ATIVO'}
                     </div>
                     <div>
-                      <button onClick={() => handleEdit(goal)}>
-                        <Edit size={18} />
-                      </button>
-                      <button onClick={() => handleDelete(goal.id)}>
-                        <Trash2 size={18} />
-                      </button>
+                      <button onClick={() => handleEdit(goal)}><Edit size={18} /></button>
+                      <button onClick={() => handleDelete(goal.id)}><Trash2 size={18} /></button>
                     </div>
                   </header>
                   <h3>{goal.titulo}</h3>
                   <p>{goal.descricao}</p>
                   <div className="goal-progress">
                     <div className="progress-bar-bg">
-                      <div
-                        className={`progress-bar-fill ${statusClass}`}
-                        style={{ width: `${progressPercent}%` }}
-                      />
+                      <div className={`progress-bar-fill ${statusClass}`} style={{ width: `${progressPercent}%` }} />
                     </div>
                     <div>
                       <span>{formatCurrency(goal.valor_atual)}</span> / <span>{formatCurrency(goal.valor)}</span>
@@ -391,4 +346,6 @@ export default function Goals() {
       </main>
     </div>
   );
-}
+};
+
+export default Goals;
