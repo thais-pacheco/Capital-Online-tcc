@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   PiggyBank, 
   Calendar,
@@ -8,13 +8,18 @@ import {
   Bell,
   User
 } from 'lucide-react';
+import Chart from 'chart.js/auto';
 import type { Page } from '../../types';
 import './charts.css';
 
 interface Transaction {
-  month: string;
-  income: number;
-  expense: number;
+  id: number;
+  data: string;
+  titulo: string;
+  categoria: number;
+  valor: number;
+  tipo: 'entrada' | 'saida';
+  observacoes?: string;
 }
 
 interface ChartsProps {
@@ -23,19 +28,200 @@ interface ChartsProps {
 }
 
 const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<string>('month');
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Dados de exemplo, substitua pelo fetch das últimas transações
-  const chartData: Transaction[] = [
-    { month: 'Jan', income: 45000, expense: 32000 },
-    { month: 'Fev', income: 52000, expense: 38000 },
-    { month: 'Mar', income: 48000, expense: 35000 },
-    { month: 'Abr', income: 61000, expense: 42000 },
-    { month: 'Mai', income: 55000, expense: 39000 },
-    { month: 'Jun', income: 67000, expense: 45000 },
-  ];
+  const chartRef = useRef<HTMLCanvasElement>(null);
+  const chartInstance = useRef<any>(null);
 
-  const maxValue = Math.max(...chartData.map(d => Math.max(d.income, d.expense)));
+  // Buscar transações
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const token = localStorage.getItem('token')?.replace(/"/g, '');
+
+      if (!token) {
+        setError('Token não encontrado. Faça login novamente.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.status === 401) throw new Error('Não autorizado. Faça login novamente.');
+        if (!response.ok) throw new Error(`Erro ao carregar: ${response.status}`);
+
+        const data = await response.json();
+
+        const validatedTransactions = data.map((t: any) => {
+          const tipo =
+            typeof t.tipo === 'string'
+              ? t.tipo.toLowerCase().trim() === 'entrada'
+                ? 'entrada'
+                : 'saida'
+              : 'saida';
+
+          const valor = Math.abs(Number(t.valor));
+
+          return {
+            id: t.id,
+            data: t.data_movimentacao || t.data || new Date().toISOString().split('T')[0],
+            titulo: t.descricao || t.titulo || 'Movimentação',
+            categoria: Number(t.categoria) || 0,
+            valor: valor,
+            tipo: tipo,
+            observacoes: t.observacoes
+          };
+        });
+
+        setTransactions(validatedTransactions);
+        setError('');
+      } catch (err: any) {
+        setError(err.message || 'Erro ao carregar transações.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
+
+  // Filtrar transações
+  const filteredTransactions = transactions.filter(transaction => {
+    if (!transaction) return false;
+
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch =
+      (transaction.titulo?.toLowerCase() || '').includes(searchLower) ||
+      (transaction.categoria?.toString()?.toLowerCase() || '').includes(searchLower);
+
+    const matchesType =
+      selectedType === 'all' ||
+      (selectedType === 'income' ? transaction.tipo === 'entrada' : transaction.tipo === 'saida');
+
+    const matchesCategory =
+      selectedCategory === 'all' ||
+      transaction.categoria?.toString() === selectedCategory;
+
+    return matchesSearch && matchesType && matchesCategory;
+  });
+
+  // Calcular totais
+  const totalIncome = filteredTransactions.filter(t => t.tipo === 'entrada').reduce((sum, t) => sum + t.valor, 0);
+  const totalExpenses = filteredTransactions.filter(t => t.tipo === 'saida').reduce((sum, t) => sum + t.valor, 0);
+  const totalBalance = totalIncome - totalExpenses;
+
+  // Gerar gráfico
+  useEffect(() => {
+    if (!filteredTransactions.length) return;
+
+    const monthlyData = filteredTransactions.reduce((acc: any, t) => {
+      const date = new Date(t.data);
+      if (isNaN(date.getTime())) return acc;
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (!acc[monthKey]) acc[monthKey] = { month: monthKey, income: 0, expense: 0 };
+      if (t.tipo === 'entrada') acc[monthKey].income += t.valor;
+      else acc[monthKey].expense += t.valor;
+      return acc;
+    }, {});
+
+    const sortedMonths = Object.keys(monthlyData).sort();
+    const last6Months = sortedMonths.slice(-6);
+    const chartData = last6Months.map(month => monthlyData[month]);
+
+    const labels = chartData.map((d: any) => {
+      const [, month] = d.month.split('-');
+      const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+      return monthNames[parseInt(month) - 1];
+    });
+    const incomeData = chartData.map((d: any) => d.income / 100);
+    const expenseData = chartData.map((d: any) => d.expense / 100);
+
+    if (chartInstance.current) chartInstance.current.destroy();
+    if (chartRef.current) {
+      chartInstance.current = new Chart(chartRef.current, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            { 
+              label: 'Entradas', 
+              data: incomeData, 
+              backgroundColor: '#22c55e',
+              borderRadius: 4,
+              barPercentage: 0.5,
+              categoryPercentage: 0.6
+            },
+            { 
+              label: 'Saídas', 
+              data: expenseData, 
+              backgroundColor: '#ef4444',
+              borderRadius: 4,
+              barPercentage: 0.5,
+              categoryPercentage: 0.6
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { 
+              display: true,
+              position: 'bottom',
+              labels: {
+                boxWidth: 12,
+                padding: 15,
+                font: { size: 12 }
+              }
+            } 
+          },
+          scales: { 
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'R$ ' + value.toLocaleString('pt-BR');
+                }
+              }
+            }
+          }
+        },
+      });
+    }
+  }, [filteredTransactions]);
+
+  if (loading) {
+    return (
+      <div className="charts-container">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="charts-container">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column' }}>
+          <p style={{ color: '#ef4444', marginBottom: '1rem' }}>{error}</p>
+          <button onClick={() => window.location.reload()}>Recarregar</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="charts-container">
@@ -79,17 +265,17 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
           <div className="charts-stats-card">
             <div className="icon-wrapper green"><PiggyBank size={24} /></div>
             <span>Saldo Atual</span>
-            <strong>2.000</strong>
+            <strong>R$ {(totalBalance / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
           </div>
           <div className="charts-stats-card">
             <div className="icon-wrapper green"><TrendingUp size={24} /></div>
             <span>Entradas</span>
-            <strong>10.000</strong>
+            <strong>R$ {(totalIncome / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
           </div>
           <div className="charts-stats-card">
             <div className="icon-wrapper red"><TrendingDown size={24} /></div>
             <span>Saídas</span>
-            <strong>8.000</strong>
+            <strong>R$ {(totalExpenses / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
           </div>
         </div>
 
@@ -97,11 +283,16 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
         <div className="charts-filters">
           <div className="filter-item">
             <label>Buscar:</label>
-            <input type="text" placeholder="Buscar por descrição ou categoria..." />
+            <input 
+              type="text" 
+              placeholder="Buscar por descrição ou categoria..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
           <div className="filter-item">
             <label>Tipo:</label>
-            <select>
+            <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
               <option value="all">Todos</option>
               <option value="income">Entradas</option>
               <option value="expense">Saídas</option>
@@ -109,10 +300,11 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
           </div>
           <div className="filter-item">
             <label>Categoria:</label>
-            <select>
+            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
               <option value="all">Todas</option>
-              <option value="vendas">Vendas</option>
-              <option value="utilidades">Utilidades</option>
+              {[...new Set(transactions.map(t => t.categoria?.toString()))].map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -120,27 +312,8 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
         {/* Chart */}
         <div className="charts-graph-card">
           <h2>Visão Geral Financeira</h2>
-          <div className="charts-graph">
-            <div className="charts-y-axis">
-              {[70000,60000,50000,40000,30000,20000,10000,0].map(val => (
-                <span key={val}>{val}</span>
-              ))}
-            </div>
-
-            <div className="charts-bars">
-              {chartData.map((data, index) => (
-                <div key={index} className="charts-bar-column">
-                  <div className="charts-bar income" style={{ height: `${(data.income/maxValue)*100}%` }} title={`R$ ${(data.income/100).toLocaleString('pt-BR')}`}></div>
-                  <div className="charts-bar expense" style={{ height: `${(data.expense/maxValue)*100}%` }} title={`R$ ${(data.expense/100).toLocaleString('pt-BR')}`}></div>
-                  <span className="month-label">{data.month}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="charts-legend">
-            <div><div className="income-color"></div><span>Entradas</span></div>
-            <div><div className="expense-color"></div><span>Saídas</span></div>
+          <div style={{ height: '400px', padding: '20px' }}>
+            <canvas ref={chartRef}></canvas>
           </div>
         </div>
       </main>
