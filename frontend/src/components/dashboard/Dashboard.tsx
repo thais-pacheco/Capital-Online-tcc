@@ -5,7 +5,6 @@ import {
   Search,
   ArrowUpRight,
   ArrowDownRight,
-  BarChart3,
   ChevronDown,
   PiggyBank,
   Calendar,
