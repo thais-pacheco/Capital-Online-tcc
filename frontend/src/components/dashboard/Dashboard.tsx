@@ -11,6 +11,7 @@ import {
   Bell,
   LogOut,
   User
+
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CalendarPopup from '../calendario/CalendarPopup';
@@ -142,6 +143,7 @@ const Dashboard: React.FC = () => {
 
   // --- LOGOUT ---
   const handleLogout = () => {
+
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     navigate('/');
@@ -213,6 +215,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="dashboard">
+
       <header className="header">
         <div className="header-container">
           <div className="header-left">
@@ -236,6 +239,7 @@ const Dashboard: React.FC = () => {
             </button>
             <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
               <User size={18} />
+
             </div>
             <button className="icon-button logout" onClick={handleLogout}>
               <LogOut size={18} />
@@ -244,6 +248,7 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
+      {/* Conteúdo principal */}
       <div className="main-content">
         <div className="page-header">
           <h1>Dashboard</h1>

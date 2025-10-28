@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { User, ArrowLeft, PiggyBank, Calendar, Bell, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CalendarPopup from '../calendario/CalendarPopup';
+import NotificationsPopup from '../notificacoes/NotificationsPopup';
 import './Profile.css';
-
-// Componente de Perfil - sem dependências de Chart.js
 
 interface ProfileProps {
   onLogout?: () => void;
@@ -14,15 +14,18 @@ export default function Profile({ onLogout }: ProfileProps) {
 
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    phone: '',
-    birthdate: ''
+    email: ''
   });
 
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(true);
   const [memberSince, setMemberSince] = useState('');
+  
+  // States para os popups
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   // 🔹 Buscar dados do usuário do localStorage
   useEffect(() => {
@@ -43,10 +46,11 @@ export default function Profile({ onLogout }: ProfileProps) {
           const user = JSON.parse(storedUser);
           setFormData({
             name: user.nome || user.username || user.name || '',
-            email: user.email || '',
-            phone: user.telefone || user.phone || '',
-            birthdate: user.data_nascimento || user.birthdate || '',
+            email: user.email || ''
           });
+
+          // Definir email para o CalendarPopup
+          setUserEmail(user.email || '');
 
           // Definir data de membro se existir
           if (user.date_joined || user.created_at) {
@@ -97,8 +101,6 @@ export default function Profile({ onLogout }: ProfileProps) {
       // Atualizar dados no localStorage
       userToSave.nome = formData.name;
       userToSave.email = formData.email;
-      userToSave.telefone = formData.phone;
-      userToSave.data_nascimento = formData.birthdate;
       
       localStorage.setItem('usuario', JSON.stringify(userToSave));
       
@@ -148,10 +150,18 @@ export default function Profile({ onLogout }: ProfileProps) {
           </div>
 
           <div className="profile-header-right">
-            <button className="profile-icon-button"><Calendar size={20} /></button>
-            <button className="profile-icon-button"><Bell size={20} /></button>
-            <div className="profile-avatar" onClick={() => navigate('/profile')}><User size={20} /></div>
-            <button className="profile-icon-button logout" onClick={handleLogoutClick}><LogOut size={20} /></button>
+            <button className="profile-icon-button" onClick={() => setIsCalendarOpen(true)}>
+              <Calendar size={20} />
+            </button>
+            <button className="profile-icon-button" onClick={() => setIsNotificationsOpen(true)}>
+              <Bell size={20} />
+            </button>
+            <div className="profile-avatar" onClick={() => navigate('/profile')}>
+              <User size={20} />
+            </div>
+            <button className="profile-icon-button logout" onClick={handleLogoutClick}>
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </header>
@@ -240,27 +250,6 @@ export default function Profile({ onLogout }: ProfileProps) {
                       required
                     />
                   </div>
-                  <div>
-                    <label className="profile-form-label">Telefone:</label>
-                    <input 
-                      type="tel" 
-                      name="phone" 
-                      value={formData.phone} 
-                      onChange={handleInputChange} 
-                      className="profile-form-input"
-                      placeholder="(00) 00000-0000"
-                    />
-                  </div>
-                  <div>
-                    <label className="profile-form-label">Data de nascimento:</label>
-                    <input 
-                      type="date" 
-                      name="birthdate" 
-                      value={formData.birthdate} 
-                      onChange={handleInputChange} 
-                      className="profile-form-input"
-                    />
-                  </div>
                   <div className="profile-form-actions">
                     <button 
                       type="submit" 
@@ -277,6 +266,17 @@ export default function Profile({ onLogout }: ProfileProps) {
           </div>
         </div>
       </div>
+
+      {/* Popups */}
+      <CalendarPopup 
+        isOpen={isCalendarOpen} 
+        onClose={() => setIsCalendarOpen(false)} 
+        userEmail={userEmail} 
+      />
+      <NotificationsPopup 
+        isOpen={isNotificationsOpen} 
+        onClose={() => setIsNotificationsOpen(false)} 
+      />
     </div>
   );
 }
