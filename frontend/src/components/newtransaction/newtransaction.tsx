@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { PiggyBank, Calendar, Bell, LogOut, User, CheckCircle, XCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import CalendarPopup from '../calendario/CalendarPopup';
+import CalendarInternal from '../calendario/CalendarPopup';
 import NotificationsPopup from '../notificacoes/NotificationsPopup';
+import './newtransaction.css';
 
 interface FormData {
   type: 'income' | 'expense';
@@ -13,6 +14,8 @@ interface FormData {
   observations: string;
   paymentType: 'avista' | 'parcelado';
   installments: string;
+  addReminders: boolean;
+  reminderDay: string;
 }
 
 interface Categoria {
@@ -39,6 +42,8 @@ const NewTransaction: React.FC = () => {
     observations: '',
     paymentType: 'avista',
     installments: '',
+    addReminders: false,
+    reminderDay: '5',
   });
 
   const [categories, setCategories] = useState<Categoria[]>([]);
@@ -111,8 +116,191 @@ const NewTransaction: React.FC = () => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const createReminders = async (movimentacaoId: number) => {
+    const token = localStorage.getItem('token')?.replace(/"/g, '');
+    if (!token) {
+      console.error('❌ Token não encontrado');
+      showToast('error', 'Usuário não autenticado.');
+      return false;
+    }
+
+    if (!movimentacaoId) {
+      console.error('❌ ID da movimentação inválido:', movimentacaoId);
+      showToast('error', 'ID da movimentação não encontrado.');
+      return false;
+    }
+
+    // Pegar o ID do usuário
+    const storedUser = localStorage.getItem('usuario');
+    let usuarioId = null;
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        usuarioId = user.id;
+      } catch (e) {
+        console.error('Erro ao parse do usuário:', e);
+      }
+    }
+
+    if (!usuarioId) {
+      console.error('❌ ID do usuário não encontrado');
+      showToast('error', 'ID do usuário não encontrado.');
+      return false;
+    }
+
+    console.log('🔄 Iniciando criação de lembretes...');
+    console.log('📊 Dados do formulário:', {
+      installments: formData.installments,
+      reminderDay: formData.reminderDay,
+      date: formData.date,
+      amount: formData.amount,
+      description: formData.description,
+      movimentacaoId: movimentacaoId,
+      usuarioId: usuarioId,
+      tipo: formData.type
+    });
+
+    try {
+      const installments = parseInt(formData.installments);
+      const reminderDay = parseInt(formData.reminderDay);
+      const startDate = new Date(formData.date);
+      const amount = parseFloat(formData.amount);
+      const installmentValue = amount / installments;
+
+      console.log(`📅 Criando ${installments} lembretes com vencimento no dia ${reminderDay} de cada mês`);
+      console.log(`💰 Valor por parcela: R$ ${installmentValue.toFixed(2)}`);
+
+      const reminders = [];
+      const errors = [];
+      
+      for (let i = 1; i <= installments; i++) {
+        try {
+          // Calcular a data de vencimento baseada no dia escolhido
+          const dueDate = new Date(startDate);
+          
+          // Avançar para o mês da parcela (i=1 é primeiro mês, i=2 é segundo mês, etc)
+          dueDate.setMonth(startDate.getMonth() + (i - 1));
+          
+          // Definir o dia escolhido pelo usuário
+          dueDate.setDate(reminderDay);
+          
+          // Ajustar se o dia não existe no mês (ex: 31 em fevereiro)
+          if (dueDate.getDate() !== reminderDay) {
+            // Voltar para o último dia válido do mês
+            dueDate.setDate(0);
+          }
+          
+          // Se a data calculada for no passado, avançar para o próximo mês
+          const hoje = new Date();
+          hoje.setHours(0, 0, 0, 0);
+          if (dueDate < hoje) {
+            dueDate.setMonth(dueDate.getMonth() + 1);
+            dueDate.setDate(reminderDay);
+            if (dueDate.getDate() !== reminderDay) {
+              dueDate.setDate(0);
+            }
+          }
+
+          const reminderPayload = {
+            movimentacao: movimentacaoId,
+            usuario: usuarioId,  // 🆕 ADICIONADO
+            numero_parcela: i,
+            total_parcelas: installments,
+            valor_parcela: parseFloat(installmentValue.toFixed(2)),
+            data_vencimento: dueDate.toISOString().split('T')[0],
+            titulo: `Parcela ${i}/${installments}: ${formData.description}`,
+            descricao: `Valor da parcela: R$ ${installmentValue.toFixed(2)}${formData.observations ? '\n' + formData.observations : ''}`,
+            pago: false,
+            notificado: false,
+          };
+
+          console.log(`\n📤 Enviando lembrete ${i}/${installments}:`);
+          console.log('Payload:', JSON.stringify(reminderPayload, null, 2));
+
+          const response = await fetch('http://127.0.0.1:8000/api/lembretes/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(reminderPayload),
+          });
+
+          const responseText = await response.text();
+          console.log(`📥 Status ${i}: ${response.status}`);
+          console.log(`📥 Resposta completa ${i}:`, responseText);
+
+          if (!response.ok) {
+            let errorData;
+            try {
+              errorData = JSON.parse(responseText);
+              console.error(`❌ Erro ao criar lembrete ${i}:`, errorData);
+              console.error('Detalhes do erro:', JSON.stringify(errorData, null, 2));
+            } catch (parseError) {
+              errorData = { detail: responseText };
+              console.error(`❌ Erro ao criar lembrete ${i} (texto):`, responseText);
+            }
+            
+            // Tentar extrair mensagem de erro mais clara
+            let errorMsg = '';
+            if (typeof errorData === 'object') {
+              if (errorData.detail) {
+                errorMsg = errorData.detail;
+              } else if (errorData.error) {
+                errorMsg = errorData.error;
+              } else {
+                // Tentar pegar o primeiro campo com erro
+                const firstKey = Object.keys(errorData)[0];
+                if (firstKey && Array.isArray(errorData[firstKey])) {
+                  errorMsg = `${firstKey}: ${errorData[firstKey][0]}`;
+                } else if (firstKey) {
+                  errorMsg = `${firstKey}: ${errorData[firstKey]}`;
+                } else {
+                  errorMsg = JSON.stringify(errorData);
+                }
+              }
+            } else {
+              errorMsg = String(errorData);
+            }
+            
+            console.error(`❌ Mensagem de erro extraída:`, errorMsg);
+            errors.push(`Parcela ${i}: ${errorMsg}`);
+            continue; // Continua tentando criar os outros lembretes
+          }
+
+          const result = JSON.parse(responseText);
+          console.log(`✅ Lembrete ${i} criado com sucesso! ID: ${result.id}`);
+          reminders.push(result);
+        } catch (innerError: any) {
+          console.error(`❌ Erro na parcela ${i}:`, innerError);
+          errors.push(`Parcela ${i}: ${innerError.message}`);
+        }
+      }
+
+      if (errors.length > 0) {
+        console.error('❌ Erros encontrados:', errors);
+        showToast('error', `Alguns lembretes falharam: ${errors.join(', ')}`);
+        return false;
+      }
+
+      console.log(`✅ Todos os ${reminders.length} lembretes criados com sucesso!`);
+      return true;
+    } catch (error: any) {
+      console.error('❌ Erro geral ao criar lembretes:', error);
+      console.error('Stack:', error.stack);
+      showToast('error', `Erro ao criar lembretes: ${error.message}`);
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -133,6 +321,13 @@ const NewTransaction: React.FC = () => {
         setLoading(false);
         return;
       }
+
+      const reminderDay = parseInt(formData.reminderDay);
+      if (formData.addReminders && (reminderDay < 1 || reminderDay > 28)) {
+        showToast('error', 'O dia do lembrete deve estar entre 1 e 28.');
+        setLoading(false);
+        return;
+      }
     }
 
     const payload = {
@@ -146,7 +341,7 @@ const NewTransaction: React.FC = () => {
       quantidade_parcelas: formData.paymentType === 'parcelado' ? parseInt(formData.installments) : null,
     };
 
-    console.log('📤 Enviando payload:', payload);
+    console.log('📤 Enviando movimentação:', payload);
 
     try {
       const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
@@ -161,6 +356,7 @@ const NewTransaction: React.FC = () => {
       if (response.status === 401) {
         localStorage.removeItem('token');
         showToast('error', 'Sessão expirada. Faça login novamente.');
+        setLoading(false);
         return;
       }
 
@@ -178,9 +374,22 @@ const NewTransaction: React.FC = () => {
         }
         
         showToast('error', errorMsg);
+        setLoading(false);
       } else {
         const result = await response.json();
         console.log('✅ Transação criada:', result);
+        
+        // Criar lembretes se necessário
+        if (formData.paymentType === 'parcelado' && formData.addReminders) {
+          const remindersSuccess = await createReminders(result.id);
+          if (remindersSuccess) {
+            showToast('success', `🎉 Movimentação salva! ${formData.installments} lembretes criados no calendário.`);
+          } else {
+            showToast('success', '✅ Movimentação salva! (Erro ao criar alguns lembretes)');
+          }
+        } else {
+          showToast('success', '✅ Movimentação salva com sucesso!');
+        }
         
         setFormData({
           type: 'income',
@@ -191,13 +400,13 @@ const NewTransaction: React.FC = () => {
           observations: '',
           paymentType: 'avista',
           installments: '',
+          addReminders: false,
+          reminderDay: '5',
         });
-        
-        showToast('success', '✅ Movimentação salva com sucesso!');
         
         setTimeout(() => {
           navigate('/dashboard');
-        }, 1500);
+        }, 2000);
       }
     } catch (err) {
       console.error('❌ Erro de conexão:', err);
@@ -223,6 +432,8 @@ const NewTransaction: React.FC = () => {
       observations: '',
       paymentType: 'avista',
       installments: '',
+      addReminders: false,
+      reminderDay: '5',
     });
   };
 
@@ -374,6 +585,7 @@ const NewTransaction: React.FC = () => {
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
           Nova movimentação
         </h1>
+        
         <p style={{ color: '#64748b', marginBottom: '2rem' }}>
           Registre uma nova entrada ou saída financeira
         </p>
@@ -545,32 +757,101 @@ const NewTransaction: React.FC = () => {
               </select>
             </div>
 
-            {/* Número de parcelas */}
+            {/* Número de parcelas e opções de lembrete */}
             {formData.paymentType === 'parcelado' && (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Número de parcelas *
-                </label>
-                <input
-                  name="installments"
-                  type="number"
-                  min="2"
-                  value={formData.installments}
-                  onChange={handleChange}
-                  required={formData.paymentType === 'parcelado'}
-                  placeholder="Ex: 3"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    fontSize: '1rem',
-                  }}
-                />
-                <small style={{ color: '#64748b', fontSize: '0.875rem' }}>
-                  Mínimo de 2 parcelas
-                </small>
-              </div>
+              <>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
+                    Número de parcelas *
+                  </label>
+                  <input
+                    name="installments"
+                    type="number"
+                    min="2"
+                    value={formData.installments}
+                    onChange={handleChange}
+                    required={formData.paymentType === 'parcelado'}
+                    placeholder="Ex: 3"
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '8px',
+                      fontSize: '1rem',
+                    }}
+                  />
+                  <small style={{ color: '#64748b', fontSize: '0.875rem' }}>
+                    Mínimo de 2 parcelas
+                  </small>
+                </div>
+
+                {/* Opção de adicionar lembretes */}
+                <div style={{
+                  marginBottom: '1.5rem',
+                  padding: '1.5rem',
+                  backgroundColor: '#f0f9ff',
+                  borderRadius: '8px',
+                  border: '2px solid #bae6fd',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                    <input
+                      type="checkbox"
+                      name="addReminders"
+                      id="addReminders"
+                      checked={formData.addReminders}
+                      onChange={handleChange}
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        cursor: 'pointer',
+                      }}
+                    />
+                    <label 
+                      htmlFor="addReminders"
+                      style={{ 
+                        fontWeight: '600',
+                        fontSize: '1rem',
+                        cursor: 'pointer',
+                        color: '#0369a1',
+                      }}
+                    >
+                      📅 Adicionar lembretes de pagamento
+                    </label>
+                  </div>
+
+                  <p style={{ fontSize: '0.875rem', color: '#0c4a6e', marginBottom: '1rem' }}>
+                    Crie lembretes automáticos para cada parcela no seu calendário
+                  </p>
+
+                  {formData.addReminders && (
+                    <div>
+                      <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#0369a1' }}>
+                        Dia do mês para o lembrete (1-28) *
+                      </label>
+                      <input
+                        name="reminderDay"
+                        type="number"
+                        min="1"
+                        max="28"
+                        value={formData.reminderDay}
+                        onChange={handleChange}
+                        required={formData.addReminders}
+                        placeholder="Ex: 5"
+                        style={{
+                          width: '100%',
+                          padding: '0.75rem',
+                          border: '1px solid #bae6fd',
+                          borderRadius: '8px',
+                          fontSize: '1rem',
+                        }}
+                      />
+                      <small style={{ color: '#0c4a6e', fontSize: '0.875rem', display: 'block', marginTop: '0.5rem' }}>
+                        💡 Escolha um dia fixo do mês para receber os lembretes das parcelas
+                      </small>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {/* Observações */}
@@ -637,7 +918,7 @@ const NewTransaction: React.FC = () => {
         </div>
       </main>
 
-      <CalendarPopup isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} userEmail={userEmail} />
+      <CalendarInternal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} userEmail={userEmail} />
       <NotificationsPopup isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
     </div>
   );
