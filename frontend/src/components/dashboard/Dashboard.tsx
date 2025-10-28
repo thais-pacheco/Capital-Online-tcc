@@ -5,7 +5,6 @@ import {
   Search,
   ArrowUpRight,
   ArrowDownRight,
-  BarChart3,
   ChevronDown,
   PiggyBank,
   Calendar,
@@ -27,6 +26,8 @@ interface Transaction {
   valor: number;
   tipo: 'entrada' | 'saida';
   observacoes?: string;
+  forma_pagamento?: 'avista' | 'parcelado';
+  quantidade_parcelas?: number;
 }
 
 const Dashboard: React.FC = () => {
@@ -100,7 +101,9 @@ const Dashboard: React.FC = () => {
             categoria: Number(t.categoria) || 0,
             valor: valor,
             tipo: tipo,
-            observacoes: t.observacoes
+            observacoes: t.observacoes,
+            forma_pagamento: t.forma_pagamento || 'avista',
+            quantidade_parcelas: t.quantidade_parcelas || 1
           };
         });
 
@@ -327,13 +330,14 @@ const Dashboard: React.FC = () => {
                 <tr>
                   <th>DATA</th>
                   <th>DESCRIÇÃO</th>
+                  <th>PAGAMENTO</th>
                   <th>OBSERVAÇÕES</th>
                   <th>VALOR</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTransactions.length === 0 ? (
-                  <tr><td colSpan={4}>Nenhuma movimentação encontrada.</td></tr>
+                  <tr><td colSpan={5}>Nenhuma movimentação encontrada.</td></tr>
                 ) : (
                   filteredTransactions.map((transaction) => (
                     <tr key={transaction.id}>
@@ -345,6 +349,11 @@ const Dashboard: React.FC = () => {
                           </div>
                           <span>{transaction.titulo || 'Sem título'}</span>
                         </div>
+                      </td>
+                      <td>
+                        {transaction.forma_pagamento === 'parcelado' 
+                          ? `${transaction.quantidade_parcelas}x` 
+                          : 'À vista'}
                       </td>
                       <td>{transaction.observacoes || '--'}</td>
                       <td>
