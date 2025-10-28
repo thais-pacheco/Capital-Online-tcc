@@ -5,9 +5,9 @@ import Dashboard from './components/dashboard/Dashboard';
 import Home from './components/home/home';
 import NewTransaction from './components/newtransaction/newtransaction';
 import Objectives from './components/objectives/objectives';
-import Charts from './components/charts/charts';
+import Charts from './components/charts/charts'; // Import da página de gráficos
 import Profile from './components/profile/Profile';
-import type { Page } from './types';
+import type { Page } from './types'; // Seu tipo centralizado
 
 interface PageProps {
   onNavigate: (page: Page) => void;
@@ -28,7 +28,7 @@ function withNavigation<P extends object>(Component: React.ComponentType<P & Pag
           navigate('/nova-movimentacao');
           break;
         case 'charts':
-          navigate('/graficos');
+          navigate('/graficos'); // nova rota para gráficos
           break;
         case 'objetivos':
           navigate('/objetivos');
@@ -60,12 +60,7 @@ const ProfileWrapper = () => {
 
 function App() {
   return (
-    <Router
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}
-    >
+    <Router>
       <Routes>
         <Route path="/" element={<HomeWrapper />} />
         <Route path="/dashboard" element={<DashboardWrapper />} />

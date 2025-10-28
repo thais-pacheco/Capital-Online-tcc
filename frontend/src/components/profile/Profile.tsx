@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { User, ArrowLeft, PiggyBank, Calendar, Bell, LogOut } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Lock, ArrowLeft, PiggyBank, Calendar, Bell, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
@@ -10,147 +10,54 @@ interface ProfileProps {
 export default function Profile({ onLogout }: ProfileProps) {
   const navigate = useNavigate();
 
+  // Dados mockados do usuário
+  const user = {
+    name: 'João Silva',
+    email: 'joao@exemplo.com'
+  };
+
+  const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
   const [formData, setFormData] = useState({
-    name: '',
-    email: ''
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: '',
+    birthdate: '',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
-
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [memberSince, setMemberSince] = useState('');
-
-  // 🔹 Buscar dados do usuário do localStorage
-  useEffect(() => {
-    const loadUserData = () => {
-      const token = localStorage.getItem('token')?.replace(/"/g, '');
-      const storedUser = localStorage.getItem('usuario');
-      
-      if (!token) {
-        setError('Token não encontrado. Faça login novamente.');
-        setLoading(false);
-        navigate('/');
-        return;
-      }
-
-      if (storedUser) {
-        try {
-          const user = JSON.parse(storedUser);
-          const userData = {
-            name: user.nome || user.username || user.name || '',
-            email: user.email || ''
-          };
-          
-          setFormData(userData);
-
-          if (user.date_joined || user.created_at) {
-            const date = new Date(user.date_joined || user.created_at);
-            setMemberSince(date.toLocaleDateString('pt-BR'));
-          } else {
-            setMemberSince(new Date().toLocaleDateString('pt-BR'));
-          }
-          
-          setError('');
-        } catch (e) {
-          console.error('Erro ao carregar dados do localStorage:', e);
-          setError('Erro ao carregar dados do perfil.');
-        }
-      } else {
-        console.warn('Nenhum dado de usuário no localStorage');
-        setFormData({ name: '', email: '' });
-      }
-
-      setLoading(false);
-    };
-
-    loadUserData();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'usuario' && e.newValue) {
-        try {
-          const user = JSON.parse(e.newValue);
-          setFormData({
-            name: user.nome || user.username || user.name || '',
-            email: user.email || ''
-          });
-        } catch (err) {
-          console.error('Erro ao atualizar dados do storage event:', err);
-        }
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
-    setError('');
-    setSuccess('');
   };
 
-  // 🔹 Atualizar perfil no localStorage
-  const handleProfileSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const token = localStorage.getItem('token')?.replace(/"/g, '');
-
-    if (!token) {
-      setError('Token não encontrado. Faça login novamente.');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const storedUser = localStorage.getItem('usuario');
-      const userToSave = storedUser ? JSON.parse(storedUser) : {};
-      
-      const updatedUser = {
-        ...userToSave,
-        nome: formData.name,
-        username: formData.name,
-        email: formData.email,
-        last_updated: new Date().toISOString()
-      };
-      
-      localStorage.setItem('usuario', JSON.stringify(updatedUser));
-      console.log('✅ Perfil salvo com sucesso:', updatedUser);
-      
-      setSuccess('Perfil atualizado com sucesso!');
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err: any) {
-      console.error('❌ Erro ao salvar no localStorage:', err);
-      setError('Erro ao salvar alterações. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
+    console.log('Profile updated:', formData);
+    alert('Perfil atualizado com sucesso!');
   };
+
+  const tabs = [
+    { id: 'profile', name: 'Perfil', icon: User },
+    { id: 'security', name: 'Segurança', icon: Lock }
+  ];
 
   const handleLogoutClick = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
-    if (onLogout) onLogout();
-    else navigate('/');
+    if (onLogout) {
+      onLogout();
+    } else {
+      navigate('/login');
+    }
   };
-
-  if (loading && !formData.email) {
-    return (
-      <div className="profile-page">
-        <div className="profile-loading">Carregando dados do perfil...</div>
-      </div>
-    );
-  }
 
   return (
     <div className="profile-page">
+      {/* Header */}
       <header className="profile-header-bar">
         <div className="profile-header-container">
           <div className="profile-header-left">
@@ -178,9 +85,10 @@ export default function Profile({ onLogout }: ProfileProps) {
         </div>
       </header>
 
+      {/* Conteúdo */}
       <div className="profile-container">
         <div className="profile-header">
-          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/dashboard'); }} className="profile-back-button">
+          <a href="#" onClick={() => navigate('/dashboard')} className="profile-back-button">
             <ArrowLeft className="profile-back-icon" /> Voltar ao Dashboard
           </a>
         </div>
@@ -190,90 +98,82 @@ export default function Profile({ onLogout }: ProfileProps) {
           <p className="profile-subtitle">Gerencie suas informações pessoais e configurações da conta.</p>
         </div>
 
-        {error && (
-          <div style={{
-            padding: '12px 16px',
-            marginBottom: '16px',
-            backgroundColor: '#fee2e2',
-            border: '1px solid #ef4444',
-            borderRadius: '8px',
-            color: '#991b1b'
-          }}>
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div style={{
-            padding: '12px 16px',
-            marginBottom: '16px',
-            backgroundColor: '#d1fae5',
-            border: '1px solid #22c55e',
-            borderRadius: '8px',
-            color: '#065f46'
-          }}>
-            {success}
-          </div>
-        )}
-
         <div className="profile-grid">
+          {/* Sidebar */}
           <div className="lg:col-span-1">
             <nav className="profile-sidebar-nav">
               <div className="profile-avatar-section">
-                <div className="profile-avatar-circle">
-                  {formData.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-                <div className="profile-user-name">{formData.name || 'Usuário'}</div>
-                <div className="profile-member-since">
-                  {memberSince ? `Membro desde ${memberSince}` : 'Membro'}
-                </div>
+                <div className="profile-avatar-circle">J</div>
+                <div className="profile-user-name">Julia Silva</div>
+                <div className="profile-member-since">Membro desde 14/01/2024</div>
               </div>
-              <button className="profile-sidebar-btn active">
-                <User className="profile-sidebar-icon" />
-                Perfil
-              </button>
+              {tabs.map(tab => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as 'profile' | 'security')}
+                    className={`profile-sidebar-btn ${activeTab === tab.id ? 'active' : ''}`}
+                  >
+                    <Icon className="profile-sidebar-icon" />
+                    {tab.name}
+                  </button>
+                );
+              })}
             </nav>
           </div>
 
+          {/* Conteúdo principal */}
           <div className="lg:col-span-3">
             <div className="profile-content-box">
-              <div>
-                <h2 className="profile-section-title">Informações pessoais</h2>
-                <form onSubmit={handleProfileSubmit} className="profile-form-space">
-                  <div>
-                    <label className="profile-form-label">Nome completo:</label>
-                    <input 
-                      type="text" 
-                      name="name" 
-                      value={formData.name} 
-                      onChange={handleInputChange} 
-                      className="profile-form-input"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="profile-form-label">Email:</label>
-                    <input 
-                      type="email" 
-                      name="email" 
-                      value={formData.email} 
-                      onChange={handleInputChange} 
-                      className="profile-form-input"
-                      required
-                    />
-                  </div>
-                  <div className="profile-form-actions">
-                    <button 
-                      type="submit" 
-                      className="profile-btn-save"
-                      disabled={loading}
-                    >
-                      <User className="profile-btn-icon" /> 
-                      {loading ? 'Salvando...' : 'Salvar Alterações'}
-                    </button>
-                  </div>
-                </form>
-              </div>
+              {activeTab === 'profile' && (
+                <div>
+                  <h2 className="profile-section-title">Informações pessoais</h2>
+                  <form onSubmit={handleSubmit} className="profile-form-space">
+                    <div>
+                      <label className="profile-form-label">Nome completo:</label>
+                      <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="profile-form-input" />
+                    </div>
+                    <div>
+                      <label className="profile-form-label">Telefone:</label>
+                      <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="profile-form-input" />
+                    </div>
+                    <div>
+                      <label className="profile-form-label">Data de nascimento:</label>
+                      <input type="date" name="birthdate" value={formData.birthdate} onChange={handleInputChange} className="profile-form-input" />
+                    </div>
+                    <div>
+                      <label className="profile-form-label">Email:</label>
+                      <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="profile-form-input" />
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {activeTab === 'security' && (
+                <div>
+                  <h2 className="profile-section-title">Segurança</h2>
+                  <form onSubmit={handleSubmit} className="profile-form-space">
+                    <div>
+                      <label className="profile-form-label">Senha Atual</label>
+                      <input type="password" name="currentPassword" value={formData.currentPassword} onChange={handleInputChange} className="profile-form-input" />
+                    </div>
+                    <div>
+                      <label className="profile-form-label">Nova Senha</label>
+                      <input type="password" name="newPassword" value={formData.newPassword} onChange={handleInputChange} className="profile-form-input" />
+                    </div>
+                    <div>
+                      <label className="profile-form-label">Confirmar Nova Senha</label>
+                      <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} className="profile-form-input" />
+                    </div>
+                    <div className="profile-form-actions">
+                      <button type="submit" className="profile-btn-save">
+                        <Lock className="profile-btn-icon" /> Alterar Senha
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
           </div>
         </div>
