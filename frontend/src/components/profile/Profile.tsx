@@ -3,8 +3,6 @@ import { User, ArrowLeft, PiggyBank, Calendar, Bell, LogOut } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
-// Componente de Perfil - sem dependências de Chart.js
-
 interface ProfileProps {
   onLogout?: () => void;
 }
@@ -14,9 +12,7 @@ export default function Profile({ onLogout }: ProfileProps) {
 
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    phone: '',
-    birthdate: ''
+    email: ''
   });
 
   const [error, setError] = useState('');
@@ -37,34 +33,57 @@ export default function Profile({ onLogout }: ProfileProps) {
         return;
       }
 
-      // Carregar dados do localStorage
       if (storedUser) {
         try {
           const user = JSON.parse(storedUser);
-          setFormData({
+          const userData = {
             name: user.nome || user.username || user.name || '',
-            email: user.email || '',
-            phone: user.telefone || user.phone || '',
-            birthdate: user.data_nascimento || user.birthdate || '',
-          });
+            email: user.email || ''
+          };
+          
+          setFormData(userData);
 
-          // Definir data de membro se existir
           if (user.date_joined || user.created_at) {
             const date = new Date(user.date_joined || user.created_at);
             setMemberSince(date.toLocaleDateString('pt-BR'));
+          } else {
+            setMemberSince(new Date().toLocaleDateString('pt-BR'));
           }
+          
+          setError('');
         } catch (e) {
           console.error('Erro ao carregar dados do localStorage:', e);
           setError('Erro ao carregar dados do perfil.');
         }
       } else {
-        setError('Nenhum dado de usuário encontrado.');
+        console.warn('Nenhum dado de usuário no localStorage');
+        setFormData({ name: '', email: '' });
       }
 
       setLoading(false);
     };
 
     loadUserData();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'usuario' && e.newValue) {
+        try {
+          const user = JSON.parse(e.newValue);
+          setFormData({
+            name: user.nome || user.username || user.name || '',
+            email: user.email || ''
+          });
+        } catch (err) {
+          console.error('Erro ao atualizar dados do storage event:', err);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,19 +113,22 @@ export default function Profile({ onLogout }: ProfileProps) {
       const storedUser = localStorage.getItem('usuario');
       const userToSave = storedUser ? JSON.parse(storedUser) : {};
       
-      // Atualizar dados no localStorage
-      userToSave.nome = formData.name;
-      userToSave.email = formData.email;
-      userToSave.telefone = formData.phone;
-      userToSave.data_nascimento = formData.birthdate;
+      const updatedUser = {
+        ...userToSave,
+        nome: formData.name,
+        username: formData.name,
+        email: formData.email,
+        last_updated: new Date().toISOString()
+      };
       
-      localStorage.setItem('usuario', JSON.stringify(userToSave));
+      localStorage.setItem('usuario', JSON.stringify(updatedUser));
+      console.log('✅ Perfil salvo com sucesso:', updatedUser);
       
       setSuccess('Perfil atualizado com sucesso!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      console.error('Erro ao salvar no localStorage:', err);
-      setError('Erro ao salvar alterações.');
+      console.error('❌ Erro ao salvar no localStorage:', err);
+      setError('Erro ao salvar alterações. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -238,27 +260,6 @@ export default function Profile({ onLogout }: ProfileProps) {
                       onChange={handleInputChange} 
                       className="profile-form-input"
                       required
-                    />
-                  </div>
-                  <div>
-                    <label className="profile-form-label">Telefone:</label>
-                    <input 
-                      type="tel" 
-                      name="phone" 
-                      value={formData.phone} 
-                      onChange={handleInputChange} 
-                      className="profile-form-input"
-                      placeholder="(00) 00000-0000"
-                    />
-                  </div>
-                  <div>
-                    <label className="profile-form-label">Data de nascimento:</label>
-                    <input 
-                      type="date" 
-                      name="birthdate" 
-                      value={formData.birthdate} 
-                      onChange={handleInputChange} 
-                      className="profile-form-input"
                     />
                   </div>
                   <div className="profile-form-actions">
