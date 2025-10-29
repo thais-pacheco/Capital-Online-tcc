@@ -202,16 +202,6 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
     }
   }, [filteredTransactions]);
 
-  if (loading) {
-    return (
-      <div className="charts-container">
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <p>Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="charts-container">
