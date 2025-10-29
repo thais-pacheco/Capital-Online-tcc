@@ -27,6 +27,8 @@ interface Transaction {
   valor: number;
   tipo: 'entrada' | 'saida';
   observacoes?: string;
+  forma_pagamento?: 'avista' | 'parcelado';
+  quantidade_parcelas?: number;
 }
 
 const Dashboard: React.FC = () => {
@@ -100,7 +102,9 @@ const Dashboard: React.FC = () => {
             categoria: Number(t.categoria) || 0,
             valor: valor,
             tipo: tipo,
-            observacoes: t.observacoes
+            observacoes: t.observacoes,
+            forma_pagamento: t.forma_pagamento || 'avista',
+            quantidade_parcelas: t.quantidade_parcelas || 1
           };
         });
 
@@ -116,7 +120,6 @@ const Dashboard: React.FC = () => {
     fetchTransactions();
   }, []);
 
-  // --- FILTROS ---
   const filteredTransactions = transactions.filter(transaction => {
     if (!transaction) return false;
 
@@ -220,7 +223,7 @@ const Dashboard: React.FC = () => {
         <div className="header-container">
           <div className="header-left">
             <div className="logo">
-              <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+              <PiggyBank className="logo-icon" />
               <span className="logo-text">CAPITAL ONLINE</span>
             </div>
           </div>
@@ -289,8 +292,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-
-        {/* --- Histórico de movimentações --- */}
         <div className="transactions-section">
           <div className="section-header"><h2>Histórico de movimentações</h2></div>
 
@@ -331,6 +332,7 @@ const Dashboard: React.FC = () => {
                 <tr>
                   <th>DATA</th>
                   <th>DESCRIÇÃO</th>
+                  <th>PAGAMENTO</th>
                   <th>OBSERVAÇÕES</th>
                   <th>VALOR</th>
                 </tr>
@@ -349,6 +351,11 @@ const Dashboard: React.FC = () => {
                           </div>
                           <span>{transaction.titulo || 'Sem título'}</span>
                         </div>
+                      </td>
+                      <td>
+                        {transaction.forma_pagamento === 'parcelado' 
+                          ? `${transaction.quantidade_parcelas}x` 
+                          : 'À vista'}
                       </td>
                       <td>{transaction.observacoes || '--'}</td>
                       <td>
