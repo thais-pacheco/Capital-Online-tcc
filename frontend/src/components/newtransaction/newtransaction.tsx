@@ -455,124 +455,36 @@ const NewTransaction: React.FC = () => {
       )}
 
       {/* Header */}
-      <header style={{
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e2e8f0',
-        padding: '1rem 2rem',
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          maxWidth: '1400px',
-          margin: '0 auto',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <PiggyBank size={32} style={{ color: '#22c55e' }} />
-            <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>CAPITAL ONLINE</span>
-          </div>
-
-          <nav style={{ display: 'flex', gap: '1rem' }}>
-            <button 
-              onClick={() => navigate('/dashboard')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: 'transparent',
-                color: '#334155',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500',
-              }}
-            >
-              Dashboard
-            </button>
-            <button 
-              onClick={() => navigate('/nova-movimentacao')}
-              style={{
-                padding: '0.5rem 1rem',
-                color: '#10b981',
-                background: '#f0fdf4',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500',
-              }}
-            >
-              Nova movimentação
-            </button>
-            <button 
-              onClick={() => navigate('/graficos')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: 'transparent',
-                color: '#334155',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500',
-              }}
-            >
-              Gráficos
-            </button>
-            <button 
-              onClick={() => navigate('/objetivos')}
-              style={{
-                padding: '0.5rem 1rem',
-                background: 'transparent',
-                color: '#334155',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500',
-              }}
-            >
-              Objetivos
-            </button>
-          </nav>
-
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <button 
-              onClick={() => setIsCalendarOpen(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              <Calendar size={20} />
-            </button>
-            <button 
-              onClick={() => setIsNotificationsOpen(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              <Bell size={20} />
-            </button>
-            <div 
-              onClick={() => navigate('/profile')}
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                background: '#e2e8f0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-              }}
-            >
-              <User size={18} />
-            </div>
-            <button 
-              onClick={handleLogout}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                cursor: 'pointer',
-                color: '#ef4444',
-              }}
-            >
-              <LogOut size={20} />
-            </button>
-          </div>
-        </div>
-      </header>
+      <header className="header">
+  <div className="header-container">
+    <div className="header-left">
+      <div className="logo">
+        <PiggyBank className="logo-icon"  />
+        <span className="logo-text">CAPITAL ONLINE</span>
+      </div>
+    </div>
+    <nav className="nav">
+      <button className="nav-button" onClick={() => navigate('/dashboard')}>Dashboard</button>
+      <button className="nav-button active" onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
+      <button className="nav-button" onClick={() => navigate('/graficos')}>Gráficos</button>
+      <button className="nav-button" onClick={() => navigate('/objetivos')}>Objetivos</button>
+    </nav>
+    <div className="header-right">
+      <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
+        <Calendar size={18} />
+      </button>
+      <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
+        <Bell size={18} />
+      </button>
+      <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+        <User size={18} />
+      </div>
+      <button className="icon-button logout" onClick={handleLogout}>
+        <LogOut size={18} />
+      </button>
+    </div>
+  </div>
+</header>
 
       {/* Main Content */}
       <main style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 2rem' }}>
