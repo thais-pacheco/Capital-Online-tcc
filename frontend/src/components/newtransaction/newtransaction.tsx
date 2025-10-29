@@ -114,194 +114,188 @@ const NewTransaction: React.FC = () => {
   }, [formData.type]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type } = e.target;
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+) => {
+  const { name, value, type } = e.target;
+  
+  if (type === 'checkbox') {
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  } else if (name === 'amount') {
+    // Remove tudo exceto números
+    const apenasNumeros = value.replace(/\D/g, '');
     
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+    if (apenasNumeros === '') {
+      setFormData(prev => ({ ...prev, [name]: '' }));
+      return;
     }
-  };
+    
+    // Converte para número e divide por 100 para ter centavos
+    const valorNumerico = parseInt(apenasNumeros) / 100;
+    
+    // Formata com vírgula como separador decimal
+    const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    
+    setFormData(prev => ({ ...prev, [name]: valorFormatado }));
+  } else {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }
+};
 
   const createReminders = async (movimentacaoId: number) => {
-    const token = localStorage.getItem('token')?.replace(/"/g, '');
-    if (!token) {
-      console.error('❌ Token não encontrado');
-      showToast('error', 'Usuário não autenticado.');
-      return false;
-    }
+  const token = localStorage.getItem('token')?.replace(/"/g, '');
+  if (!token) {
+    console.error('❌ Token não encontrado');
+    showToast('error', 'Usuário não autenticado.');
+    return false;
+  }
 
-    if (!movimentacaoId) {
-      console.error('❌ ID da movimentação inválido:', movimentacaoId);
-      showToast('error', 'ID da movimentação não encontrado.');
-      return false;
-    }
+  if (!movimentacaoId) {
+    console.error('❌ ID da movimentação inválido:', movimentacaoId);
+    showToast('error', 'ID da movimentação não encontrado.');
+    return false;
+  }
 
-    // Pegar o ID do usuário
-    const storedUser = localStorage.getItem('usuario');
-    let usuarioId = null;
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        usuarioId = user.id;
-      } catch (e) {
-        console.error('Erro ao parse do usuário:', e);
-      }
-    }
-
-    if (!usuarioId) {
-      console.error('❌ ID do usuário não encontrado');
-      showToast('error', 'ID do usuário não encontrado.');
-      return false;
-    }
-
-    console.log('🔄 Iniciando criação de lembretes...');
-    console.log('📊 Dados do formulário:', {
-      installments: formData.installments,
-      reminderDay: formData.reminderDay,
-      date: formData.date,
-      amount: formData.amount,
-      description: formData.description,
-      movimentacaoId: movimentacaoId,
-      usuarioId: usuarioId,
-      tipo: formData.type
-    });
-
+  // Pegar o ID do usuário
+  const storedUser = localStorage.getItem('usuario');
+  let usuarioId = null;
+  if (storedUser) {
     try {
-      const installments = parseInt(formData.installments);
-      const reminderDay = parseInt(formData.reminderDay);
-      const startDate = new Date(formData.date);
-      const amount = parseFloat(formData.amount);
-      const installmentValue = amount / installments;
+      const user = JSON.parse(storedUser);
+      usuarioId = user.id;
+    } catch (e) {
+      console.error('Erro ao parse do usuário:', e);
+    }
+  }
 
-      console.log(`📅 Criando ${installments} lembretes com vencimento no dia ${reminderDay} de cada mês`);
-      console.log(`💰 Valor por parcela: R$ ${installmentValue.toFixed(2)}`);
+  if (!usuarioId) {
+    console.error('❌ ID do usuário não encontrado');
+    showToast('error', 'ID do usuário não encontrado.');
+    return false;
+  }
 
-      const reminders = [];
-      const errors = [];
-      
-      for (let i = 1; i <= installments; i++) {
-        try {
-          // Calcular a data de vencimento baseada no dia escolhido
-          const dueDate = new Date(startDate);
-          
-          // Avançar para o mês da parcela (i=1 é primeiro mês, i=2 é segundo mês, etc)
-          dueDate.setMonth(startDate.getMonth() + (i - 1));
-          
-          // Definir o dia escolhido pelo usuário
-          dueDate.setDate(reminderDay);
-          
-          // Ajustar se o dia não existe no mês (ex: 31 em fevereiro)
-          if (dueDate.getDate() !== reminderDay) {
-            // Voltar para o último dia válido do mês
-            dueDate.setDate(0);
-          }
-          
-          // Se a data calculada for no passado, avançar para o próximo mês
-          const hoje = new Date();
-          hoje.setHours(0, 0, 0, 0);
-          if (dueDate < hoje) {
-            dueDate.setMonth(dueDate.getMonth() + 1);
-            dueDate.setDate(reminderDay);
-            if (dueDate.getDate() !== reminderDay) {
-              dueDate.setDate(0);
-            }
-          }
+  console.log('🔄 Iniciando criação de lembretes...');
 
-          const reminderPayload = {
-            movimentacao: movimentacaoId,
-            usuario: usuarioId,  // 🆕 ADICIONADO
-            numero_parcela: i,
-            total_parcelas: installments,
-            valor_parcela: parseFloat(installmentValue.toFixed(2)),
-            data_vencimento: dueDate.toISOString().split('T')[0],
-            titulo: `Parcela ${i}/${installments}: ${formData.description}`,
-            descricao: `Valor da parcela: R$ ${installmentValue.toFixed(2)}${formData.observations ? '\n' + formData.observations : ''}`,
-            pago: false,
-            notificado: false,
-          };
+  try {
+    const installments = parseInt(formData.installments);
+    const reminderDay = parseInt(formData.reminderDay);
+    const startDate = new Date(formData.date);
+    
+    // Converte o valor formatado para centavos
+    const amount = parseFloat(formData.amount.replace(/\./g, '').replace(',', '.')) * 100;
+    const installmentValue = amount / installments;
 
-          console.log(`\n📤 Enviando lembrete ${i}/${installments}:`);
-          console.log('Payload:', JSON.stringify(reminderPayload, null, 2));
+    console.log(`📅 Criando ${installments} lembretes`);
+    console.log(`💰 Valor total: R$ ${(amount / 100).toFixed(2)}`);
+    console.log(`💰 Valor por parcela: R$ ${(installmentValue / 100).toFixed(2)}`);
 
-          const response = await fetch('http://127.0.0.1:8000/api/lembretes/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify(reminderPayload),
-          });
-
-          const responseText = await response.text();
-          console.log(`📥 Status ${i}: ${response.status}`);
-          console.log(`📥 Resposta completa ${i}:`, responseText);
-
-          if (!response.ok) {
-            let errorData;
-            try {
-              errorData = JSON.parse(responseText);
-              console.error(`❌ Erro ao criar lembrete ${i}:`, errorData);
-              console.error('Detalhes do erro:', JSON.stringify(errorData, null, 2));
-            } catch (parseError) {
-              errorData = { detail: responseText };
-              console.error(`❌ Erro ao criar lembrete ${i} (texto):`, responseText);
-            }
-            
-            // Tentar extrair mensagem de erro mais clara
-            let errorMsg = '';
-            if (typeof errorData === 'object') {
-              if (errorData.detail) {
-                errorMsg = errorData.detail;
-              } else if (errorData.error) {
-                errorMsg = errorData.error;
-              } else {
-                // Tentar pegar o primeiro campo com erro
-                const firstKey = Object.keys(errorData)[0];
-                if (firstKey && Array.isArray(errorData[firstKey])) {
-                  errorMsg = `${firstKey}: ${errorData[firstKey][0]}`;
-                } else if (firstKey) {
-                  errorMsg = `${firstKey}: ${errorData[firstKey]}`;
-                } else {
-                  errorMsg = JSON.stringify(errorData);
-                }
-              }
-            } else {
-              errorMsg = String(errorData);
-            }
-            
-            console.error(`❌ Mensagem de erro extraída:`, errorMsg);
-            errors.push(`Parcela ${i}: ${errorMsg}`);
-            continue; // Continua tentando criar os outros lembretes
-          }
-
-          const result = JSON.parse(responseText);
-          console.log(`✅ Lembrete ${i} criado com sucesso! ID: ${result.id}`);
-          reminders.push(result);
-        } catch (innerError: any) {
-          console.error(`❌ Erro na parcela ${i}:`, innerError);
-          errors.push(`Parcela ${i}: ${innerError.message}`);
+    const reminders = [];
+    const errors = [];
+    
+    for (let i = 1; i <= installments; i++) {
+      try {
+        const dueDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, reminderDay);
+        
+        if (dueDate.getDate() !== reminderDay) {
+          dueDate.setDate(0);
         }
-      }
 
-      if (errors.length > 0) {
-        console.error('❌ Erros encontrados:', errors);
-        showToast('error', `Alguns lembretes falharam: ${errors.join(', ')}`);
-        return false;
-      }
+        const year = dueDate.getFullYear();
+        const month = String(dueDate.getMonth() + 1).padStart(2, '0');
+        const day = String(dueDate.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
 
-      console.log(`✅ Todos os ${reminders.length} lembretes criados com sucesso!`);
-      return true;
-    } catch (error: any) {
-      console.error('❌ Erro geral ao criar lembretes:', error);
-      console.error('Stack:', error.stack);
-      showToast('error', `Erro ao criar lembretes: ${error.message}`);
+        const reminderPayload = {
+          movimentacao: movimentacaoId,
+          usuario: usuarioId,
+          numero_parcela: i,
+          total_parcelas: installments,
+          valor_parcela: installmentValue, // Envia em centavos (sem dividir por 100)
+          data_vencimento: dateStr,
+          titulo: `Parcela ${i}/${installments}: ${formData.description}`,
+          descricao: `Valor da parcela: R$ ${(installmentValue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${formData.observations ? '\n' + formData.observations : ''}`,
+          pago: false,
+          notificado: false,
+        };
+
+        console.log(`\n📤 Enviando lembrete ${i}/${installments} - Valor: R$ ${(installmentValue / 100).toFixed(2)}`);
+        console.log('Payload:', JSON.stringify(reminderPayload, null, 2));
+
+        const response = await fetch('http://127.0.0.1:8000/api/lembretes/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(reminderPayload),
+        });
+
+        const responseText = await response.text();
+        console.log(`📥 Status ${i}: ${response.status}`);
+        console.log(`📥 Resposta completa ${i}:`, responseText);
+
+        if (!response.ok) {
+          let errorData;
+          try {
+            errorData = JSON.parse(responseText);
+            console.error(`❌ Erro ao criar lembrete ${i}:`, errorData);
+          } catch (parseError) {
+            errorData = { detail: responseText };
+            console.error(`❌ Erro ao criar lembrete ${i} (texto):`, responseText);
+          }
+          
+          let errorMsg = '';
+          if (typeof errorData === 'object') {
+            if (errorData.detail) {
+              errorMsg = errorData.detail;
+            } else if (errorData.error) {
+              errorMsg = errorData.error;
+            } else {
+              const firstKey = Object.keys(errorData)[0];
+              if (firstKey && Array.isArray(errorData[firstKey])) {
+                errorMsg = `${firstKey}: ${errorData[firstKey][0]}`;
+              } else if (firstKey) {
+                errorMsg = `${firstKey}: ${errorData[firstKey]}`;
+              } else {
+                errorMsg = JSON.stringify(errorData);
+              }
+            }
+          } else {
+            errorMsg = String(errorData);
+          }
+          
+          console.error(`❌ Mensagem de erro extraída:`, errorMsg);
+          errors.push(`Parcela ${i}: ${errorMsg}`);
+          continue;
+        }
+
+        const result = JSON.parse(responseText);
+        console.log(`✅ Lembrete ${i} criado com sucesso! ID: ${result.id}`);
+        reminders.push(result);
+      } catch (innerError: any) {
+        console.error(`❌ Erro na parcela ${i}:`, innerError);
+        errors.push(`Parcela ${i}: ${innerError.message}`);
+      }
+    }
+
+    if (errors.length > 0) {
+      console.error('❌ Erros encontrados:', errors);
+      showToast('error', `Alguns lembretes falharam: ${errors.join(', ')}`);
       return false;
     }
-  };
+
+    console.log(`✅ Todos os ${reminders.length} lembretes criados com sucesso!`);
+    return true;
+  } catch (error: any) {
+    console.error('❌ Erro geral ao criar lembretes:', error);
+    console.error('Stack:', error.stack);
+    showToast('error', `Erro ao criar lembretes: ${error.message}`);
+    return false;
+  }
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -331,15 +325,15 @@ const NewTransaction: React.FC = () => {
     }
 
     const payload = {
-      descricao: formData.description.trim(),
-      tipo: formData.type === 'income' ? 'entrada' : 'saida',
-      valor: parseFloat(formData.amount),
-      categoria: parseInt(formData.category),
-      data_movimentacao: `${formData.date}T12:00:00`,
-      observacoes: formData.observations.trim(),
-      forma_pagamento: formData.paymentType,
-      quantidade_parcelas: formData.paymentType === 'parcelado' ? parseInt(formData.installments) : null,
-    };
+    descricao: formData.description.trim(),
+    tipo: formData.type === 'income' ? 'entrada' : 'saida',
+    valor: parseFloat(formData.amount.replace(/\./g, '').replace(',', '.')) * 100, // Multiplica por 100 para enviar em centavos
+    categoria: parseInt(formData.category),
+    data_movimentacao: `${formData.date}T12:00:00`,
+    observacoes: formData.observations.trim(),
+    forma_pagamento: formData.paymentType,
+    quantidade_parcelas: formData.paymentType === 'parcelado' ? parseInt(formData.installments) : null,
+  };
 
     console.log('📤 Enviando movimentação:', payload);
 
@@ -670,9 +664,7 @@ const NewTransaction: React.FC = () => {
                 </label>
                 <input
                   name="amount"
-                  type="number"
-                  step="0.01"
-                  min="0"
+                  type="text"
                   value={formData.amount}
                   onChange={handleChange}
                   required

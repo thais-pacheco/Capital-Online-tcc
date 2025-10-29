@@ -32,6 +32,15 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
 
   const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
+  // Função para obter data no fuso de Brasília (sem conversão de timezone)
+  const getBrasiliaDate = (dateStr?: string) => {
+    if (dateStr) {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+    return new Date();
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchLembretes();
@@ -126,8 +135,8 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
 
-  const today = new Date();
   const isToday = (day: number) => {
+    const today = getBrasiliaDate();
     return day === today.getDate() &&
            currentDate.getMonth() === today.getMonth() &&
            currentDate.getFullYear() === today.getFullYear();
@@ -322,7 +331,7 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h4 style={{ fontWeight: "600", fontSize: "1rem" }}>
-                Lembretes de {new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR')}
+                Lembretes de {getBrasiliaDate(selectedDate).toLocaleDateString('pt-BR')}
               </h4>
               <button
                 onClick={() => setSelectedDate(null)}
@@ -359,7 +368,7 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
                       {lembrete.descricao}
                     </p>
                     <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "#059669" }}>
-                      R$ {parseFloat(lembrete.valor_parcela).toFixed(2)}
+                      R$ {parseFloat(lembrete.valor_parcela).toFixed(2).replace('.', ',')}
                     </div>
                   </div>
                   
