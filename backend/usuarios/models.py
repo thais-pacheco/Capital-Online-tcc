@@ -21,7 +21,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     nome = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=255)  # ✅ nome certo
+    password = models.CharField(max_length=255)
     data_criacao = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -36,3 +36,22 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class PasswordResetToken(models.Model):
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='reset_tokens')
+    token = models.CharField(max_length=6)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    expira_em = models.DateTimeField()
+    usado = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'password_reset_tokens'
+        ordering = ['-criado_em']
+
+    def __str__(self):
+        return f"Token para {self.usuario.email} - {self.token}"
+
+    def is_valid(self):
+        """Verifica se o token ainda é válido"""
+        return not self.usado and self.expira_em > timezone.now()

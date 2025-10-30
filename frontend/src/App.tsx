@@ -7,6 +7,7 @@ import NewTransaction from './components/newtransaction/newtransaction';
 import Objectives from './components/objectives/objectives';
 import Charts from './components/charts/charts';
 import Profile from './components/profile/Profile';
+import ForgotPassword from './components/auth/ForgotPassword';
 import type { Page } from './types';
 
 
@@ -80,6 +81,7 @@ function App() {
         <Route path="/graficos" element={<ChartsWrapper />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/profile" element={<ProfileWrapper />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </Router>
   );

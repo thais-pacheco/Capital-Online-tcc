@@ -69,7 +69,6 @@ const Auth: React.FC = () => {
     try {
       const endpoint = isLogin ? '/login/' : '/register/';
       
-      // 🔑 Correção: enviar campo 'password' para o backend
       const payload = isLogin
         ? { email: formData.email, password: formData.password }
         : { nome: formData.nome, email: formData.email, password: formData.password };
@@ -202,7 +201,7 @@ const Auth: React.FC = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="senha"
-                  name="password" // ✅ nome do campo corrigido
+                  name="password"
                   value={formData.password}
                   onChange={handleInputChange}
                   placeholder="Digite sua senha"
@@ -236,6 +235,19 @@ const Auth: React.FC = () => {
                   </button>
                 </div>
                 {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+              </div>
+            )}
+
+            {isLogin && (
+              <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+                <button 
+                  type="button" 
+                  className="link-btn" 
+                  onClick={() => navigate('/forgot-password')}
+                  style={{ fontSize: '0.875rem' }}
+                >
+                  Esqueceu a senha?
+                </button>
               </div>
             )}
 
