@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { PiggyBank, Calendar, Bell, LogOut, User, Clock, AlertCircle, CheckCircle, Edit, Trash2, Plus } from 'lucide-react';
+ import React, { useState, useEffect } from 'react';
+import { PiggyBank, Calendar, Bell, LogOut, User, Clock, AlertCircle, CheckCircle, Edit, Trash2, Plus, Wallet } from 'lucide-react';
+import CalendarPopup from '../calendario/CalendarPopup';
+import NotificationsPopup from '../notificacoes/NotificationsPopup';
 import './objectives.css';
 import type { Page } from '../../types';
-
-
 
 interface Goal {
   id: number;
@@ -16,14 +16,17 @@ interface Goal {
   categoria?: string;
   status: 'active' | 'completed' | 'overdue';
 }
+
 interface GoalsProps {
   onNavigate: (page: Page) => void;
   onLogout: () => void;
 }
 
-
 const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
+  const [depositAmount, setDepositAmount] = useState('');
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
     titulo: '',
@@ -35,26 +38,38 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   const token = localStorage.getItem('token')?.replace(/"/g, '');
 
-
   useEffect(() => {
     if (!token) {
-      setErrorMessage('Usuário não autenticado.');
       onNavigate('dashboard');
+    }
+
+    const storedUser = localStorage.getItem('usuario');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        setUserEmail(user.email || '');
+      } catch (e) {
+        console.error('Erro ao parse do usuário:', e);
+      }
     }
   }, [token, onNavigate]);
 
   const calculateStatus = (goal: Goal) => {
     const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
     const prazo = new Date(goal.data_limite);
+    prazo.setHours(0, 0, 0, 0);
     if (goal.valor_atual >= goal.valor) return 'completed';
     if (prazo < hoje) return 'overdue';
     return 'active';
   };
 
-  // Busca objetivos
   const fetchGoals = async () => {
     if (!token) return;
     setLoading(true);
@@ -72,14 +87,20 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         return;
       }
 
-      if (!response.ok) throw new Error('Erro ao buscar objetivos');
-
       const data = await response.json();
       const results = Array.isArray(data) ? data : data.results || [];
+
       const withStatus = results.map((goal: any) => ({
         ...goal,
-        status: calculateStatus(goal),
+        valor: parseFloat(goal.valor) || 0,
+        valor_atual: parseFloat(goal.valor_atual) || 0,
+        status: calculateStatus({
+          ...goal,
+          valor: parseFloat(goal.valor) || 0,
+          valor_atual: parseFloat(goal.valor_atual) || 0,
+        }),
       }));
+
       setGoals(withStatus);
     } catch (error) {
       console.error(error);
@@ -99,30 +120,23 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) {
-      setErrorMessage('Usuário não autenticado.');
-      return;
-    }
+    if (!token) return;
 
-    if (!formData.titulo || !formData.valor_necessario || !formData.prazo) {
-      alert('Preencha todos os campos obrigatórios');
-      return;
-    }
+    if (!formData.titulo || !formData.valor_necessario || !formData.prazo) return;
 
     const payload = {
       titulo: formData.titulo,
       descricao: formData.descricao,
       valor: parseFloat(formData.valor_necessario),
-      valor_atual: editingGoal ? editingGoal.valor_atual : 0,
       data_limite: formData.prazo,
-      categoria: formData.categoria,
+      categoria: formData.categoria || 'outro',
     };
 
     try {
       let response;
       if (editingGoal) {
         response = await fetch(`http://127.0.0.1:8000/api/objetivos/${editingGoal.id}/`, {
-          method: 'PUT',
+          method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
@@ -146,20 +160,51 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         return;
       }
 
-      if (!response.ok) throw new Error('Erro ao salvar objetivo');
-
-      await fetchGoals();
-      setShowCreateForm(false);
-      setEditingGoal(null);
-      setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' });
+      if (response.ok) {
+        await fetchGoals();
+        setShowCreateForm(false);
+        setEditingGoal(null);
+        setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' });
+      }
     } catch (error) {
       console.error(error);
-      alert('Falha ao salvar objetivo.');
+    }
+  };
+
+  const handleDeposit = async () => {
+    if (!selectedGoal || !depositAmount || !token) return;
+
+    const amount = parseFloat(depositAmount);
+    if (isNaN(amount) || amount <= 0) return;
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/objetivos/${selectedGoal.id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ valor_atual: amount }),
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        onNavigate('dashboard');
+        return;
+      }
+
+      if (response.ok) {
+        await fetchGoals();
+        setShowDepositModal(false);
+        setSelectedGoal(null);
+        setDepositAmount('');
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Tem certeza que deseja deletar este objetivo?')) return;
     if (!token) return;
 
     try {
@@ -174,11 +219,9 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         return;
       }
 
-      if (!response.ok) throw new Error('Erro ao deletar objetivo');
-      await fetchGoals();
+      if (response.ok) await fetchGoals();
     } catch (error) {
       console.error(error);
-      alert('Falha ao deletar objetivo.');
     }
   };
 
@@ -186,7 +229,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     setEditingGoal(goal);
     setFormData({
       titulo: goal.titulo,
-      descricao: goal.descricao,
+      descricao: goal.descricao || '',
       valor_necessario: goal.valor.toString(),
       prazo: goal.data_limite,
       categoria: goal.categoria || '',
@@ -194,8 +237,16 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     setShowCreateForm(true);
   };
 
+  const openDepositModal = (goal: Goal) => {
+    setSelectedGoal(goal);
+    setShowDepositModal(true);
+  };
+
   const calculateProgress = (goal: Goal) =>
     goal.valor === 0 ? 0 : Math.min(100, (goal.valor_atual / goal.valor) * 100);
+
+  const calculateRemaining = (goal: Goal) =>
+    Math.max(0, goal.valor - goal.valor_atual);
 
   const formatCurrency = (value: number | undefined) =>
     typeof value === 'number'
@@ -209,23 +260,33 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
 
   return (
     <div className="goals-container">
-      <header className="goals-header">
-        <div className="goals-header-inner">
-          <div className="logo">
-            <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
-            <span className="logo-text">CAPITAL ONLINE</span>
+      <header className="header">
+        <div className="header-container">
+          <div className="header-left">
+            <div className="logo">
+              <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+              <span className="logo-text">CAPITAL ONLINE</span>
+            </div>
           </div>
-          <nav className="goals-nav">
-            <button onClick={() => onNavigate('dashboard')}>Dashboard</button>
-            <button onClick={() => onNavigate('nova-transacao')}>Nova movimentação</button>
-            <button onClick={() => onNavigate('charts')}>Gráficos</button>
-            <button className="active">Objetivos</button>
+          <nav className="nav">
+            <button className="nav-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
+            <button className="nav-button" onClick={() => onNavigate('new-transaction')}>Nova movimentação</button>
+            <button className="nav-button" onClick={() => onNavigate('charts')}>Gráficos</button>
+            <button className="nav-button active">Objetivos</button>
           </nav>
-          <div className="goals-header-actions">
-            <button className="icon-button" title="Calendário"><Calendar size={18} /></button>
-            <button className="icon-button" title="Notificações"><Bell size={18} /></button>
-            <div className="profile-avatar"><User size={18} /></div>
-            <button className="icon-button logout" title="Sair" onClick={handleLogout}><LogOut size={18} /></button>
+          <div className="header-right">
+            <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
+              <Calendar size={18} />
+            </button>
+            <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
+              <Bell size={18} />
+            </button>
+            <div className="profile-avatar" onClick={() => onNavigate('profile')} style={{ cursor: 'pointer' }}>
+              <User size={18} />
+            </div>
+            <button className="icon-button logout" onClick={handleLogout}>
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </header>
@@ -308,6 +369,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
           <section className="goals-grid">
             {goals.map(goal => {
               const progressPercent = calculateProgress(goal);
+              const remaining = calculateRemaining(goal);
               let statusClass =
                 goal.status === 'completed'
                   ? 'status-completed'
@@ -330,20 +392,88 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
                   </header>
                   <h3>{goal.titulo}</h3>
                   <p>{goal.descricao}</p>
+                  
+                  <div className="goal-remaining">
+                    <span className="remaining-label">Falta atingir:</span>
+                    <span className="remaining-value">{formatCurrency(remaining)}</span>
+                  </div>
+
                   <div className="goal-progress">
+                    <div className="progress-info">
+                      <span className="progress-label">Progresso: {progressPercent.toFixed(0)}%</span>
+                    </div>
                     <div className="progress-bar-bg">
                       <div className={`progress-bar-fill ${statusClass}`} style={{ width: `${progressPercent}%` }} />
                     </div>
-                    <div>
-                      <span>{formatCurrency(goal.valor_atual)}</span> / <span>{formatCurrency(goal.valor)}</span>
+                    <div className="progress-values">
+                      <span className="current-value">{formatCurrency(goal.valor_atual || 0)}</span>
+                      <span className="target-value">{formatCurrency(goal.valor || 0)}</span>
                     </div>
                   </div>
+
+                  {goal.status !== 'completed' && (
+                    <button 
+                      className="goal-deposit-button"
+                      onClick={() => openDepositModal(goal)}
+                    >
+                      <Wallet size={18} /> Adicionar Valor
+                    </button>
+                  )}
                 </article>
               );
             })}
           </section>
         )}
       </main>
+
+      {showDepositModal && selectedGoal && (
+        <div className="modal-overlay" onClick={() => setShowDepositModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Adicionar Valor ao Objetivo</h3>
+            <div className="modal-goal-info">
+              <p className="modal-goal-title">{selectedGoal.titulo}</p>
+              <div className="modal-goal-values">
+                <span>Valor atual: {formatCurrency(selectedGoal.valor_atual)}</span>
+                <span>Falta: {formatCurrency(calculateRemaining(selectedGoal))}</span>
+              </div>
+            </div>
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Valor a adicionar (R$)"
+              value={depositAmount}
+              onChange={(e) => setDepositAmount(e.target.value)}
+              className="modal-input"
+              autoFocus
+            />
+            <div className="modal-buttons">
+              <button className="modal-confirm" onClick={handleDeposit}>
+                Confirmar
+              </button>
+              <button 
+                className="modal-cancel" 
+                onClick={() => {
+                  setShowDepositModal(false);
+                  setSelectedGoal(null);
+                  setDepositAmount('');
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CalendarPopup 
+        isOpen={isCalendarOpen} 
+        onClose={() => setIsCalendarOpen(false)} 
+        userEmail={userEmail} 
+      />
+      <NotificationsPopup 
+        isOpen={isNotificationsOpen} 
+        onClose={() => setIsNotificationsOpen(false)} 
+      />
     </div>
   );
 };
