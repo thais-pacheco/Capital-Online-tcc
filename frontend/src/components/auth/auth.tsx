@@ -137,7 +137,7 @@ const Auth: React.FC = () => {
       <div className="auth-card">
         <div className="auth-header">
           <div className="logo">
-            <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+            <PiggyBank className="logo-icon" />
             <span className="logo-text">Capital Online</span>
           </div>
           <div className="tagline">

@@ -188,7 +188,7 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
         </button>
 
         <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
-          📅 Calendário de Lembretes
+           Calendário de Lembretes
         </h2>
         <p style={{ color: "#64748b", marginBottom: "1.5rem", fontSize: "0.875rem" }}>
           Acompanhe suas parcelas e lembretes de pagamento

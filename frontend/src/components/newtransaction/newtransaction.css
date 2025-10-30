@@ -37,12 +37,10 @@
 .logo-icon {
   width: 32px;
   height: 32px;
-  background: #22c55e;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
 }
 
 .logo-text {

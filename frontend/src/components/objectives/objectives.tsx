@@ -264,7 +264,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         <div className="header-container">
           <div className="header-left">
             <div className="logo">
-              <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+              <PiggyBank className="logo-icon"/>
               <span className="logo-text">CAPITAL ONLINE</span>
             </div>
           </div>

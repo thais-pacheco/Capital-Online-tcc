@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import Chart from 'chart.js/auto';
 import type { Page } from '../../types';
+import CalendarPopup from '../calendario/CalendarPopup';
+import NotificationsPopup from '../notificacoes/NotificationsPopup';
 import './charts.css';
 
 interface Transaction {
@@ -34,6 +36,9 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<any>(null);
@@ -42,6 +47,16 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
   useEffect(() => {
     const fetchTransactions = async () => {
       const token = localStorage.getItem('token')?.replace(/"/g, '');
+      const storedUser = localStorage.getItem('usuario');
+
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          setUserEmail(user.email || '');
+        } catch (e) {
+          console.error('Erro ao parse do usuário:', e);
+        }
+      }
 
       if (!token) {
         setError('Token não encontrado. Faça login novamente.');
@@ -220,25 +235,31 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
         <div className="charts-header-inner">
           <div className="charts-header-left">
             <div className="charts-logo">
-              <PiggyBank className="logo-icon" style={{ color: '#22c55e' }} />
+              <PiggyBank className="logo-icon" />
               <span className="charts-title">CAPITAL ONLINE</span>
             </div>
           </div>
 
           <nav className="charts-nav">
             <button className="nav-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
-            <button className="nav-button" onClick={() => onNavigate('new-transaction')}>Nova movimentação</button>
-            <button className="nav-button active">Gráficos</button>
+            <button className="nav-button" onClick={() => onNavigate('nova-transacao')}>Nova movimentação</button>
+            <button className="nav-button active" onClick={() => onNavigate('charts')}>Gráficos</button>
             <button className="nav-button" onClick={() => onNavigate('objetivos')}>Objetivos</button>
           </nav>
 
           <div className="charts-header-right">
-            <button className="icon-button" title="Calendário"><Calendar size={18} /></button>
-            <button className="icon-button" title="Notificações"><Bell size={18} /></button>
+            <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
+              <Calendar size={18} />
+            </button>
+            <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
+              <Bell size={18} />
+            </button>
             <div className="profile-avatar" style={{ cursor: 'pointer' }} onClick={() => onNavigate('profile')}>
               <User size={18} />
             </div>
-            <button className="icon-button logout" onClick={onLogout}><LogOut size={18} /></button>
+            <button className="icon-button logout" onClick={onLogout}>
+              <LogOut size={18} />
+            </button>
           </div>
         </div>
       </header>
@@ -307,6 +328,9 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
           </div>
         </div>
       </main>
+
+      <CalendarPopup isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} userEmail={userEmail} />
+      <NotificationsPopup isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
     </div>
   );
 };
