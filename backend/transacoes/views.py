@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Categoria, Movimentacao, LembreteParcela
 from .serializers import CategoriaSerializer, MovimentacaoSerializer, LembreteParcelaSerializer
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
@@ -91,7 +91,7 @@ class LembreteParcelaViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        """🆕 ADICIONADO - Associa o usuário automaticamente ao criar lembrete"""
+        """Associa o usuário automaticamente ao criar lembrete"""
         serializer.save(usuario=self.request.user)
 
     @action(detail=True, methods=['post'])
@@ -114,6 +114,45 @@ class LembreteParcelaViewSet(viewsets.ModelViewSet):
         lembrete.save()
         
         serializer = self.get_serializer(lembrete)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def marcar_notificado(self, request, pk=None):
+        """🆕 Marca um lembrete como notificado (dispensar notificação)"""
+        lembrete = self.get_object()
+        
+        # Verifica se o modelo tem o campo notificado
+        if hasattr(lembrete, 'notificado'):
+            lembrete.notificado = True
+            lembrete.save()
+            serializer = self.get_serializer(lembrete)
+            return Response(serializer.data)
+        else:
+            return Response(
+                {'detail': 'Campo notificado não existe no modelo. Execute as migrações.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=False, methods=['get'])
+    def notificacoes(self, request):
+        """🆕 Retorna lembretes não pagos e não notificados dos próximos 7 dias"""
+        hoje = date.today()
+        limite = hoje + timedelta(days=7)
+        
+        # Filtra lembretes não pagos com vencimento até 7 dias
+        queryset = LembreteParcela.objects.filter(
+            usuario=request.user,
+            pago=False,
+            data_vencimento__lte=limite
+        )
+        
+        # Se o campo notificado existir, filtra também
+        if hasattr(LembreteParcela, 'notificado'):
+            queryset = queryset.filter(notificado=False)
+        
+        lembretes = queryset.order_by('data_vencimento')
+        
+        serializer = self.get_serializer(lembretes, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])

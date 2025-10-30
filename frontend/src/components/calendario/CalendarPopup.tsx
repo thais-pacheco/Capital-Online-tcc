@@ -32,7 +32,6 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
 
   const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-  // Função para obter data no fuso de Brasília (sem conversão de timezone)
   const getBrasiliaDate = (dateStr?: string) => {
     if (dateStr) {
       const [year, month, day] = dateStr.split('-').map(Number);
