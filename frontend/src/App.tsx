@@ -104,7 +104,11 @@ function App() {
           path="/graficos" 
           element={
             <ProtectedRoute>
-              <ChartsWrapper />
+              <ChartsWrapper onNavigate={function (page: string): void {
+                throw new Error('Function not implemented.');
+              } } onLogout={function (): void {
+                throw new Error('Function not implemented.');
+              } } />
             </ProtectedRoute>
           } 
         />
