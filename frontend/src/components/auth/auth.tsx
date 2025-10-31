@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PiggyBank, Eye, EyeOff, Mail, Lock, User, TrendingUp } from 'lucide-react';
 import './auth.css';
@@ -18,6 +18,7 @@ interface FormErrors {
 }
 
 const Auth: React.FC = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -32,7 +33,34 @@ const Auth: React.FC = () => {
   const [serverMessage, setServerMessage] = useState('');
   const [serverMessageIsError, setServerMessageIsError] = useState(false);
 
-  const navigate = useNavigate();
+  // Redirecionar se já estiver autenticado
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/auth/verify-token/', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          navigate('/dashboard');
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('usuario');
+        }
+      } catch (error) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -73,7 +101,7 @@ const Auth: React.FC = () => {
         ? { email: formData.email, password: formData.password }
         : { nome: formData.nome, email: formData.email, password: formData.password };
 
-      const response = await fetch(`http://127.0.0.1:8000/auth${endpoint}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/auth${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -82,6 +110,7 @@ const Auth: React.FC = () => {
       const data = await response.json();
 
       if (response.ok) {
+        // Salvar token como string simples (SEM JSON.stringify)
         if (data.token) localStorage.setItem('token', data.token);
         if (data.usuario) localStorage.setItem('usuario', JSON.stringify(data.usuario));
 
@@ -239,14 +268,14 @@ const Auth: React.FC = () => {
             )}
 
             {isLogin && (
-              <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+              <div style={{ textAlign: 'right', marginTop: '-8px', marginBottom: '16px' }}>
                 <button 
                   type="button" 
                   className="link-btn" 
                   onClick={() => navigate('/forgot-password')}
-                  style={{ fontSize: '0.875rem' }}
+                  style={{ fontSize: '0.875rem', color: '#6366f1' }}
                 >
-                  Esqueceu a senha?
+                  Esqueci minha senha
                 </button>
               </div>
             )}

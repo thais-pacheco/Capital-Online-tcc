@@ -255,3 +255,75 @@ def reset_password_view(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Método não permitido"}, status=405)
+
+# Adicione estas funções no FINAL do seu arquivo views.py
+
+@csrf_exempt
+def verify_token_view(request):
+    """
+    Endpoint para verificar se o token JWT é válido.
+    O middleware já validou o token e adicionou request.user
+    """
+    if request.method == "GET":
+        try:
+            # O middleware já validou tudo, só retornamos os dados
+            if hasattr(request, 'user') and request.user:
+                usuario = request.user
+                return JsonResponse({
+                    "valid": True,
+                    "usuario": {
+                        "id": usuario.id,
+                        "nome": usuario.nome,
+                        "email": usuario.email,
+                        "data_criacao": usuario.data_criacao.isoformat() if usuario.data_criacao else None
+                    }
+                }, status=200)
+            else:
+                return JsonResponse({
+                    "valid": False,
+                    "error": "Usuário não autenticado."
+                }, status=401)
+
+        except Exception as e:
+            return JsonResponse({
+                "error": f"Erro ao verificar token: {str(e)}"
+            }, status=500)
+
+    return JsonResponse({"error": "Método não permitido"}, status=405)
+
+
+@csrf_exempt
+def refresh_token_view(request):
+    """
+    Endpoint para renovar o token JWT (opcional, mas recomendado).
+    Gera um novo token com 12 horas de validade.
+    """
+    if request.method == "POST":
+        try:
+            if hasattr(request, 'user') and request.user:
+                usuario = request.user
+                
+                # Gera novo token com 12 horas de validade
+                payload = {
+                    "id": usuario.id,
+                    "email": usuario.email,
+                    "exp": timezone.now() + timezone.timedelta(hours=12)
+                }
+                new_token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+                return JsonResponse({
+                    "message": "Token renovado com sucesso!",
+                    "token": new_token,
+                    "expires_in": "12 horas"
+                }, status=200)
+            else:
+                return JsonResponse({
+                    "error": "Usuário não autenticado."
+                }, status=401)
+
+        except Exception as e:
+            return JsonResponse({
+                "error": f"Erro ao renovar token: {str(e)}"
+            }, status=500)
+
+    return JsonResponse({"error": "Método não permitido"}, status=405)

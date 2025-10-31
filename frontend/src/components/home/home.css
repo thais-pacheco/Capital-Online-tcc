@@ -28,14 +28,6 @@ body {
 }
 
 .home-login {
-  background: none;
-  border: none;
-  color: #1f2937;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.home-signup {
   background-color: #22c55e;
   border: none;
   color: white;

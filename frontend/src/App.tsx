@@ -1,5 +1,6 @@
- import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import ProtectedRoute from './ProtectedRoute';
 import Auth from './components/auth/auth';
 import Dashboard from './components/dashboard/Dashboard';
 import Home from './components/home/home';
@@ -10,18 +11,15 @@ import Profile from './components/profile/Profile';
 import ForgotPassword from './components/auth/ForgotPassword';
 import type { Page } from './types';
 
-
 interface PageProps {
   onNavigate: (page: Page) => void;
   onLogout: () => void;
 }
 
-
 // Wrapper genérico para passar as props necessárias
 function withNavigation<P extends object>(Component: React.ComponentType<P & PageProps>) {
   return (props: P) => {
     const navigate = useNavigate();
-
 
     const handleNavigate = (page: Page) => {
       switch (page) {
@@ -45,16 +43,13 @@ function withNavigation<P extends object>(Component: React.ComponentType<P & Pag
       }
     };
 
-
     const handleLogout = () => {
       navigate('/login');
     };
 
-
     return <Component {...props} onNavigate={handleNavigate} onLogout={handleLogout} />;
   };
 }
-
 
 // Wrappers para cada página que precisa de navegação
 const DashboardWrapper = withNavigation(Dashboard);
@@ -63,29 +58,71 @@ const NewTransactionWrapper = withNavigation(NewTransaction);
 const HomeWrapper = withNavigation(Home);
 const ChartsWrapper = withNavigation(Charts);
 
-
 const ProfileWrapper = () => {
   const navigate = useNavigate();
   return <Profile onLogout={() => navigate('/login')} />;
 };
 
-
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Rotas públicas */}
         <Route path="/" element={<HomeWrapper />} />
-        <Route path="/dashboard" element={<DashboardWrapper />} />
-        <Route path="/nova-movimentacao" element={<NewTransactionWrapper />} />
-        <Route path="/objetivos" element={<ObjectivesWrapper />} />
-        <Route path="/graficos" element={<ChartsWrapper />} />
         <Route path="/login" element={<Auth />} />
-        <Route path="/profile" element={<ProfileWrapper />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        
+        {/* Rotas protegidas */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <DashboardWrapper />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/nova-movimentacao" 
+          element={
+            <ProtectedRoute>
+              <NewTransactionWrapper />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/objetivos" 
+          element={
+            <ProtectedRoute>
+              <ObjectivesWrapper />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/graficos" 
+          element={
+            <ProtectedRoute>
+              <ChartsWrapper />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <ProfileWrapper />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Redirecionar qualquer rota não encontrada */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
 }
-
 
 export default App;

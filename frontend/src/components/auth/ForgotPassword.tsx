@@ -29,7 +29,7 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/auth/forgot-password/', {
+      const response = await fetch('http://127.0.0.1:8000/api/auth/forgot-password/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -67,7 +67,7 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/auth/verify-reset-code/', {
+      const response = await fetch('http://127.0.0.1:8000/api/auth/verify-reset-code/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, codigo: code }),
@@ -111,7 +111,7 @@ const ForgotPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/auth/reset-password/', {
+      const response = await fetch('http://127.0.0.1:8000/api/auth/reset-password/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, codigo: code, nova_senha: newPassword }),
