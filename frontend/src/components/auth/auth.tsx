@@ -273,7 +273,7 @@ const Auth: React.FC = () => {
                   type="button" 
                   className="link-btn" 
                   onClick={() => navigate('/forgot-password')}
-                  style={{ fontSize: '0.875rem', color: '#6366f1' }}
+                  style={{ fontSize: '0.875rem', color: '#22c55e' }}
                 >
                   Esqueci minha senha
                 </button>

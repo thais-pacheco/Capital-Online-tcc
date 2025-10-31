@@ -12,7 +12,7 @@ interface Lembrete {
   titulo: string;
   descricao: string;
   data_vencimento: string;
-  valor_parcela: string;
+  valor_parcela: number | string; // Pode vir como number ou string
   numero_parcela: number;
   total_parcelas: number;
   pago: boolean;
@@ -40,6 +40,25 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
     return new Date();
   };
 
+  // Função para formatar valor em reais
+  const formatarValor = (valor: number | string): string => {
+    let valorNumerico: number;
+    
+    if (typeof valor === 'string') {
+      // Se veio como string, tentar converter
+      valorNumerico = parseFloat(valor);
+    } else {
+      valorNumerico = valor;
+    }
+    
+    // Se o valor for maior que 1000, assumir que está em centavos
+    if (valorNumerico >= 1000) {
+      valorNumerico = valorNumerico / 100;
+    }
+    
+    return valorNumerico.toFixed(2).replace('.', ',');
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchLembretes();
@@ -49,11 +68,16 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
   const fetchLembretes = async () => {
     setLoading(true);
     const token = localStorage.getItem('token')?.replace(/"/g, '');
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const mes = currentDate.getMonth() + 1;
       const ano = currentDate.getFullYear();
+      
+      console.log(`🔍 Buscando lembretes para ${mes}/${ano}`);
       
       const response = await fetch(
         `http://127.0.0.1:8000/api/lembretes/?mes=${mes}&ano=${ano}`,
@@ -67,10 +91,14 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
 
       if (response.ok) {
         const data = await response.json();
-        setLembretes(Array.isArray(data) ? data : data.results || []);
+        const lembretesData = Array.isArray(data) ? data : data.results || [];
+        console.log(`✅ ${lembretesData.length} lembretes encontrados:`, lembretesData);
+        setLembretes(lembretesData);
+      } else {
+        console.error('❌ Erro ao buscar lembretes:', response.status);
       }
     } catch (error) {
-      console.error('Erro ao buscar lembretes:', error);
+      console.error('❌ Erro ao buscar lembretes:', error);
     } finally {
       setLoading(false);
     }
@@ -93,10 +121,13 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
       );
 
       if (response.ok) {
+        console.log(`✅ Lembrete ${lembreteId} marcado como pago`);
         fetchLembretes();
+      } else {
+        console.error(`❌ Erro ao marcar lembrete ${lembreteId} como pago`);
       }
     } catch (error) {
-      console.error('Erro ao marcar como pago:', error);
+      console.error('❌ Erro ao marcar como pago:', error);
     }
   };
 
@@ -188,11 +219,17 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
         </button>
 
         <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
-           Calendário de Lembretes
+          📅 Calendário de Lembretes
         </h2>
         <p style={{ color: "#64748b", marginBottom: "1.5rem", fontSize: "0.875rem" }}>
           Acompanhe suas parcelas e lembretes de pagamento
         </p>
+
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '1rem', color: '#64748b' }}>
+            Carregando lembretes...
+          </div>
+        )}
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <button
@@ -367,7 +404,7 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
                       {lembrete.descricao}
                     </p>
                     <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "#059669" }}>
-                      R$ {parseFloat(lembrete.valor_parcela).toFixed(2).replace('.', ',')}
+                      R$ {formatarValor(lembrete.valor_parcela)}
                     </div>
                   </div>
                   

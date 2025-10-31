@@ -254,7 +254,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({ isOpen, onClose
           }}>
             <CheckCircle size={48} color="#22c55e" style={{ margin: '0 auto 1rem' }} />
             <p style={{ fontSize: '1rem', color: '#475569', fontWeight: '500' }}>
-              Você está em dia! 🎉
+              Você está em dia! 
             </p>
             <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.5rem' }}>
               Não há pagamentos pendentes ou próximos do vencimento.
@@ -298,7 +298,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({ isOpen, onClose
                           </p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <span style={{ fontSize: '1rem', fontWeight: '700', color: grupo.cor }}>
-                              R$ {parseFloat(lembrete.valor_parcela).toFixed(2).replace('.', ',')}
+                              R$ {(Number(lembrete.valor_parcela) / 100).toFixed(2).replace('.', ',')}
                             </span>
                             <span style={{
                               fontSize: '0.75rem',

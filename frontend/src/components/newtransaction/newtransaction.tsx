@@ -234,10 +234,14 @@ const NewTransaction: React.FC = () => {
       const reminderDay = parseInt(formData.reminderDay);
       const startDate = new Date(formData.date);
       
-      const amount = parseFloat(formData.amount.replace(/\./g, '').replace(',', '.')) * 100;
-      const installmentValue = amount / installments;
+      // Converter valor para centavos (inteiro)
+      const totalAmount = parseFloat(formData.amount.replace(/\./g, '').replace(',', '.')) * 100;
+      // Calcular valor da parcela (arredondar para inteiro)
+      const installmentValue = Math.round(totalAmount / installments);
 
       console.log(`📅 Criando ${installments} lembretes`);
+      console.log(`💰 Valor total: ${totalAmount} centavos`);
+      console.log(`💵 Valor por parcela: ${installmentValue} centavos`);
 
       const reminders = [];
       const errors = [];
@@ -255,18 +259,23 @@ const NewTransaction: React.FC = () => {
           const day = String(dueDate.getDate()).padStart(2, '0');
           const dateStr = `${year}-${month}-${day}`;
 
+          // Formatar valor da parcela com 2 casas decimais
+          const valorParcelaFormatado = (installmentValue / 100).toFixed(2).replace('.', ',');
+
           const reminderPayload = {
             movimentacao: movimentacaoId,
             usuario: usuarioId,
             numero_parcela: i,
             total_parcelas: installments,
-            valor_parcela: installmentValue,
+            valor_parcela: installmentValue, // Enviar como inteiro (centavos)
             data_vencimento: dateStr,
             titulo: `Parcela ${i}/${installments}: ${formData.description}`,
-            descricao: `Valor da parcela: R$ ${(installmentValue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${formData.observations ? '\n' + formData.observations : ''}`,
+            descricao: `Valor da parcela: R$ ${valorParcelaFormatado}${formData.observations ? '\n' + formData.observations : ''}`,
             pago: false,
             notificado: false,
           };
+
+          console.log(`📤 Enviando lembrete ${i}:`, reminderPayload);
 
           const response = await fetch('http://127.0.0.1:8000/api/lembretes/', {
             method: 'POST',
@@ -278,6 +287,7 @@ const NewTransaction: React.FC = () => {
           });
 
           const responseText = await response.text();
+          console.log(`📥 Resposta lembrete ${i}:`, responseText);
 
           if (!response.ok) {
             let errorData;
@@ -307,24 +317,30 @@ const NewTransaction: React.FC = () => {
               errorMsg = String(errorData);
             }
             
+            console.error(`❌ Erro na parcela ${i}:`, errorMsg);
             errors.push(`Parcela ${i}: ${errorMsg}`);
             continue;
           }
 
           const result = JSON.parse(responseText);
+          console.log(`✅ Lembrete ${i} criado com sucesso:`, result);
           reminders.push(result);
         } catch (innerError: any) {
+          console.error(`❌ Exceção na parcela ${i}:`, innerError);
           errors.push(`Parcela ${i}: ${innerError.message}`);
         }
       }
 
       if (errors.length > 0) {
+        console.error('❌ Erros encontrados:', errors);
         showToast('error', `Alguns lembretes falharam: ${errors.join(', ')}`);
         return false;
       }
 
+      console.log('✅ Todos os lembretes criados com sucesso!');
       return true;
     } catch (error: any) {
+      console.error('❌ Erro geral ao criar lembretes:', error);
       showToast('error', `Erro ao criar lembretes: ${error.message}`);
       return false;
     }
@@ -401,8 +417,10 @@ const NewTransaction: React.FC = () => {
         setLoading(false);
       } else {
         const result = await response.json();
+        console.log('✅ Transação criada:', result);
         
         if (formData.paymentType === 'parcelado' && formData.addReminders) {
+          console.log('🔄 Iniciando criação de lembretes para movimentação ID:', result.id);
           const remindersSuccess = await createReminders(result.id);
           if (remindersSuccess) {
             showToast('success', `🎉 Movimentação salva! ${formData.installments} lembretes criados no calendário.`);
@@ -417,6 +435,7 @@ const NewTransaction: React.FC = () => {
         fetchTransactions();
       }
     } catch (err) {
+      console.error('❌ Erro ao salvar transação:', err);
       showToast('error', 'Erro ao conectar com o servidor. Verifique se a API está rodando.');
     } finally {
       setLoading(false);
@@ -1030,7 +1049,7 @@ const NewTransaction: React.FC = () => {
                         fontWeight: '600',
                         color: transaction.tipo === 'entrada' ? '#22c55e' : '#ef4444',
                       }}>
-                        {transaction.tipo === 'entrada' ? '+' : '-'}R$ {(transaction.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        {transaction.tipo === 'entrada' ? '+' : '-'}R$ {(transaction.valor / 100).toFixed(2).replace('.', ',')}
                       </td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         <button
