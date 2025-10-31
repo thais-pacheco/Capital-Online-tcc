@@ -78,7 +78,7 @@ const Home: React.FC = () => {
       <section className="cta">
         <h2>Pronto para transformar suas finanças?</h2>
         <p>Junte-se a milhares de usuários que já estão no controle de suas finanças</p>
-        <button className="cta-button" onClick={() => navigate('/')}>
+        <button className="cta-button" onClick={() => navigate('/login')}>
           Comece agora! É grátis →
         </button>
       </section>
