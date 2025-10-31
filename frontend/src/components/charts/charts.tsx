@@ -100,6 +100,13 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
           };
         });
 
+        // Ordenar por data (mais recentes primeiro)
+        validatedTransactions.sort((a: Transaction, b: Transaction) => {
+          const dateA = new Date(a.data);
+          const dateB = new Date(b.data);
+          return dateB.getTime() - dateA.getTime(); // Mais recentes primeiro
+        });
+
         setTransactions(validatedTransactions);
         setError('');
       } catch (err: any) {

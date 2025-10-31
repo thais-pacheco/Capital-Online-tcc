@@ -85,7 +85,7 @@ const Dashboard: React.FC = () => {
 
         const data = await response.json();
 
-        const validatedTransactions = data.map((t: any) => {
+        const validatedTransactions: Transaction[] = data.map((t: any) => {
           const tipo =
             typeof t.tipo === 'string'
               ? t.tipo.toLowerCase().trim() === 'entrada'
@@ -106,6 +106,13 @@ const Dashboard: React.FC = () => {
             forma_pagamento: t.forma_pagamento || 'avista',
             quantidade_parcelas: t.quantidade_parcelas || 1
           };
+        });
+
+        // Ordenar por data (mais recentes primeiro)
+        validatedTransactions.sort((a: Transaction, b: Transaction) => {
+          const dateA = new Date(a.data).getTime();
+          const dateB = new Date(b.data).getTime();
+          return dateB - dateA; // Ordem decrescente
         });
 
         setTransactions(validatedTransactions);
@@ -146,7 +153,6 @@ const Dashboard: React.FC = () => {
 
   // --- LOGOUT ---
   const handleLogout = () => {
-
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
     navigate('/');
@@ -242,7 +248,6 @@ const Dashboard: React.FC = () => {
             </button>
             <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
               <User size={18} />
-
             </div>
             <button className="icon-button logout" onClick={handleLogout}>
               <LogOut size={18} />
@@ -293,7 +298,12 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="transactions-section">
-          <div className="section-header"><h2>Histórico de movimentações</h2></div>
+          <div className="section-header">
+            <h2>Últimas 10 movimentações</h2>
+            <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: 'normal' }}>
+              Ordenadas por data (mais recentes primeiro)
+            </span>
+          </div>
 
           <div className="filters">
             <div className="search-input">
@@ -339,9 +349,9 @@ const Dashboard: React.FC = () => {
               </thead>
               <tbody>
                 {filteredTransactions.length === 0 ? (
-                  <tr><td colSpan={4}>Nenhuma movimentação encontrada.</td></tr>
+                  <tr><td colSpan={5}>Nenhuma movimentação encontrada.</td></tr>
                 ) : (
-                  filteredTransactions.map((transaction) => (
+                  filteredTransactions.slice(0, 10).map((transaction) => (
                     <tr key={transaction.id}>
                       <td>{transaction.data && !isNaN(new Date(transaction.data).getTime()) ? new Date(transaction.data).toLocaleDateString('pt-BR') : 'Data inválida'}</td>
                       <td>

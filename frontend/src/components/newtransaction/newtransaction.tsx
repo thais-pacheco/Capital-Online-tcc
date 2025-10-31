@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PiggyBank, Calendar, Bell, LogOut, User, CheckCircle, XCircle } from 'lucide-react';
+import { PiggyBank, Calendar, Bell, LogOut, User, CheckCircle, XCircle, Trash2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CalendarInternal from '../calendario/CalendarPopup';
 import NotificationsPopup from '../notificacoes/NotificationsPopup';
@@ -30,6 +30,24 @@ interface Toast {
   message: string;
 }
 
+interface Transaction {
+  id: number;
+  descricao: string;
+  tipo: 'entrada' | 'saida';
+  valor: number;
+  data_movimentacao: string;
+  categoria: number;
+  observacoes?: string;
+  forma_pagamento?: 'avista' | 'parcelado';
+  quantidade_parcelas?: number;
+}
+
+interface DeleteModal {
+  isOpen: boolean;
+  transactionId: number | null;
+  transactionName: string;
+}
+
 const NewTransaction: React.FC = () => {
   const navigate = useNavigate();
   
@@ -47,11 +65,18 @@ const NewTransaction: React.FC = () => {
   });
 
   const [categories, setCategories] = useState<Categoria[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<Toast>({ show: false, type: 'success', message: '' });
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [deleteModal, setDeleteModal] = useState<DeleteModal>({
+    isOpen: false,
+    transactionId: null,
+    transactionName: '',
+  });
+  const [deleting, setDeleting] = useState(false);
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ show: true, type, message });
@@ -71,6 +96,36 @@ const NewTransaction: React.FC = () => {
       }
     }
   }, []);
+
+  // Buscar transações
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const fetchTransactions = async () => {
+    const token = localStorage.getItem('token')?.replace(/"/g, '');
+    if (!token) return;
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Ordenar por data (mais recentes primeiro)
+        const sorted = data.sort((a: Transaction, b: Transaction) => {
+          return new Date(b.data_movimentacao).getTime() - new Date(a.data_movimentacao).getTime();
+        });
+        setTransactions(sorted);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar transações:', err);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem('token')?.replace(/"/g, '');
@@ -114,188 +169,166 @@ const NewTransaction: React.FC = () => {
   }, [formData.type]);
 
   const handleChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-) => {
-  const { name, value, type } = e.target;
-  
-  if (type === 'checkbox') {
-    const checked = (e.target as HTMLInputElement).checked;
-    setFormData(prev => ({ ...prev, [name]: checked }));
-  } else if (name === 'amount') {
-    // Remove tudo exceto números
-    const apenasNumeros = value.replace(/\D/g, '');
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
     
-    if (apenasNumeros === '') {
-      setFormData(prev => ({ ...prev, [name]: '' }));
-      return;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else if (name === 'amount') {
+      const apenasNumeros = value.replace(/\D/g, '');
+      
+      if (apenasNumeros === '') {
+        setFormData(prev => ({ ...prev, [name]: '' }));
+        return;
+      }
+      
+      const valorNumerico = parseInt(apenasNumeros) / 100;
+      const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      
+      setFormData(prev => ({ ...prev, [name]: valorFormatado }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
-    
-    // Converte para número e divide por 100 para ter centavos
-    const valorNumerico = parseInt(apenasNumeros) / 100;
-    
-    // Formata com vírgula como separador decimal
-    const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-    
-    setFormData(prev => ({ ...prev, [name]: valorFormatado }));
-  } else {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  }
-};
+  };
 
   const createReminders = async (movimentacaoId: number) => {
-  const token = localStorage.getItem('token')?.replace(/"/g, '');
-  if (!token) {
-    console.error('❌ Token não encontrado');
-    showToast('error', 'Usuário não autenticado.');
-    return false;
-  }
-
-  if (!movimentacaoId) {
-    console.error('❌ ID da movimentação inválido:', movimentacaoId);
-    showToast('error', 'ID da movimentação não encontrado.');
-    return false;
-  }
-
-  // Pegar o ID do usuário
-  const storedUser = localStorage.getItem('usuario');
-  let usuarioId = null;
-  if (storedUser) {
-    try {
-      const user = JSON.parse(storedUser);
-      usuarioId = user.id;
-    } catch (e) {
-      console.error('Erro ao parse do usuário:', e);
-    }
-  }
-
-  if (!usuarioId) {
-    console.error('❌ ID do usuário não encontrado');
-    showToast('error', 'ID do usuário não encontrado.');
-    return false;
-  }
-
-  console.log('🔄 Iniciando criação de lembretes...');
-
-  try {
-    const installments = parseInt(formData.installments);
-    const reminderDay = parseInt(formData.reminderDay);
-    const startDate = new Date(formData.date);
-    
-    // Converte o valor formatado para centavos
-    const amount = parseFloat(formData.amount.replace(/\./g, '').replace(',', '.')) * 100;
-    const installmentValue = amount / installments;
-
-    console.log(`📅 Criando ${installments} lembretes`);
-    console.log(`💰 Valor total: R$ ${(amount / 100).toFixed(2)}`);
-    console.log(`💰 Valor por parcela: R$ ${(installmentValue / 100).toFixed(2)}`);
-
-    const reminders = [];
-    const errors = [];
-    
-    for (let i = 1; i <= installments; i++) {
-      try {
-        const dueDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, reminderDay);
-        
-        if (dueDate.getDate() !== reminderDay) {
-          dueDate.setDate(0);
-        }
-
-        const year = dueDate.getFullYear();
-        const month = String(dueDate.getMonth() + 1).padStart(2, '0');
-        const day = String(dueDate.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
-
-        const reminderPayload = {
-          movimentacao: movimentacaoId,
-          usuario: usuarioId,
-          numero_parcela: i,
-          total_parcelas: installments,
-          valor_parcela: installmentValue, // Envia em centavos (sem dividir por 100)
-          data_vencimento: dateStr,
-          titulo: `Parcela ${i}/${installments}: ${formData.description}`,
-          descricao: `Valor da parcela: R$ ${(installmentValue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${formData.observations ? '\n' + formData.observations : ''}`,
-          pago: false,
-          notificado: false,
-        };
-
-        console.log(`\n📤 Enviando lembrete ${i}/${installments} - Valor: R$ ${(installmentValue / 100).toFixed(2)}`);
-        console.log('Payload:', JSON.stringify(reminderPayload, null, 2));
-
-        const response = await fetch('http://127.0.0.1:8000/api/lembretes/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify(reminderPayload),
-        });
-
-        const responseText = await response.text();
-        console.log(`📥 Status ${i}: ${response.status}`);
-        console.log(`📥 Resposta completa ${i}:`, responseText);
-
-        if (!response.ok) {
-          let errorData;
-          try {
-            errorData = JSON.parse(responseText);
-            console.error(`❌ Erro ao criar lembrete ${i}:`, errorData);
-          } catch (parseError) {
-            errorData = { detail: responseText };
-            console.error(`❌ Erro ao criar lembrete ${i} (texto):`, responseText);
-          }
-          
-          let errorMsg = '';
-          if (typeof errorData === 'object') {
-            if (errorData.detail) {
-              errorMsg = errorData.detail;
-            } else if (errorData.error) {
-              errorMsg = errorData.error;
-            } else {
-              const firstKey = Object.keys(errorData)[0];
-              if (firstKey && Array.isArray(errorData[firstKey])) {
-                errorMsg = `${firstKey}: ${errorData[firstKey][0]}`;
-              } else if (firstKey) {
-                errorMsg = `${firstKey}: ${errorData[firstKey]}`;
-              } else {
-                errorMsg = JSON.stringify(errorData);
-              }
-            }
-          } else {
-            errorMsg = String(errorData);
-          }
-          
-          console.error(`❌ Mensagem de erro extraída:`, errorMsg);
-          errors.push(`Parcela ${i}: ${errorMsg}`);
-          continue;
-        }
-
-        const result = JSON.parse(responseText);
-        console.log(`✅ Lembrete ${i} criado com sucesso! ID: ${result.id}`);
-        reminders.push(result);
-      } catch (innerError: any) {
-        console.error(`❌ Erro na parcela ${i}:`, innerError);
-        errors.push(`Parcela ${i}: ${innerError.message}`);
-      }
-    }
-
-    if (errors.length > 0) {
-      console.error('❌ Erros encontrados:', errors);
-      showToast('error', `Alguns lembretes falharam: ${errors.join(', ')}`);
+    const token = localStorage.getItem('token')?.replace(/"/g, '');
+    if (!token) {
+      console.error('❌ Token não encontrado');
+      showToast('error', 'Usuário não autenticado.');
       return false;
     }
 
-    console.log(`✅ Todos os ${reminders.length} lembretes criados com sucesso!`);
-    return true;
-  } catch (error: any) {
-    console.error('❌ Erro geral ao criar lembretes:', error);
-    console.error('Stack:', error.stack);
-    showToast('error', `Erro ao criar lembretes: ${error.message}`);
-    return false;
-  }
-};
+    if (!movimentacaoId) {
+      console.error('❌ ID da movimentação inválido:', movimentacaoId);
+      showToast('error', 'ID da movimentação não encontrado.');
+      return false;
+    }
+
+    const storedUser = localStorage.getItem('usuario');
+    let usuarioId = null;
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        usuarioId = user.id;
+      } catch (e) {
+        console.error('Erro ao parse do usuário:', e);
+      }
+    }
+
+    if (!usuarioId) {
+      console.error('❌ ID do usuário não encontrado');
+      showToast('error', 'ID do usuário não encontrado.');
+      return false;
+    }
+
+    console.log('🔄 Iniciando criação de lembretes...');
+
+    try {
+      const installments = parseInt(formData.installments);
+      const reminderDay = parseInt(formData.reminderDay);
+      const startDate = new Date(formData.date);
+      
+      const amount = parseFloat(formData.amount.replace(/\./g, '').replace(',', '.')) * 100;
+      const installmentValue = amount / installments;
+
+      console.log(`📅 Criando ${installments} lembretes`);
+
+      const reminders = [];
+      const errors = [];
+      
+      for (let i = 1; i <= installments; i++) {
+        try {
+          const dueDate = new Date(startDate.getFullYear(), startDate.getMonth() + i, reminderDay);
+          
+          if (dueDate.getDate() !== reminderDay) {
+            dueDate.setDate(0);
+          }
+
+          const year = dueDate.getFullYear();
+          const month = String(dueDate.getMonth() + 1).padStart(2, '0');
+          const day = String(dueDate.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
+
+          const reminderPayload = {
+            movimentacao: movimentacaoId,
+            usuario: usuarioId,
+            numero_parcela: i,
+            total_parcelas: installments,
+            valor_parcela: installmentValue,
+            data_vencimento: dateStr,
+            titulo: `Parcela ${i}/${installments}: ${formData.description}`,
+            descricao: `Valor da parcela: R$ ${(installmentValue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${formData.observations ? '\n' + formData.observations : ''}`,
+            pago: false,
+            notificado: false,
+          };
+
+          const response = await fetch('http://127.0.0.1:8000/api/lembretes/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(reminderPayload),
+          });
+
+          const responseText = await response.text();
+
+          if (!response.ok) {
+            let errorData;
+            try {
+              errorData = JSON.parse(responseText);
+            } catch (parseError) {
+              errorData = { detail: responseText };
+            }
+            
+            let errorMsg = '';
+            if (typeof errorData === 'object') {
+              if (errorData.detail) {
+                errorMsg = errorData.detail;
+              } else if (errorData.error) {
+                errorMsg = errorData.error;
+              } else {
+                const firstKey = Object.keys(errorData)[0];
+                if (firstKey && Array.isArray(errorData[firstKey])) {
+                  errorMsg = `${firstKey}: ${errorData[firstKey][0]}`;
+                } else if (firstKey) {
+                  errorMsg = `${firstKey}: ${errorData[firstKey]}`;
+                } else {
+                  errorMsg = JSON.stringify(errorData);
+                }
+              }
+            } else {
+              errorMsg = String(errorData);
+            }
+            
+            errors.push(`Parcela ${i}: ${errorMsg}`);
+            continue;
+          }
+
+          const result = JSON.parse(responseText);
+          reminders.push(result);
+        } catch (innerError: any) {
+          errors.push(`Parcela ${i}: ${innerError.message}`);
+        }
+      }
+
+      if (errors.length > 0) {
+        showToast('error', `Alguns lembretes falharam: ${errors.join(', ')}`);
+        return false;
+      }
+
+      return true;
+    } catch (error: any) {
+      showToast('error', `Erro ao criar lembretes: ${error.message}`);
+      return false;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -325,17 +358,15 @@ const NewTransaction: React.FC = () => {
     }
 
     const payload = {
-    descricao: formData.description.trim(),
-    tipo: formData.type === 'income' ? 'entrada' : 'saida',
-    valor: parseFloat(formData.amount.replace(/\./g, '').replace(',', '.')) * 100, // Multiplica por 100 para enviar em centavos
-    categoria: parseInt(formData.category),
-    data_movimentacao: `${formData.date}T12:00:00`,
-    observacoes: formData.observations.trim(),
-    forma_pagamento: formData.paymentType,
-    quantidade_parcelas: formData.paymentType === 'parcelado' ? parseInt(formData.installments) : null,
-  };
-
-    console.log('📤 Enviando movimentação:', payload);
+      descricao: formData.description.trim(),
+      tipo: formData.type === 'income' ? 'entrada' : 'saida',
+      valor: parseFloat(formData.amount.replace(/\./g, '').replace(',', '.')) * 100,
+      categoria: parseInt(formData.category),
+      data_movimentacao: `${formData.date}T12:00:00`,
+      observacoes: formData.observations.trim(),
+      forma_pagamento: formData.paymentType,
+      quantidade_parcelas: formData.paymentType === 'parcelado' ? parseInt(formData.installments) : null,
+    };
 
     try {
       const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
@@ -356,7 +387,6 @@ const NewTransaction: React.FC = () => {
 
       if (!response.ok) {
         const error = await response.json();
-        console.error('❌ Erro da API:', error);
         
         let errorMsg = 'Erro ao salvar transação. ';
         if (error.quantidade_parcelas) {
@@ -371,9 +401,7 @@ const NewTransaction: React.FC = () => {
         setLoading(false);
       } else {
         const result = await response.json();
-        console.log('✅ Transação criada:', result);
         
-        // Criar lembretes se necessário
         if (formData.paymentType === 'parcelado' && formData.addReminders) {
           const remindersSuccess = await createReminders(result.id);
           if (remindersSuccess) {
@@ -385,28 +413,64 @@ const NewTransaction: React.FC = () => {
           showToast('success', '✅ Movimentação salva com sucesso!');
         }
         
-        setFormData({
-          type: 'income',
-          description: '',
-          amount: '',
-          category: '',
-          date: new Date().toISOString().split('T')[0],
-          observations: '',
-          paymentType: 'avista',
-          installments: '',
-          addReminders: false,
-          reminderDay: '5',
-        });
-        
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
+        clearForm();
+        fetchTransactions();
       }
     } catch (err) {
-      console.error('❌ Erro de conexão:', err);
       showToast('error', 'Erro ao conectar com o servidor. Verifique se a API está rodando.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openDeleteModal = (id: number, name: string) => {
+    setDeleteModal({
+      isOpen: true,
+      transactionId: id,
+      transactionName: name,
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      transactionId: null,
+      transactionName: '',
+    });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.transactionId) return;
+
+    setDeleting(true);
+    const token = localStorage.getItem('token')?.replace(/"/g, '');
+
+    if (!token) {
+      showToast('error', 'Usuário não autenticado.');
+      setDeleting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/transacoes/${deleteModal.transactionId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok || response.status === 204) {
+        showToast('success', '✅ Transação excluída com sucesso!');
+        fetchTransactions();
+        closeDeleteModal();
+      } else {
+        const error = await response.json();
+        showToast('error', error.detail || 'Erro ao excluir transação');
+      }
+    } catch (err) {
+      showToast('error', 'Erro ao conectar com o servidor');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -454,37 +518,122 @@ const NewTransaction: React.FC = () => {
         </div>
       )}
 
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+        }}
+        onClick={closeDeleteModal}
+        >
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '2rem',
+            maxWidth: '500px',
+            width: '90%',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+          }}
+          onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{
+                backgroundColor: '#fee2e2',
+                borderRadius: '50%',
+                padding: '0.75rem',
+                display: 'flex',
+              }}>
+                <AlertCircle size={24} color="#ef4444" />
+              </div>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>
+                Confirmar Exclusão
+              </h2>
+            </div>
+
+            <p style={{ color: '#64748b', marginBottom: '1.5rem', fontSize: '1rem' }}>
+              Tem certeza que deseja excluir a transação <strong>"{deleteModal.transactionName}"</strong>?
+              Esta ação não pode ser desfeita.
+            </p>
+
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button
+                onClick={closeDeleteModal}
+                disabled={deleting}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: 'white',
+                  color: '#64748b',
+                  border: '2px solid #e2e8f0',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: deleting ? '#fca5a5' : '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {deleting ? 'Excluindo...' : 'Sim, Excluir'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="header">
-  <div className="header-container">
-    <div className="header-left">
-      <div className="logo">
-        <PiggyBank className="logo-icon"  />
-        <span className="logo-text">CAPITAL ONLINE</span>
-      </div>
-    </div>
-    <nav className="nav">
-      <button className="nav-button" onClick={() => navigate('/dashboard')}>Dashboard</button>
-      <button className="nav-button active" onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
-      <button className="nav-button" onClick={() => navigate('/graficos')}>Gráficos</button>
-      <button className="nav-button" onClick={() => navigate('/objetivos')}>Objetivos</button>
-    </nav>
-    <div className="header-right">
-      <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
-        <Calendar size={18} />
-      </button>
-      <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
-        <Bell size={18} />
-      </button>
-      <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
-        <User size={18} />
-      </div>
-      <button className="icon-button logout" onClick={handleLogout}>
-        <LogOut size={18} />
-      </button>
-    </div>
-  </div>
-</header>
+        <div className="header-container">
+          <div className="header-left">
+            <div className="logo">
+              <PiggyBank className="logo-icon" />
+              <span className="logo-text">CAPITAL ONLINE</span>
+            </div>
+          </div>
+          <nav className="nav">
+            <button className="nav-button" onClick={() => navigate('/dashboard')}>Dashboard</button>
+            <button className="nav-button active" onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
+            <button className="nav-button" onClick={() => navigate('/graficos')}>Gráficos</button>
+            <button className="nav-button" onClick={() => navigate('/objetivos')}>Objetivos</button>
+          </nav>
+          <div className="header-right">
+            <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
+              <Calendar size={18} />
+            </button>
+            <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
+              <Bell size={18} />
+            </button>
+            <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+              <User size={18} />
+            </div>
+            <button className="icon-button logout" onClick={handleLogout}>
+              <LogOut size={18} />
+            </button>
+          </div>
+        </div>
+      </header>
 
       {/* Main Content */}
       <main style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 2rem' }}>
@@ -820,6 +969,102 @@ const NewTransaction: React.FC = () => {
             </div>
           </form>
         </div>
+
+        {/* Lista de TODAS as Transações */}
+        {transactions.length > 0 && (
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '2rem',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            marginTop: '2rem',
+          }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              Todas as Movimentações
+            </h2>
+            <p style={{ color: '#64748b', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+              Total de {transactions.length} transações (ordenadas por data - mais recentes primeiro)
+            </p>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600', color: '#64748b' }}>Data</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600', color: '#64748b' }}>Descrição</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600', color: '#64748b' }}>Tipo</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600', color: '#64748b' }}>Pagamento</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right', fontWeight: '600', color: '#64748b' }}>Valor</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: '600', color: '#64748b' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((transaction) => (
+                    <tr key={transaction.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                        {new Date(transaction.data_movimentacao).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td style={{ padding: '1rem', fontWeight: '500' }}>
+                        {transaction.descricao}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        <span style={{
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.875rem',
+                          fontWeight: '600',
+                          backgroundColor: transaction.tipo === 'entrada' ? '#dcfce7' : '#fee2e2',
+                          color: transaction.tipo === 'entrada' ? '#166534' : '#991b1b',
+                        }}>
+                          {transaction.tipo === 'entrada' ? 'Entrada' : 'Saída'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#64748b' }}>
+                        {transaction.forma_pagamento === 'parcelado' 
+                          ? `${transaction.quantidade_parcelas}x` 
+                          : 'À vista'}
+                      </td>
+                      <td style={{ 
+                        padding: '1rem', 
+                        textAlign: 'right',
+                        fontWeight: '600',
+                        color: transaction.tipo === 'entrada' ? '#22c55e' : '#ef4444',
+                      }}>
+                        {transaction.tipo === 'entrada' ? '+' : '-'}R$ {(transaction.valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                        <button
+                          onClick={() => openDeleteModal(transaction.id, transaction.descricao)}
+                          style={{
+                            padding: '0.5rem',
+                            backgroundColor: '#fee2e2',
+                            color: '#ef4444',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#fecaca';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#fee2e2';
+                          }}
+                          title="Excluir transação"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </main>
 
       <CalendarInternal isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} userEmail={userEmail} />
