@@ -12,18 +12,14 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-2w!p&thmu)ara4h67xlz5r-p*m45_4(kta7!4a6=0ty3%sj_=7'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-
-# Application definition
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -102,9 +98,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 
 DATABASES = {
     'default': {
@@ -125,25 +118,18 @@ EMAIL_HOST_USER = 'capitalonline.tcc@gmail.com'
 EMAIL_HOST_PASSWORD = 'gbhc uvov zzox xakk' 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+LANGUAGE_CODE = 'pt-br'
 
-
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

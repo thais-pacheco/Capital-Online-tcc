@@ -764,25 +764,6 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
           <p>Visualize o desempenho financeiro através de gráficos detalhados.</p>
         </div>
 
-        {/* Stats cards */}
-        <div className="charts-stats-grid">
-          <div className="charts-stats-card">
-            <div className="icon-wrapper green"><PiggyBank size={24} /></div>
-            <span>Saldo Atual</span>
-            <strong>R$ {(totalBalance / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-          </div>
-          <div className="charts-stats-card">
-            <div className="icon-wrapper green"><TrendingUp size={24} /></div>
-            <span>Entradas</span>
-            <strong>R$ {(totalIncome / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-          </div>
-          <div className="charts-stats-card">
-            <div className="icon-wrapper red"><TrendingDown size={24} /></div>
-            <span>Saídas</span>
-            <strong>R$ {(totalExpenses / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-          </div>
-        </div>
-
         {/* Filters */}
         <div className="charts-filters">
           <div className="filter-item">
@@ -874,6 +855,25 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
               </div>
             </div>
           )}
+
+          {/* Stats cards */}
+        <div className="charts-stats-grid">
+          <div className="charts-stats-card">
+            <div className="icon-wrapper green"><PiggyBank size={24} /></div>
+            <span>Saldo Atual</span>
+            <strong>R$ {(totalBalance / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+          </div>
+          <div className="charts-stats-card">
+            <div className="icon-wrapper green"><TrendingUp size={24} /></div>
+            <span>Entradas</span>
+            <strong>R$ {(totalIncome / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+          </div>
+          <div className="charts-stats-card">
+            <div className="icon-wrapper red"><TrendingDown size={24} /></div>
+            <span>Saídas</span>
+            <strong>R$ {(totalExpenses / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+          </div>
+        </div>
         </div>
       </main>
     </div>

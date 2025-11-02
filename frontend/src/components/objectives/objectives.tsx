@@ -1,5 +1,5 @@
- import React, { useState, useEffect } from 'react';
-import { PiggyBank, Calendar, Bell, LogOut, User, Clock, AlertCircle, CheckCircle, Edit, Trash2, Plus, Wallet } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { PiggyBank, Calendar, Bell, LogOut, User, Clock, AlertCircle, Edit, Trash2, Plus, Wallet, MinusCircle, TrendingUp, Target, CheckCircle } from 'lucide-react';
 import CalendarPopup from '../calendario/CalendarPopup';
 import NotificationsPopup from '../notificacoes/NotificationsPopup';
 import './objectives.css';
@@ -25,13 +25,32 @@ interface GoalsProps {
 const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [depositAmount, setDepositAmount] = useState('');
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+
+  const handleAmountChange = (value: string, setter: (val: string) => void) => {
+    const apenasNumeros = value.replace(/\D/g, '');
+    
+    if (apenasNumeros === '') {
+      setter('0,00');
+      return;
+    }
+    
+    const valorNumerico = parseInt(apenasNumeros) / 100;
+    const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+    
+    setter(valorFormatado);
+  };
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [formData, setFormData] = useState({
     titulo: '',
     descricao: '',
-    valor_necessario: '',
+    valor_necessario: '0,00',
     prazo: '',
     categoria: '',
   });
@@ -58,9 +77,13 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         console.error('Erro ao parse do usuário:', e);
       }
     }
+
+    // Inicializar valores formatados
+    setDepositAmount('0,00');
+    setWithdrawAmount('0,00');
   }, [token, onNavigate]);
 
-  const calculateStatus = (goal: Goal) => {
+  const calculateStatus = (goal: Goal): 'active' | 'completed' | 'overdue' => {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     const prazo = new Date(goal.data_limite);
@@ -98,10 +121,11 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
           ...goal,
           valor: parseFloat(goal.valor) || 0,
           valor_atual: parseFloat(goal.valor_atual) || 0,
-        }),
+        } as Goal),
       }));
 
       setGoals(withStatus);
+      setErrorMessage('');
     } catch (error) {
       console.error(error);
       setErrorMessage('Erro ao carregar objetivos do servidor.');
@@ -115,7 +139,24 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
   }, [token]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'valor_necessario') {
+      const apenasNumeros = value.replace(/\D/g, '');
+      
+      if (apenasNumeros === '') {
+        setFormData(prev => ({ ...prev, valor_necessario: '0,00' }));
+        return;
+      }
+      
+      const valorNumerico = parseInt(apenasNumeros) / 100;
+      const valorFormatado = valorNumerico.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      
+      setFormData(prev => ({ ...prev, valor_necessario: valorFormatado }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,10 +165,12 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
 
     if (!formData.titulo || !formData.valor_necessario || !formData.prazo) return;
 
+    const valorConvertido = parseFloat(formData.valor_necessario.replace(/\./g, '').replace(',', '.'));
+
     const payload = {
       titulo: formData.titulo,
       descricao: formData.descricao,
-      valor: parseFloat(formData.valor_necessario),
+      valor: valorConvertido,
       data_limite: formData.prazo,
       categoria: formData.categoria || 'outro',
     };
@@ -164,7 +207,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         await fetchGoals();
         setShowCreateForm(false);
         setEditingGoal(null);
-        setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' });
+        setFormData({ titulo: '', descricao: '', valor_necessario: '0,00', prazo: '', categoria: '' });
       }
     } catch (error) {
       console.error(error);
@@ -174,8 +217,10 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
   const handleDeposit = async () => {
     if (!selectedGoal || !depositAmount || !token) return;
 
-    const amount = parseFloat(depositAmount);
+    const amount = parseFloat(depositAmount.replace(/\./g, '').replace(',', '.'));
     if (isNaN(amount) || amount <= 0) return;
+
+    const newTotal = selectedGoal.valor_atual + amount;
 
     try {
       const response = await fetch(`http://127.0.0.1:8000/api/objetivos/${selectedGoal.id}/`, {
@@ -184,7 +229,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ valor_atual: amount }),
+        body: JSON.stringify({ valor_atual: newTotal }),
       });
 
       if (response.status === 401) {
@@ -197,7 +242,43 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         await fetchGoals();
         setShowDepositModal(false);
         setSelectedGoal(null);
-        setDepositAmount('');
+        setDepositAmount('0,00');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!selectedGoal || !withdrawAmount || !token) return;
+
+    const amount = parseFloat(withdrawAmount.replace(/\./g, '').replace(',', '.'));
+    if (isNaN(amount) || amount <= 0) return;
+    if (amount > selectedGoal.valor_atual) return;
+
+    const newTotal = selectedGoal.valor_atual - amount;
+
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/objetivos/${selectedGoal.id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ valor_atual: newTotal }),
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        onNavigate('dashboard');
+        return;
+      }
+
+      if (response.ok) {
+        await fetchGoals();
+        setShowWithdrawModal(false);
+        setSelectedGoal(null);
+        setWithdrawAmount('0,00');
       }
     } catch (error) {
       console.error(error);
@@ -227,19 +308,18 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
 
   const handleEdit = (goal: Goal) => {
     setEditingGoal(goal);
+    const valorFormatado = goal.valor.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
     setFormData({
       titulo: goal.titulo,
       descricao: goal.descricao || '',
-      valor_necessario: goal.valor.toString(),
+      valor_necessario: valorFormatado,
       prazo: goal.data_limite,
       categoria: goal.categoria || '',
     });
     setShowCreateForm(true);
-  };
-
-  const openDepositModal = (goal: Goal) => {
-    setSelectedGoal(goal);
-    setShowDepositModal(true);
   };
 
   const calculateProgress = (goal: Goal) =>
@@ -258,13 +338,19 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     onLogout();
   };
 
+  const totalSaved = goals.reduce((sum, goal) => sum + goal.valor_atual, 0);
+  const totalGoals = goals.reduce((sum, goal) => sum + goal.valor, 0);
+  const completedGoals = goals.filter(g => g.status === 'completed').length;
+  const activeGoals = goals.filter(g => g.status === 'active');
+  const completedList = goals.filter(g => g.status === 'completed');
+
   return (
-    <div className="goals-container">
+    <div className="goals-page">
       <header className="header">
         <div className="header-container">
           <div className="header-left">
             <div className="logo">
-              <PiggyBank className="logo-icon"/>
+              <PiggyBank className="logo-icon" />
               <span className="logo-text">CAPITAL ONLINE</span>
             </div>
           </div>
@@ -272,7 +358,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
             <button className="nav-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
             <button className="nav-button" onClick={() => onNavigate('new-transaction')}>Nova movimentação</button>
             <button className="nav-button" onClick={() => onNavigate('charts')}>Gráficos</button>
-            <button className="nav-button active">Objetivos</button>
+            <button className="nav-button active" onClick={() => onNavigate('objetivos')}>Objetivos</button>
           </nav>
           <div className="header-right">
             <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
@@ -291,173 +377,301 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         </div>
       </header>
 
-      <main className="goals-content">
-        {errorMessage && <div className="error-card">{errorMessage}</div>}
+      <main className="main-content">
+        {errorMessage && (
+          <div className="error-message">
+            <AlertCircle size={20} />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
-        <section className="goals-header-section">
-          <h1>Meus Objetivos</h1>
-          <p>Gerencie seus objetivos financeiros</p>
-          <button className="goals-new-button" onClick={() => setShowCreateForm(true)}>
-            <Plus size={18} /> Novo Objetivo
+        <div className="stats-section">
+          <div className="stat-card">
+            <div className="stat-icon green">
+              <TrendingUp size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-label">Total Economizado</span>
+              <span className="stat-value">{formatCurrency(totalSaved)}</span>
+              <span className="stat-detail">
+                {totalGoals > 0 ? ((totalSaved / totalGoals) * 100).toFixed(1) : '0'}% do total
+              </span>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon blue">
+              <Target size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-label">Objetivos Ativos</span>
+              <span className="stat-value">{goals.length}</span>
+              <span className="stat-detail">{completedGoals} concluídos</span>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon orange">
+              <Clock size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-label">Falta Economizar</span>
+              <span className="stat-value">{formatCurrency(totalGoals - totalSaved)}</span>
+              <span className="stat-detail">Para atingir as metas</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="page-header">
+          <div>
+            <h1>Objetivos Financeiros</h1>
+            <p>Gerencie seus objetivos e acompanhe o progresso</p>
+          </div>
+          <button className="btn-primary" onClick={() => setShowCreateForm(true)}>
+            <Plus size={20} />
+            Novo Objetivo
           </button>
-        </section>
+        </div>
 
         {showCreateForm && (
-          <section className="goals-form-container">
-            <h2>{editingGoal ? 'Editar Objetivo' : 'Novo Objetivo'}</h2>
-            <form className="goals-form" onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Título"
-                value={formData.titulo}
-                onChange={e => handleInputChange('titulo', e.target.value)}
-                required
-              />
-              <textarea
-                placeholder="Descrição"
-                value={formData.descricao}
-                onChange={e => handleInputChange('descricao', e.target.value)}
-              />
-              <input
-                type="number"
-                step="0.01"
-                placeholder="Meta (R$)"
-                value={formData.valor_necessario}
-                onChange={e => handleInputChange('valor_necessario', e.target.value)}
-                required
-              />
-              <input
-                type="date"
-                value={formData.prazo}
-                onChange={e => handleInputChange('prazo', e.target.value)}
-                required
-              />
-              <select
-                value={formData.categoria}
-                onChange={e => handleInputChange('categoria', e.target.value)}
-              >
-                <option value="">Selecione uma categoria</option>
-                <option value="investimento">Investimento</option>
-                <option value="compra">Compra</option>
-                <option value="viagem">Viagem</option>
-                <option value="educacao">Educação</option>
-                <option value="emergencia">Emergência</option>
-                <option value="outro">Outro</option>
-              </select>
-              <div className="goals-form-buttons">
-                <button type="submit">{editingGoal ? 'Salvar' : 'Criar'}</button>
+          <div className="form-card">
+            <h2>{editingGoal ? 'Editar Objetivo' : 'Criar Novo Objetivo'}</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Título</label>
+                  <input
+                    type="text"
+                    placeholder="Nome do objetivo"
+                    value={formData.titulo}
+                    onChange={e => handleInputChange('titulo', e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Categoria</label>
+                  <select value={formData.categoria} onChange={e => handleInputChange('categoria', e.target.value)}>
+                    <option value="">Selecione</option>
+                    <option value="investimento">Investimento</option>
+                    <option value="compra">Compra</option>
+                    <option value="viagem">Viagem</option>
+                    <option value="educacao">Educação</option>
+                    <option value="emergencia">Emergência</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Descrição</label>
+                <textarea
+                  placeholder="Descreva seu objetivo..."
+                  value={formData.descricao}
+                  onChange={e => handleInputChange('descricao', e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Valor da Meta (R$)</label>
+                  <input
+                    type="text"
+                    placeholder="0,00"
+                    value={formData.valor_necessario}
+                    onChange={e => handleInputChange('valor_necessario', e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Data Limite</label>
+                  <input
+                    type="date"
+                    value={formData.prazo}
+                    onChange={e => handleInputChange('prazo', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="btn-primary">
+                  {editingGoal ? 'Salvar' : 'Criar'}
+                </button>
                 <button
                   type="button"
+                  className="btn-secondary"
                   onClick={() => {
                     setShowCreateForm(false);
                     setEditingGoal(null);
-                    setFormData({ titulo: '', descricao: '', valor_necessario: '', prazo: '', categoria: '' });
+                    setFormData({ titulo: '', descricao: '', valor_necessario: '0,00', prazo: '', categoria: '' });
                   }}
                 >
                   Cancelar
                 </button>
               </div>
             </form>
-          </section>
+          </div>
         )}
 
         {loading ? (
-          <p>Carregando objetivos...</p>
+          <div className="loading">Carregando objetivos...</div>
         ) : goals.length === 0 ? (
-          <p>Nenhum objetivo cadastrado</p>
+          <div className="empty-state">
+            <Target size={64} />
+            <h3>Nenhum objetivo cadastrado</h3>
+            <p>Comece criando seu primeiro objetivo financeiro</p>
+          </div>
         ) : (
-          <section className="goals-grid">
-            {goals.map(goal => {
-              const progressPercent = calculateProgress(goal);
-              const remaining = calculateRemaining(goal);
-              let statusClass =
-                goal.status === 'completed'
-                  ? 'status-completed'
-                  : goal.status === 'overdue'
-                  ? 'status-overdue'
-                  : 'status-active';
-              return (
-                <article key={goal.id} className="goal-card">
-                  <header className="goal-card-header">
-                    {goal.status === 'completed' && <CheckCircle color="#166534" size={20} />}
-                    {goal.status === 'active' && <Clock color="#1e40af" size={20} />}
-                    {goal.status === 'overdue' && <AlertCircle color="#991b1b" size={20} />}
-                    <div className={`goal-status-badge ${statusClass}`}>
-                      {goal.status === 'completed' ? 'CONCLUÍDO' : goal.status === 'overdue' ? 'ATRASADO' : 'ATIVO'}
-                    </div>
-                    <div>
-                      <button onClick={() => handleEdit(goal)}><Edit size={18} /></button>
-                      <button onClick={() => handleDelete(goal.id)}><Trash2 size={18} /></button>
-                    </div>
-                  </header>
-                  <h3>{goal.titulo}</h3>
-                  <p>{goal.descricao}</p>
-                  
-                  <div className="goal-remaining">
-                    <span className="remaining-label">Falta atingir:</span>
-                    <span className="remaining-value">{formatCurrency(remaining)}</span>
-                  </div>
+          <>
+            {activeGoals.length > 0 && (
+              <section className="goals-section">
+                <h2 className="section-title">
+                  <Target size={20} />
+                  Em Progresso
+                </h2>
+                <div className="goals-grid">
+                  {activeGoals.map(goal => {
+                    const progress = calculateProgress(goal);
+                    const remaining = calculateRemaining(goal);
 
-                  <div className="goal-progress">
-                    <div className="progress-info">
-                      <span className="progress-label">Progresso: {progressPercent.toFixed(0)}%</span>
-                    </div>
-                    <div className="progress-bar-bg">
-                      <div className={`progress-bar-fill ${statusClass}`} style={{ width: `${progressPercent}%` }} />
-                    </div>
-                    <div className="progress-values">
-                      <span className="current-value">{formatCurrency(goal.valor_atual || 0)}</span>
-                      <span className="target-value">{formatCurrency(goal.valor || 0)}</span>
-                    </div>
-                  </div>
+                    return (
+                      <div key={goal.id} className="goal-card">
+                        <div className="goal-header">
+                          <span className="goal-category">{goal.categoria || 'Outro'}</span>
+                          <div className="goal-actions">
+                            <button onClick={() => handleEdit(goal)}><Edit size={16} /></button>
+                            <button onClick={() => handleDelete(goal.id)} className="delete"><Trash2 size={16} /></button>
+                          </div>
+                        </div>
 
-                  {goal.status !== 'completed' && (
-                    <button 
-                      className="goal-deposit-button"
-                      onClick={() => openDepositModal(goal)}
-                    >
-                      <Wallet size={18} /> Adicionar Valor
-                    </button>
-                  )}
-                </article>
-              );
-            })}
-          </section>
+                        <h3 className="goal-title">{goal.titulo}</h3>
+                        {goal.descricao && <p className="goal-description">{goal.descricao}</p>}
+
+                        <div className="goal-amount">
+                          <span className="label">Falta economizar</span>
+                          <span className="value">{formatCurrency(remaining)}</span>
+                        </div>
+
+                        <div className="progress-section">
+                          <div className="progress-info">
+                            <span>Progresso</span>
+                            <span>{progress.toFixed(0)}%</span>
+                          </div>
+                          <div className="progress-bar">
+                            <div className="progress-fill" style={{ width: `${progress}%` }} />
+                          </div>
+                          <div className="progress-values">
+                            <span>{formatCurrency(goal.valor_atual)}</span>
+                            <span>{formatCurrency(goal.valor)}</span>
+                          </div>
+                        </div>
+
+                        <div className="goal-footer">
+                          <button className="btn-add" onClick={() => { setSelectedGoal(goal); setShowDepositModal(true); }}>
+                            <Wallet size={18} />
+                            Adicionar
+                          </button>
+                          <button className="btn-remove" onClick={() => { setSelectedGoal(goal); setShowWithdrawModal(true); }}>
+                            <MinusCircle size={18} />
+                            Remover
+                          </button>
+                        </div>
+
+                        <div className="goal-deadline">
+                          <Clock size={16} />
+                          <span>Prazo: {new Date(goal.data_limite).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {completedList.length > 0 && (
+              <section className="goals-section">
+                <h2 className="section-title">
+                  <CheckCircle size={20} />
+                  Concluídos ({completedList.length})
+                </h2>
+                <div className="goals-grid">
+                  {completedList.map(goal => (
+                    <div key={goal.id} className="goal-card completed">
+                      <div className="completed-badge">Concluído</div>
+                      <div className="goal-header">
+                        <span className="goal-category">{goal.categoria || 'Outro'}</span>
+                        <div className="goal-actions">
+                          <button onClick={() => handleEdit(goal)}><Edit size={16} /></button>
+                          <button onClick={() => handleDelete(goal.id)} className="delete"><Trash2 size={16} /></button>
+                        </div>
+                      </div>
+
+                      <h3 className="goal-title">{goal.titulo}</h3>
+                      {goal.descricao && <p className="goal-description">{goal.descricao}</p>}
+
+                      <div className="goal-success">
+                        <span className="label">Meta atingida</span>
+                        <span className="value">{formatCurrency(goal.valor)}</span>
+                      </div>
+
+                      <div className="progress-section">
+                        <div className="progress-bar completed">
+                          <div className="progress-fill" style={{ width: '100%' }} />
+                        </div>
+                      </div>
+
+                      <div className="goal-completion">
+                        <CheckCircle size={16} />
+                        <span>Concluído em {new Date(goal.data_limite).toLocaleDateString('pt-BR')}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </main>
 
       {showDepositModal && selectedGoal && (
         <div className="modal-overlay" onClick={() => setShowDepositModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Adicionar Valor ao Objetivo</h3>
-            <div className="modal-goal-info">
-              <p className="modal-goal-title">{selectedGoal.titulo}</p>
-              <div className="modal-goal-values">
-                <span>Valor atual: {formatCurrency(selectedGoal.valor_atual)}</span>
-                <span>Falta: {formatCurrency(calculateRemaining(selectedGoal))}</span>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-icon green">
+                <Wallet size={24} />
+              </div>
+              <div>
+                <h3>Adicionar Valor</h3>
+                <p>Contribua para: {selectedGoal.titulo}</p>
               </div>
             </div>
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Valor a adicionar (R$)"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              className="modal-input"
-              autoFocus
-            />
-            <div className="modal-buttons">
-              <button className="modal-confirm" onClick={handleDeposit}>
-                Confirmar
-              </button>
-              <button 
-                className="modal-cancel" 
-                onClick={() => {
-                  setShowDepositModal(false);
-                  setSelectedGoal(null);
-                  setDepositAmount('');
-                }}
-              >
+
+            <div className="modal-info">
+              <div className="info-item">
+                <span>Valor atual</span>
+                <strong>{formatCurrency(selectedGoal.valor_atual)}</strong>
+              </div>
+              <div className="info-item">
+                <span>Ainda falta</span>
+                <strong>{formatCurrency(calculateRemaining(selectedGoal))}</strong>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Valor a adicionar (R$)</label>
+              <input
+                type="text"
+                placeholder="0,00"
+                value={depositAmount}
+                onChange={e => handleAmountChange(e.target.value, setDepositAmount)}
+                autoFocus
+              />
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-primary" onClick={handleDeposit}>Confirmar</button>
+              <button className="btn-secondary" onClick={() => { setShowDepositModal(false); setDepositAmount('0,00'); }}>
                 Cancelar
               </button>
             </div>
@@ -465,15 +679,55 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
         </div>
       )}
 
-      <CalendarPopup 
-        isOpen={isCalendarOpen} 
-        onClose={() => setIsCalendarOpen(false)} 
-        userEmail={userEmail} 
-      />
-      <NotificationsPopup 
-        isOpen={isNotificationsOpen} 
-        onClose={() => setIsNotificationsOpen(false)} 
-      />
+      {showWithdrawModal && selectedGoal && (
+        <div className="modal-overlay" onClick={() => setShowWithdrawModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-icon red">
+                <MinusCircle size={24} />
+              </div>
+              <div>
+                <h3>Remover Valor</h3>
+                <p>Retirar de: {selectedGoal.titulo}</p>
+              </div>
+            </div>
+
+            <div className="modal-warning">
+              <AlertCircle size={20} />
+              <p>Ao remover dinheiro, o progresso será reduzido.</p>
+            </div>
+
+            <div className="modal-info">
+              <div className="info-item">
+                <span>Valor disponível</span>
+                <strong>{formatCurrency(selectedGoal.valor_atual)}</strong>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Valor a remover (R$)</label>
+              <input
+                type="text"
+                placeholder="0,00"
+                value={withdrawAmount}
+                onChange={e => handleAmountChange(e.target.value, setWithdrawAmount)}
+                autoFocus
+              />
+              <small>Máximo: {formatCurrency(selectedGoal.valor_atual)}</small>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => { setShowWithdrawModal(false); setWithdrawAmount('0,00'); }}>
+                Cancelar
+              </button>
+              <button className="btn-danger" onClick={handleWithdraw}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <CalendarPopup isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} userEmail={userEmail} />
+      <NotificationsPopup isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
     </div>
   );
 };

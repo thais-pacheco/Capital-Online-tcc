@@ -10,7 +10,8 @@ import {
   Calendar,
   Bell,
   LogOut,
-  User
+  User,
+  ArrowRight
 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -299,7 +300,7 @@ const Dashboard: React.FC = () => {
 
         <div className="transactions-section">
           <div className="section-header">
-            <h2>Últimas 10 movimentações</h2>
+            <h2>Últimas movimentações</h2>
             <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: 'normal' }}>
               Ordenadas por data (mais recentes primeiro)
             </span>
@@ -379,6 +380,48 @@ const Dashboard: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Botão Ver Mais */}
+          {filteredTransactions.length > 10 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: '2rem',
+              paddingBottom: '2rem',
+            }}>
+              <button
+                onClick={() => navigate('/nova-movimentacao')}
+                style={{
+                  padding: '0.75rem 2rem',
+                  backgroundColor: '#22c55e',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 2px 4px rgba(34, 197, 94, 0.2)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#16a34a';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(34, 197, 94, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#22c55e';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 4px rgba(34, 197, 94, 0.2)';
+                }}
+              >
+                Ver todas as movimentações
+                <ArrowRight size={18} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

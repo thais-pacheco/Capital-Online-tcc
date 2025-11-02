@@ -28,8 +28,8 @@ const Home: React.FC = () => {
       {/* Hero */}
       <section className="hero">
         <h1>
-          Sua jornada financeira <span className="green">começa</span> <br />
-          <span className="green">aqui</span>
+          Sua jornada financeira <br />
+          <span className="green">começa aqui</span>
         </h1>
         <p>
           Gerencie suas finanças de forma inteligente com nossa plataforma completa.
@@ -85,32 +85,10 @@ const Home: React.FC = () => {
 
       {/* Footer */}
       <footer className="home-footer">
-        <div className="logo">
-          <PiggyBank color="#22c55e" />
-          <span className="logo-text">CAPITAL ONLINE</span>
-        </div>
-        <div className="footer-links">
-          <div>
-            <h4>Produto</h4>
-            <p>Dashboard</p>
-            <p>Relatórios</p>
-            <p>Objetivos</p>
-          </div>
-          <div>
-            <h4>Empresa</h4>
-            <p>Sobre</p>
-            <p>Blog</p>
-            <p>Contato</p>
-          </div>
-          <div>
-            <h4>Suporte</h4>
-            <p>Central de Ajuda</p>
-            <p>Segurança</p>
-            <p>Dúvidas</p>
-          </div>
-        </div>
+    
+        
         <div className="footer-bottom">
-          © 2025 Capital Online. Todos os direitos reservados.
+          © 2025 Capital Online. 
         </div>
       </footer>
     </div>
