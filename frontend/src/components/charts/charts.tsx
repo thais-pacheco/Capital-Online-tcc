@@ -71,7 +71,7 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
         setLoading(true);
 
         // Buscar categorias
-        const categoriesResponse = await fetch('http://127.0.0.1:8000/api/categorias/', {
+        const categoriesResponse = await fetch('https://capital-online-tcc.onrender.com/api/categorias/', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
         }
 
         // Buscar transações
-        const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+        const response = await fetch('https://capital-online-tcc.onrender.com/api/transacoes/', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

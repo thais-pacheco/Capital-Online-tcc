@@ -80,7 +80,7 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
       console.log(`🔍 Buscando lembretes para ${mes}/${ano}`);
       
       const response = await fetch(
-        `http://127.0.0.1:8000/api/lembretes/?mes=${mes}&ano=${ano}`,
+        `https://capital-online-tcc.onrender.com/api/lembretes/?mes=${mes}&ano=${ano}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -110,7 +110,7 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/lembretes/${lembreteId}/marcar_pago/`,
+        `https://capital-online-tcc.onrender.com/api/lembretes/${lembreteId}/marcar_pago/`,
         {
           method: 'POST',
           headers: {

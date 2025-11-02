@@ -107,7 +107,7 @@ const NewTransaction: React.FC = () => {
     if (!token) return;
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+      const res = await fetch('https://capital-online-tcc.onrender.com/api/transacoes/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -136,7 +136,7 @@ const NewTransaction: React.FC = () => {
 
     const fetchCategories = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/categorias/', {
+        const res = await fetch('https://capital-online-tcc.onrender.com/api/categorias/', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ const NewTransaction: React.FC = () => {
 
           console.log(`📤 Enviando lembrete ${i}:`, reminderPayload);
 
-          const response = await fetch('http://127.0.0.1:8000/api/lembretes/', {
+          const response = await fetch('https://capital-online-tcc.onrender.com/api/lembretes/', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -385,7 +385,7 @@ const NewTransaction: React.FC = () => {
     };
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+      const response = await fetch('https://capital-online-tcc.onrender.com/api/transacoes/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -471,7 +471,7 @@ const NewTransaction: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/transacoes/${deleteModal.transactionId}/`, {
+      const response = await fetch(`https://capital-online-tcc.onrender.com/api/transacoes/${deleteModal.transactionId}/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -52,7 +52,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({ isOpen, onClose
     if (!token) return;
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/lembretes/notificacoes/', {
+      const response = await fetch('https://capital-online-tcc.onrender.com/api/lembretes/notificacoes/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({ isOpen, onClose
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/lembretes/${lembreteId}/marcar_pago/`,
+        `https://capital-online-tcc.onrender.com/api/lembretes/${lembreteId}/marcar_pago/`,
         {
           method: 'POST',
           headers: {
@@ -100,7 +100,7 @@ const NotificationsPopup: React.FC<NotificationsPopupProps> = ({ isOpen, onClose
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/lembretes/${lembreteId}/marcar_notificado/`,
+        `https://capital-online-tcc.onrender.com/api/lembretes/${lembreteId}/marcar_notificado/`,
         {
           method: 'POST',
           headers: {

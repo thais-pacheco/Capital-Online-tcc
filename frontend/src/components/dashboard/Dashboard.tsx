@@ -73,7 +73,7 @@ const Dashboard: React.FC = () => {
 
       try {
         setLoading(true);
-        const response = await fetch('http://127.0.0.1:8000/api/transacoes/', {
+        const response = await fetch('https://capital-online-tcc.onrender.com/api/transacoes/', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -97,7 +97,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/objetivos/', {
+      const response = await fetch('https://capital-online-tcc.onrender.com/api/objetivos/', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -178,7 +178,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     try {
       let response;
       if (editingGoal) {
-        response = await fetch(`http://127.0.0.1:8000/api/objetivos/${editingGoal.id}/`, {
+        response = await fetch(`https://capital-online-tcc.onrender.com/api/objetivos/${editingGoal.id}/`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -187,7 +187,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
           body: JSON.stringify(payload),
         });
       } else {
-        response = await fetch('http://127.0.0.1:8000/api/objetivos/', {
+        response = await fetch('https://capital-online-tcc.onrender.com/api/objetivos/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     const newTotal = selectedGoal.valor_atual + amount;
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/objetivos/${selectedGoal.id}/`, {
+      const response = await fetch(`https://capital-online-tcc.onrender.com/api/objetivos/${selectedGoal.id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     const newTotal = selectedGoal.valor_atual - amount;
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/objetivos/${selectedGoal.id}/`, {
+      const response = await fetch(`https://capital-online-tcc.onrender.com/api/objetivos/${selectedGoal.id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -289,7 +289,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/objetivos/${id}/`, {
+      const response = await fetch(`https://capital-online-tcc.onrender.com/api/objetivos/${id}/`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` },
       });

@@ -20,7 +20,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       }
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/auth/verify-token/', {
+        const response = await fetch('https://capital-online-tcc.onrender.com/api/auth/verify-token/', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,

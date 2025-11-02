@@ -40,7 +40,8 @@ const Auth: React.FC = () => {
       if (!token) return;
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/auth/verify-token/', {
+        const backend_url = process.env.BACKEND_URL;
+        const response = await fetch(`${backend_url}/api/auth/verify-token/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -101,7 +102,7 @@ const Auth: React.FC = () => {
         ? { email: formData.email, password: formData.password }
         : { nome: formData.nome, email: formData.email, password: formData.password };
 
-      const response = await fetch(`http://127.0.0.1:8000/api/auth${endpoint}`, {
+      const response = await fetch(`https://capital-online-tcc.onrender.com/api/auth${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
