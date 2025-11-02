@@ -28,7 +28,6 @@
     "@types/chart.js": "^2.9.41",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "@types/react-router-dom": "^6.0.0",
     "@types/react-toastify": "^4.0.2",
     "@vitejs/plugin-react": "^4.5.2",
     "eslint": "^9.29.0",
