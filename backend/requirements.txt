@@ -6,3 +6,5 @@ bcrypt
 django-cors-headers
 djangorestframework-simplejwt
 python-dateutil
+gunicorn
+
