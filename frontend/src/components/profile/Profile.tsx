@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, ArrowLeft, PiggyBank, Calendar, Bell, LogOut } from 'lucide-react';
+import { User, ArrowLeft, PiggyBank, Calendar, Bell, LogOut, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CalendarPopup from '../calendario/CalendarPopup';
 import NotificationsPopup from '../notificacoes/NotificationsPopup';
@@ -26,6 +26,7 @@ export default function Profile({ onLogout }: ProfileProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // 🔹 Buscar dados do usuário do localStorage
   useEffect(() => {
@@ -121,6 +122,11 @@ export default function Profile({ onLogout }: ProfileProps) {
     else navigate('/');
   };
 
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsMobileMenuOpen(false);
+  };
+
   if (loading && !formData.email) {
     return (
       <div className="profile-page">
@@ -134,6 +140,13 @@ export default function Profile({ onLogout }: ProfileProps) {
       <header className="profile-header-bar">
         <div className="profile-header-container">
           <div className="profile-header-left">
+            <button 
+              className="profile-menu-button" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
             <div className="profile-logo">
               <div className="profile-logo-icon">
                 <PiggyBank size={32} />
@@ -165,6 +178,24 @@ export default function Profile({ onLogout }: ProfileProps) {
           </div>
         </div>
       </header>
+
+      {/* Menu Mobile */}
+      {isMobileMenuOpen && (
+        <div className="profile-mobile-menu">
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('/dashboard')}>
+            Dashboard
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('/nova-movimentacao')}>
+            Nova movimentação
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('/graficos')}>
+            Gráficos
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('/objetivos')}>
+            Objetivos
+          </button>
+        </div>
+      )}
 
       <div className="profile-container">
         <div>
