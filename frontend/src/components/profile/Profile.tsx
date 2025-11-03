@@ -167,12 +167,6 @@ export default function Profile({ onLogout }: ProfileProps) {
       </header>
 
       <div className="profile-container">
-        <div className="profile-header">
-          <a href="#" onClick={(e) => { e.preventDefault(); navigate('/dashboard'); }} className="profile-back-button">
-            <ArrowLeft className="profile-back-icon" /> Voltar ao Dashboard
-          </a>
-        </div>
-
         <div>
           <h1 className="profile-title">Meu perfil</h1>
           <p className="profile-subtitle">Gerencie suas informações pessoais e configurações da conta.</p>
