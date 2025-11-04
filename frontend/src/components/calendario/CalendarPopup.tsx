@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { X, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import "./CalendarPopup.css";
 
 export interface CalendarInternalProps {
   isOpen: boolean;
@@ -12,7 +13,7 @@ interface Lembrete {
   titulo: string;
   descricao: string;
   data_vencimento: string;
-  valor_parcela: number | string; // Pode vir como number ou string
+  valor_parcela: number | string;
   numero_parcela: number;
   total_parcelas: number;
   pago: boolean;
@@ -40,18 +41,15 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
     return new Date();
   };
 
-  // Função para formatar valor em reais
   const formatarValor = (valor: number | string): string => {
     let valorNumerico: number;
     
     if (typeof valor === 'string') {
-      // Se veio como string, tentar converter
       valorNumerico = parseFloat(valor);
     } else {
       valorNumerico = valor;
     }
     
-    // Se o valor for maior que 1000, assumir que está em centavos
     if (valorNumerico >= 1000) {
       valorNumerico = valorNumerico / 100;
     }
@@ -178,114 +176,47 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
   const selectedLembretes = selectedDate ? lembretes.filter(l => l.data_vencimento === selectedDate) : [];
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 9999,
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius: "12px",
-          padding: "2rem",
-          width: "90%",
-          maxWidth: "900px",
-          maxHeight: "90vh",
-          overflow: "auto",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-          position: "relative",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          style={{
-            position: "absolute",
-            top: "1rem",
-            right: "1rem",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
+    <div className="calendar-overlay" onClick={onClose}>
+      <div className="calendar-modal" onClick={(e) => e.stopPropagation()}>
+        <button onClick={onClose} className="calendar-close-btn">
           <X size={20} />
         </button>
 
-        <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "0.5rem" }}>
-          📅 Calendário de Lembretes
-        </h2>
-        <p style={{ color: "#64748b", marginBottom: "1.5rem", fontSize: "0.875rem" }}>
-          Acompanhe suas parcelas e lembretes de pagamento
-        </p>
+        <div className="calendar-header-section">
+          <h2 className="calendar-title">📅 Calendário de Lembretes</h2>
+          <p className="calendar-subtitle">Acompanhe suas parcelas e lembretes de pagamento</p>
+        </div>
 
         {loading && (
-          <div style={{ textAlign: 'center', padding: '1rem', color: '#64748b' }}>
+          <div className="calendar-loading">
             Carregando lembretes...
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-          <button
-            onClick={previousMonth}
-            style={{
-              padding: "0.5rem",
-              border: "1px solid #e2e8f0",
-              borderRadius: "6px",
-              background: "white",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+        <div className="calendar-navigation">
+          <button onClick={previousMonth} className="calendar-nav-btn">
             <ChevronLeft size={20} />
           </button>
           
-          <h3 style={{ fontSize: "1.25rem", fontWeight: "600" }}>
+          <h3 className="calendar-month-year">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h3>
           
-          <button
-            onClick={nextMonth}
-            style={{
-              padding: "0.5rem",
-              border: "1px solid #e2e8f0",
-              borderRadius: "6px",
-              background: "white",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
+          <button onClick={nextMonth} className="calendar-nav-btn">
             <ChevronRight size={20} />
           </button>
         </div>
 
-        <div style={{ marginBottom: "1.5rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem", marginBottom: "0.5rem" }}>
+        <div className="calendar-content">
+          <div className="calendar-days-header">
             {dayNames.map(name => (
-              <div
-                key={name}
-                style={{
-                  textAlign: "center",
-                  fontWeight: "600",
-                  fontSize: "0.875rem",
-                  color: "#64748b",
-                  padding: "0.5rem",
-                }}
-              >
+              <div key={name} className="calendar-day-name">
                 {name}
               </div>
             ))}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem" }}>
+          <div className="calendar-days-grid">
             {days.map((dayInfo, index) => {
               const dayLembretes = dayInfo.day ? getLembretesForDay(dayInfo.day) : [];
               const hasLembretes = dayLembretes.length > 0;
@@ -297,54 +228,27 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
                 <div
                   key={index}
                   onClick={() => dateStr && hasLembretes && setSelectedDate(dateStr)}
-                  style={{
-                    minHeight: "80px",
-                    padding: "0.5rem",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "6px",
-                    backgroundColor: !dayInfo.isCurrentMonth ? "#f8fafc" : 
-                                   dayInfo.day && isToday(dayInfo.day) ? "#dbeafe" : 
-                                   "white",
-                    cursor: hasLembretes ? "pointer" : "default",
-                    position: "relative",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => hasLembretes && (e.currentTarget.style.transform = "scale(1.02)")}
-                  onMouseLeave={(e) => hasLembretes && (e.currentTarget.style.transform = "scale(1)")}
+                  className={`calendar-day-cell ${!dayInfo.isCurrentMonth ? 'calendar-day-other-month' : ''} ${dayInfo.day && isToday(dayInfo.day) ? 'calendar-day-today' : ''} ${hasLembretes ? 'calendar-day-clickable' : ''}`}
                 >
                   {dayInfo.day && (
                     <>
-                      <div style={{ 
-                        fontWeight: isToday(dayInfo.day) ? "700" : "500",
-                        fontSize: "0.875rem",
-                        color: !dayInfo.isCurrentMonth ? "#94a3b8" : "#1e293b",
-                        marginBottom: "0.25rem"
-                      }}>
+                      <div className={`calendar-day-number ${isToday(dayInfo.day) ? 'calendar-day-number-today' : ''}`}>
                         {dayInfo.day}
                       </div>
                       
                       {hasLembretes && (
-                        <div style={{ fontSize: "0.75rem" }}>
+                        <div className="calendar-day-reminders">
                           {dayLembretes.slice(0, 2).map((lembrete, i) => (
                             <div
                               key={i}
-                              style={{
-                                padding: "0.125rem 0.25rem",
-                                marginBottom: "0.125rem",
-                                backgroundColor: lembrete.pago ? "#dcfce7" : "#fef3c7",
-                                borderRadius: "3px",
-                                fontSize: "0.625rem",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              }}
+                              className={`calendar-reminder-badge ${lembrete.pago ? 'calendar-reminder-paid' : 'calendar-reminder-pending'}`}
                             >
                               {lembrete.pago ? "✓" : "💰"} {lembrete.numero_parcela}/{lembrete.total_parcelas}
                             </div>
                           ))}
                           {dayLembretes.length > 2 && (
-                            <div style={{ fontSize: "0.625rem", color: "#64748b", marginTop: "0.125rem" }}>
-                              +{dayLembretes.length - 2} mais
+                            <div className="calendar-reminder-more">
+                              +{dayLembretes.length - 2}
                             </div>
                           )}
                         </div>
@@ -358,87 +262,33 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
         </div>
 
         {selectedDate && selectedLembretes.length > 0 && (
-          <div style={{
-            marginTop: "1.5rem",
-            padding: "1rem",
-            backgroundColor: "#f8fafc",
-            borderRadius: "8px",
-            border: "1px solid #e2e8f0",
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-              <h4 style={{ fontWeight: "600", fontSize: "1rem" }}>
+          <div className="calendar-selected-details">
+            <div className="calendar-selected-header">
+              <h4 className="calendar-selected-title">
                 Lembretes de {getBrasiliaDate(selectedDate).toLocaleDateString('pt-BR')}
               </h4>
-              <button
-                onClick={() => setSelectedDate(null)}
-                style={{
-                  padding: "0.25rem 0.5rem",
-                  fontSize: "0.75rem",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: "4px",
-                  background: "white",
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={() => setSelectedDate(null)} className="calendar-selected-close">
                 Fechar
               </button>
             </div>
             
             {selectedLembretes.map((lembrete) => (
-              <div
-                key={lembrete.id}
-                style={{
-                  padding: "1rem",
-                  marginBottom: "0.75rem",
-                  backgroundColor: "white",
-                  borderRadius: "6px",
-                  border: lembrete.pago ? "2px solid #22c55e" : "2px solid #eab308",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                  <div style={{ flex: 1 }}>
-                    <h5 style={{ fontWeight: "600", marginBottom: "0.25rem" }}>
-                      {lembrete.titulo}
-                    </h5>
-                    <p style={{ fontSize: "0.875rem", color: "#64748b", marginBottom: "0.5rem" }}>
-                      {lembrete.descricao}
-                    </p>
-                    <div style={{ fontSize: "0.875rem", fontWeight: "600", color: "#059669" }}>
+              <div key={lembrete.id} className={`calendar-reminder-card ${lembrete.pago ? 'calendar-reminder-card-paid' : 'calendar-reminder-card-pending'}`}>
+                <div className="calendar-reminder-card-content">
+                  <div className="calendar-reminder-info">
+                    <h5 className="calendar-reminder-title">{lembrete.titulo}</h5>
+                    <p className="calendar-reminder-description">{lembrete.descricao}</p>
+                    <div className="calendar-reminder-value">
                       R$ {formatarValor(lembrete.valor_parcela)}
                     </div>
                   </div>
                   
                   {!lembrete.pago ? (
-                    <button
-                      onClick={() => marcarPago(lembrete.id)}
-                      style={{
-                        padding: "0.5rem 1rem",
-                        backgroundColor: "#22c55e",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        cursor: "pointer",
-                        fontSize: "0.875rem",
-                        fontWeight: "600",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                      }}
-                    >
+                    <button onClick={() => marcarPago(lembrete.id)} className="calendar-pay-btn">
                       <Check size={16} /> Pagar
                     </button>
                   ) : (
-                    <div style={{
-                      padding: "0.5rem 1rem",
-                      backgroundColor: "#dcfce7",
-                      color: "#166534",
-                      borderRadius: "6px",
-                      fontSize: "0.875rem",
-                      fontWeight: "600",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                    }}>
+                    <div className="calendar-paid-badge">
                       <Check size={16} /> Pago
                     </div>
                   )}
@@ -448,32 +298,24 @@ const CalendarInternal: React.FC<CalendarInternalProps> = ({ isOpen, onClose, us
           </div>
         )}
 
-        <div style={{
-          marginTop: "1.5rem",
-          padding: "1rem",
-          backgroundColor: "#f0f9ff",
-          borderRadius: "8px",
-          display: "flex",
-          gap: "2rem",
-          justifyContent: "center",
-        }}>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#0284c7" }}>
+        <div className="calendar-stats">
+          <div className="calendar-stat-item">
+            <div className="calendar-stat-value calendar-stat-pending">
               {lembretes.filter(l => !l.pago).length}
             </div>
-            <div style={{ fontSize: "0.875rem", color: "#64748b" }}>Pendentes</div>
+            <div className="calendar-stat-label">Pendentes</div>
           </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#22c55e" }}>
+          <div className="calendar-stat-item">
+            <div className="calendar-stat-value calendar-stat-paid">
               {lembretes.filter(l => l.pago).length}
             </div>
-            <div style={{ fontSize: "0.875rem", color: "#64748b" }}>Pagos</div>
+            <div className="calendar-stat-label">Pagos</div>
           </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#6366f1" }}>
+          <div className="calendar-stat-item">
+            <div className="calendar-stat-value calendar-stat-total">
               {lembretes.length}
             </div>
-            <div style={{ fontSize: "0.875rem", color: "#64748b" }}>Total</div>
+            <div className="calendar-stat-label">Total</div>
           </div>
         </div>
       </div>
