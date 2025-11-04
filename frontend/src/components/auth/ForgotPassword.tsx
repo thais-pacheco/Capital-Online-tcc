@@ -48,6 +48,7 @@ const ForgotPassword: React.FC = () => {
     } catch (err) {
       setMessage('Erro na conexão com o servidor');
       setIsError(true);
+      console.error('Erro ao enviar código:', err);
     } finally {
       setLoading(false);
     }
@@ -86,6 +87,7 @@ const ForgotPassword: React.FC = () => {
     } catch (err) {
       setMessage('Erro na conexão com o servidor');
       setIsError(true);
+      console.error('Erro ao verificar código:', err);
     } finally {
       setLoading(false);
     }
@@ -130,6 +132,7 @@ const ForgotPassword: React.FC = () => {
     } catch (err) {
       setMessage('Erro na conexão com o servidor');
       setIsError(true);
+      console.error('Erro ao resetar senha:', err);
     } finally {
       setLoading(false);
     }
