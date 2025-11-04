@@ -33,7 +33,6 @@ const Auth: React.FC = () => {
   const [serverMessage, setServerMessage] = useState('');
   const [serverMessageIsError, setServerMessageIsError] = useState(false);
 
-  // Redirecionar se já estiver autenticado
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
@@ -185,12 +184,12 @@ const Auth: React.FC = () => {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
+          <form onSubmit={handleSubmit} className="auth-form" autoComplete="off" noValidate>
             {!isLogin && (
               <div className="form-group">
                 <label htmlFor="nome">Nome Completo</label>
                 <div className="input-wrapper">
-                  <User className="input-icon" />
+                  <User className="icon-user" />
                   <input
                     type="text"
                     id="nome"
@@ -199,7 +198,10 @@ const Auth: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="Digite seu nome completo"
                     className={errors.nome ? 'error' : ''}
-                    autoComplete="name"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                   />
                 </div>
                 {errors.nome && <span className="error-message">{errors.nome}</span>}
@@ -209,7 +211,7 @@ const Auth: React.FC = () => {
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <div className="input-wrapper">
-                <Mail className="input-icon" />
+                <Mail className="icon-user" />
                 <input
                   type="email"
                   id="email"
@@ -218,7 +220,10 @@ const Auth: React.FC = () => {
                   onChange={handleInputChange}
                   placeholder="Digite seu email"
                   className={errors.email ? 'error' : ''}
-                  autoComplete="email"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
                 />
               </div>
               {errors.email && <span className="error-message">{errors.email}</span>}
@@ -227,7 +232,7 @@ const Auth: React.FC = () => {
             <div className="form-group">
               <label htmlFor="senha">Senha</label>
               <div className="input-wrapper">
-                <Lock className="input-icon" />
+                <Lock className="icon-user" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="senha"
@@ -236,7 +241,10 @@ const Auth: React.FC = () => {
                   onChange={handleInputChange}
                   placeholder="Digite sua senha"
                   className={errors.password ? 'error' : ''}
-                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
                 />
                 <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                   {showPassword ? <EyeOff /> : <Eye />}
@@ -249,7 +257,7 @@ const Auth: React.FC = () => {
               <div className="form-group">
                 <label htmlFor="confirmPassword">Confirmar Senha</label>
                 <div className="input-wrapper">
-                  <Lock className="input-icon" />
+                  <Lock className="icon-user" />
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     id="confirmPassword"
@@ -258,7 +266,10 @@ const Auth: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="Confirme sua senha"
                     className={errors.confirmPassword ? 'error' : ''}
-                    autoComplete="new-password"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
                   />
                   <button type="button" className="password-toggle" onClick={() => setShowConfirmPassword(!showConfirmPassword)} tabIndex={-1}>
                     {showConfirmPassword ? <EyeOff /> : <Eye />}
@@ -270,14 +281,6 @@ const Auth: React.FC = () => {
 
             {isLogin && (
               <div style={{ textAlign: 'right', marginTop: '-8px', marginBottom: '16px' }}>
-                <button 
-                  type="button" 
-                  className="link-btn" 
-                  onClick={() => navigate('/forgot-password')}
-                  style={{ fontSize: '0.875rem', color: '#22c55e' }}
-                >
-                  Esqueci minha senha
-                </button>
               </div>
             )}
 
