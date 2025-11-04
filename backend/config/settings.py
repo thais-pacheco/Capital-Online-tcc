@@ -109,18 +109,6 @@ DATABASES = {
     }
 }
 
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465  
-EMAIL_USE_TLS = False  
-EMAIL_USE_SSL = True  
-EMAIL_HOST_USER = 'capitalonline.tcc@gmail.com'
-EMAIL_HOST_PASSWORD = 'gxhelqwbnapzyn'  
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-SERVER_EMAIL = EMAIL_HOST_USER
-EMAIL_TIMEOUT = 30
-
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
@@ -128,5 +116,7 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+RESEND_API_KEY = 're_HDqkQS2W_6G6epXFCaxBnVsAzFSfczi3e'
