@@ -1,4 +1,3 @@
-# usuarios/middleware.py
 from django.http import JsonResponse
 from django.conf import settings
 from django.utils import timezone
@@ -10,28 +9,24 @@ class JWTAuthenticationMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # ✅ Rotas públicas que NÃO precisam de autenticação
         public_paths = [
             '/api/auth/register/',
             '/api/auth/login/',
             '/api/auth/forgot-password/',     
             '/api/auth/verify-reset-code/',
             '/api/auth/reset-password/',           
+            '/api/auth/test-email/', 
             '/admin/',
             '/static/',
             '/media/',
-            '/api/auth/test-email/', 
         ]
 
-        # Se a rota for pública, permite sem verificar token
         if any(request.path.startswith(path) for path in public_paths):
             return self.get_response(request)
 
-        # Permite requisições OPTIONS (CORS preflight)
         if request.method == 'OPTIONS':
             return self.get_response(request)
 
-        # ✅ A partir daqui, verifica token apenas para rotas protegidas
         auth_header = request.headers.get('Authorization', '')
         
         if not auth_header.startswith('Bearer '):
