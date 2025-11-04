@@ -14,12 +14,13 @@ class JWTAuthenticationMiddleware:
         public_paths = [
             '/api/auth/register/',
             '/api/auth/login/',
-            '/api/auth/forgot-password/',           # ← ADICIONE ESTA
-            '/api/auth/verify-reset-code/',         # ← ADICIONE ESTA
-            '/api/auth/reset-password/',            # ← ADICIONE ESTA
+            '/api/auth/forgot-password/',     
+            '/api/auth/verify-reset-code/',
+            '/api/auth/reset-password/',           
             '/admin/',
             '/static/',
             '/media/',
+            '/api/auth/test-email/', 
         ]
 
         # Se a rota for pública, permite sem verificar token
