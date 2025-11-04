@@ -365,7 +365,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
             </button>
             <div className="logo">
               <div className="logo-icon">
-                <PiggyBank size={28} />
+                <PiggyBank size={32} />
               </div>
               <span className="logo-text">CAPITAL ONLINE</span>
             </div>
@@ -380,16 +380,16 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
 
           <div className="header-right">
             <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
-              <Calendar size={18} />
+              <Calendar size={20} />
             </button>
             <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
-              <Bell size={18} />
+              <Bell size={20} />
             </button>
             <div className="profile-avatar" onClick={() => onNavigate('profile')}>
-              <User size={18} />
+              <User size={20} />
             </div>
             <button className="icon-button logout" onClick={handleLogout}>
-              <LogOut size={18} />
+              <LogOut size={20} />
             </button>
           </div>
         </div>
