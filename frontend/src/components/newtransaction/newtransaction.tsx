@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PiggyBank, Calendar, Bell, LogOut, User, CheckCircle, XCircle, Trash2, AlertCircle } from 'lucide-react';
+import { PiggyBank, Calendar, Bell, LogOut, User, CheckCircle, XCircle, Trash2, AlertCircle, Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CalendarInternal from '../calendario/CalendarPopup';
 import NotificationsPopup from '../notificacoes/NotificationsPopup';
@@ -77,12 +77,18 @@ const NewTransaction: React.FC = () => {
     transactionName: '',
   });
   const [deleting, setDeleting] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ show: true, type, message });
     setTimeout(() => {
       setToast({ show: false, type, message: '' });
     }, 4000);
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsMobileMenuOpen(false);
   };
 
   useEffect(() => {
@@ -515,105 +521,45 @@ const NewTransaction: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+    <div className="newtransaction-container">
       {/* Toast Notification */}
       {toast.show && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
+        <div className="toast-notification" style={{
           backgroundColor: toast.type === 'success' ? '#22c55e' : '#ef4444',
-          color: 'white',
-          padding: '1rem 1.5rem',
-          borderRadius: '8px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
         }}>
           {toast.type === 'success' ? <CheckCircle size={24} /> : <XCircle size={24} />}
-          <span style={{ fontWeight: '600' }}>{toast.message}</span>
+          <span>{toast.message}</span>
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-        }}
-        onClick={closeDeleteModal}
-        >
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '2rem',
-            maxWidth: '500px',
-            width: '90%',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-          }}
-          onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div style={{
-                backgroundColor: '#fee2e2',
-                borderRadius: '50%',
-                padding: '0.75rem',
-                display: 'flex',
-              }}>
+        <div className="modal-overlay" onClick={closeDeleteModal}>
+          <div className="delete-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-modal-header">
+              <div className="delete-modal-icon">
                 <AlertCircle size={24} color="#ef4444" />
               </div>
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>
-                Confirmar Exclusão
-              </h2>
+              <h2 className="delete-modal-title">Confirmar Exclusão</h2>
             </div>
 
-            <p style={{ color: '#64748b', marginBottom: '1.5rem', fontSize: '1rem' }}>
+            <p className="delete-modal-message">
               Tem certeza que deseja excluir a transação <strong>"{deleteModal.transactionName}"</strong>?
               Esta ação não pode ser desfeita.
             </p>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className="delete-modal-buttons">
               <button
                 onClick={closeDeleteModal}
                 disabled={deleting}
-                style={{
-                  flex: 1,
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: 'white',
-                  color: '#64748b',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: deleting ? 'not-allowed' : 'pointer',
-                }}
+                className="btn-cancel"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
-                style={{
-                  flex: 1,
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: deleting ? '#fca5a5' : '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: deleting ? 'not-allowed' : 'pointer',
-                }}
+                className="btn-delete"
               >
                 {deleting ? 'Excluindo...' : 'Sim, Excluir'}
               </button>
@@ -626,98 +572,118 @@ const NewTransaction: React.FC = () => {
       <header className="header">
         <div className="header-container">
           <div className="header-left">
+            <button 
+              className="menu-button" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
             <div className="logo">
-              <PiggyBank className="logo-icon" />
+              <div className="logo-icon">
+                <PiggyBank size={32} />
+              </div>
               <span className="logo-text">CAPITAL ONLINE</span>
             </div>
           </div>
-          <nav className="nav">
+
+          <div className="header-center">
             <button className="nav-button" onClick={() => navigate('/dashboard')}>Dashboard</button>
             <button className="nav-button active" onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
             <button className="nav-button" onClick={() => navigate('/graficos')}>Gráficos</button>
             <button className="nav-button" onClick={() => navigate('/objetivos')}>Objetivos</button>
-          </nav>
+          </div>
+
           <div className="header-right">
             <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
-              <Calendar size={18} />
+              <Calendar size={20} />
             </button>
             <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
-              <Bell size={18} />
+              <Bell size={20} />
             </button>
-            <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
-              <User size={18} />
+            <div className="profile-avatar" onClick={() => navigate('/profile')}>
+              <User size={20} />
             </div>
             <button className="icon-button logout" onClick={handleLogout}>
-              <LogOut size={18} />
+              <LogOut size={20} />
             </button>
           </div>
         </div>
       </header>
 
+      {/* Menu Mobile */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu">
+          <button className="mobile-menu-item" onClick={() => handleNavigate('/dashboard')}>
+            Dashboard
+          </button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('/nova-movimentacao')}>
+            Nova movimentação
+          </button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('/graficos')}>
+            Gráficos
+          </button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('/objetivos')}>
+            Objetivos
+          </button>
+        </div>
+      )}
+
       {/* Main Content */}
-      <main style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 2rem' }}>
-        <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      <main className="newtransaction-content">
+        <h1 className="newtransaction-title">
           Nova movimentação
         </h1>
         
-        <p style={{ color: '#64748b', marginBottom: '2rem' }}>
+        <p className="newtransaction-subtitle">
           Registre uma nova entrada ou saída financeira
         </p>
 
-        <div style={{
-          backgroundColor: 'white',
-          borderRadius: '12px',
-          padding: '2rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        }}>
-          <form onSubmit={handleSubmit}>
+        <div className="newtransaction-form-container">
+          <form className="newtransaction-form" onSubmit={handleSubmit}>
             {/* Tipo de movimentação */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.75rem' }}>
+            <div className="form-group">
+              <label className="transaction-type-label">
                 Tipo de movimentação
               </label>
-              <div style={{ display: 'flex', gap: '1rem' }}>
+              <div className="transaction-type-buttons">
                 <button
                   type="button"
+                  className={`transaction-type-button ${formData.type === 'income' ? 'income' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, type: 'income' }))}
-                  style={{
-                    flex: 1,
-                    padding: '1rem',
-                    border: formData.type === 'income' ? '2px solid #22c55e' : '2px solid #e2e8f0',
-                    borderRadius: '8px',
-                    background: formData.type === 'income' ? '#f0fdf4' : 'white',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    fontSize: '1rem',
-                    color: formData.type === 'income' ? '#22c55e' : '#64748b',
-                  }}
                 >
-                  ↗ Entrada
+                  <div className="transaction-type-button-content">
+                    <div className="transaction-type-icon-container">
+                      <span className="transaction-type-icon">↗</span>
+                    </div>
+                    <div className="transaction-type-text">
+                      <div className="transaction-type-text-title">Entrada</div>
+                      <div className="transaction-type-text-subtitle">Recebimentos</div>
+                    </div>
+                  </div>
                 </button>
                 <button
                   type="button"
+                  className={`transaction-type-button ${formData.type === 'expense' ? 'expense' : ''}`}
                   onClick={() => setFormData(prev => ({ ...prev, type: 'expense' }))}
-                  style={{
-                    flex: 1,
-                    padding: '1rem',
-                    border: formData.type === 'expense' ? '2px solid #ef4444' : '2px solid #e2e8f0',
-                    borderRadius: '8px',
-                    background: formData.type === 'expense' ? '#fef2f2' : 'white',
-                    cursor: 'pointer',
-                    fontWeight: '600',
-                    fontSize: '1rem',
-                    color: formData.type === 'expense' ? '#ef4444' : '#64748b',
-                  }}
                 >
-                  ↙ Saída
+                  <div className="transaction-type-button-content">
+                    <div className="transaction-type-icon-container">
+                      <span className="transaction-type-icon">↙</span>
+                    </div>
+                    <div className="transaction-type-text">
+                      <div className="transaction-type-text-title">Saída</div>
+                      <div className="transaction-type-text-subtitle">Pagamentos</div>
+                    </div>
+                  </div>
                 </button>
               </div>
             </div>
 
             {/* Descrição */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
-                Descrição *
+            <div className="form-group">
+              <label className="form-label">
+                Descrição <span className="required">*</span>
               </label>
               <input
                 name="description"
@@ -726,21 +692,15 @@ const NewTransaction: React.FC = () => {
                 onChange={handleChange}
                 required
                 placeholder="Ex: Venda de produto"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                }}
+                className="form-input"
               />
             </div>
 
             {/* Grid: Valor, Categoria, Data */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Valor (R$) *
+            <div className="form-grid">
+              <div className="form-group">
+                <label className="form-label">
+                  Valor (R$) <span className="required">*</span>
                 </label>
                 <input
                   name="amount"
@@ -749,32 +709,20 @@ const NewTransaction: React.FC = () => {
                   onChange={handleChange}
                   required
                   placeholder="0,00"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    fontSize: '1rem',
-                  }}
+                  className="form-input"
                 />
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Categoria *
+              <div className="form-group">
+                <label className="form-label">
+                  Categoria <span className="required">*</span>
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
                   required
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    fontSize: '1rem',
-                  }}
+                  className="form-select"
                 >
                   <option value="">Selecione</option>
                   {categories.map(cat => (
@@ -785,9 +733,9 @@ const NewTransaction: React.FC = () => {
                 </select>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
-                  Data *
+              <div className="form-group">
+                <label className="form-label">
+                  Data <span className="required">*</span>
                 </label>
                 <input
                   name="date"
@@ -795,34 +743,22 @@ const NewTransaction: React.FC = () => {
                   value={formData.date}
                   onChange={handleChange}
                   required
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    fontSize: '1rem',
-                  }}
+                  className="form-input"
                 />
               </div>
             </div>
 
             {/* Forma de pagamento */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
-                Forma de pagamento *
+            <div className="form-group">
+              <label className="form-label">
+                Forma de pagamento <span className="required">*</span>
               </label>
               <select
                 name="paymentType"
                 value={formData.paymentType}
                 onChange={handleChange}
                 required
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                }}
+                className="form-select"
               >
                 <option value="avista">À vista</option>
                 <option value="parcelado">Parcelado</option>
@@ -832,9 +768,9 @@ const NewTransaction: React.FC = () => {
             {/* Número de parcelas e opções de lembrete */}
             {formData.paymentType === 'parcelado' && (
               <>
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
-                    Número de parcelas *
+                <div className="form-group">
+                  <label className="form-label">
+                    Número de parcelas <span className="required">*</span>
                   </label>
                   <input
                     name="installments"
@@ -844,60 +780,35 @@ const NewTransaction: React.FC = () => {
                     onChange={handleChange}
                     required={formData.paymentType === 'parcelado'}
                     placeholder="Ex: 3"
-                    style={{
-                      width: '100%',
-                      padding: '0.75rem',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '8px',
-                      fontSize: '1rem',
-                    }}
+                    className="form-input"
                   />
-                  <small style={{ color: '#64748b', fontSize: '0.875rem' }}>
+                  <small className="form-hint">
                     Mínimo de 2 parcelas
                   </small>
                 </div>
 
                 {/* Opção de adicionar lembretes */}
-                <div style={{
-                  marginBottom: '1.5rem',
-                  padding: '1.5rem',
-                  backgroundColor: '#f0f9ff',
-                  borderRadius: '8px',
-                  border: '2px solid #bae6fd',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div className="reminders-section">
+                  <div className="reminders-checkbox">
                     <input
                       type="checkbox"
                       name="addReminders"
                       id="addReminders"
                       checked={formData.addReminders}
                       onChange={handleChange}
-                      style={{
-                        width: '18px',
-                        height: '18px',
-                        cursor: 'pointer',
-                      }}
                     />
-                    <label 
-                      htmlFor="addReminders"
-                      style={{ 
-                        fontWeight: '600',
-                        fontSize: '1rem',
-                        cursor: 'pointer',
-                        color: '#0369a1',
-                      }}
-                    >
+                    <label htmlFor="addReminders">
                       📅 Adicionar lembretes de pagamento
                     </label>
                   </div>
 
-                  <p style={{ fontSize: '0.875rem', color: '#0c4a6e', marginBottom: '1rem' }}>
+                  <p className="reminders-description">
                     Crie lembretes automáticos para cada parcela no seu calendário
                   </p>
 
                   {formData.addReminders && (
-                    <div>
-                      <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#0369a1' }}>
+                    <div className="reminders-day">
+                      <label className="form-label">
                         Dia do mês para o lembrete (1-28) *
                       </label>
                       <input
@@ -909,15 +820,9 @@ const NewTransaction: React.FC = () => {
                         onChange={handleChange}
                         required={formData.addReminders}
                         placeholder="Ex: 5"
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem',
-                          border: '1px solid #bae6fd',
-                          borderRadius: '8px',
-                          fontSize: '1rem',
-                        }}
+                        className="form-input"
                       />
-                      <small style={{ color: '#0c4a6e', fontSize: '0.875rem', display: 'block', marginTop: '0.5rem' }}>
+                      <small className="form-hint">
                         💡 Escolha um dia fixo do mês para receber os lembretes das parcelas
                       </small>
                     </div>
@@ -927,8 +832,8 @@ const NewTransaction: React.FC = () => {
             )}
 
             {/* Observações */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontWeight: '600', marginBottom: '0.5rem' }}>
+            <div className="form-group form-grid-full">
+              <label className="form-label">
                 Observações
               </label>
               <textarea
@@ -937,51 +842,23 @@ const NewTransaction: React.FC = () => {
                 onChange={handleChange}
                 rows={4}
                 placeholder="Informações adicionais (opcional)"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontFamily: 'inherit',
-                  resize: 'vertical',
-                }}
+                className="form-textarea"
               />
             </div>
 
             {/* Botões */}
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className="form-actions">
               <button
                 type="submit"
                 disabled={loading}
-                style={{
-                  flex: 1,
-                  padding: '1rem',
-                  backgroundColor: loading ? '#94a3b8' : '#22c55e',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                }}
+                className="btn-primary"
               >
                 {loading ? 'Salvando...' : 'Salvar Movimentação'}
               </button>
               <button
                 type="button"
                 onClick={clearForm}
-                style={{
-                  flex: 1,
-                  padding: '1rem',
-                  backgroundColor: 'white',
-                  color: '#64748b',
-                  border: '2px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                }}
+                className="btn-secondary"
               >
                 Limpar Formulário
               </button>
@@ -991,87 +868,52 @@ const NewTransaction: React.FC = () => {
 
         {/* Lista de TODAS as Transações */}
         {transactions.length > 0 && (
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '2rem',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            marginTop: '2rem',
-          }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+          <div className="transactions-container">
+            <h2 className="transactions-title">
               Todas as Movimentações
             </h2>
-            <p style={{ color: '#64748b', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+            <p className="transactions-subtitle">
               Total de {transactions.length} transações (ordenadas por data - mais recentes primeiro)
             </p>
             
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="transactions-table-container">
+              <table className="transactions-table">
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600', color: '#64748b' }}>Data</th>
-                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600', color: '#64748b' }}>Descrição</th>
-                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600', color: '#64748b' }}>Tipo</th>
-                    <th style={{ padding: '0.75rem', textAlign: 'left', fontWeight: '600', color: '#64748b' }}>Pagamento</th>
-                    <th style={{ padding: '0.75rem', textAlign: 'right', fontWeight: '600', color: '#64748b' }}>Valor</th>
-                    <th style={{ padding: '0.75rem', textAlign: 'center', fontWeight: '600', color: '#64748b' }}>Ações</th>
+                  <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Tipo</th>
+                    <th>Pagamento</th>
+                    <th>Valor</th>
+                    <th>Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {transactions.map((transaction) => (
-                    <tr key={transaction.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                    <tr key={transaction.id}>
+                      <td className="transaction-date">
                         {new Date(transaction.data_movimentacao).toLocaleDateString('pt-BR')}
                       </td>
-                      <td style={{ padding: '1rem', fontWeight: '500' }}>
+                      <td className="transaction-description">
                         {transaction.descricao}
                       </td>
-                      <td style={{ padding: '1rem' }}>
-                        <span style={{
-                          padding: '0.25rem 0.75rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.875rem',
-                          fontWeight: '600',
-                          backgroundColor: transaction.tipo === 'entrada' ? '#dcfce7' : '#fee2e2',
-                          color: transaction.tipo === 'entrada' ? '#166534' : '#991b1b',
-                        }}>
+                      <td className="transaction-type">
+                        <span className={`transaction-badge ${transaction.tipo}`}>
                           {transaction.tipo === 'entrada' ? 'Entrada' : 'Saída'}
                         </span>
                       </td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#64748b' }}>
+                      <td className="transaction-payment">
                         {transaction.forma_pagamento === 'parcelado' 
                           ? `${transaction.quantidade_parcelas}x` 
                           : 'À vista'}
                       </td>
-                      <td style={{ 
-                        padding: '1rem', 
-                        textAlign: 'right',
-                        fontWeight: '600',
-                        color: transaction.tipo === 'entrada' ? '#22c55e' : '#ef4444',
-                      }}>
+                      <td className={`transaction-value ${transaction.tipo}`}>
                         {transaction.tipo === 'entrada' ? '+' : '-'}R$ {(transaction.valor / 100).toFixed(2).replace('.', ',')}
                       </td>
-                      <td style={{ padding: '1rem', textAlign: 'center' }}>
+                      <td className="transaction-actions">
                         <button
                           onClick={() => openDeleteModal(transaction.id, transaction.descricao)}
-                          style={{
-                            padding: '0.5rem',
-                            backgroundColor: '#fee2e2',
-                            color: '#ef4444',
-                            border: 'none',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#fecaca';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#fee2e2';
-                          }}
+                          className="delete-button"
                           title="Excluir transação"
                         >
                           <Trash2 size={18} />

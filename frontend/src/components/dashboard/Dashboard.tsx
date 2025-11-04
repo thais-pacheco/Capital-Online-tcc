@@ -11,8 +11,9 @@ import {
   Bell,
   LogOut,
   User,
-  ArrowRight
-
+  ArrowRight,
+  Menu,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CalendarPopup from '../calendario/CalendarPopup';
@@ -44,11 +45,17 @@ const Dashboard: React.FC = () => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const barChartRef = useRef<HTMLCanvasElement>(null);
   const pieChartRef = useRef<HTMLCanvasElement>(null);
   const barChartInstance = useRef<any>(null);
   const pieChartInstance = useRef<any>(null);
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsMobileMenuOpen(false);
+  };
 
   // --- Buscar transações ---
   useEffect(() => {
@@ -226,9 +233,17 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard">
 
+      {/* HEADER atualizado com menu mobile */}
       <header className="header">
         <div className="header-container">
           <div className="header-left">
+            <button 
+              className="menu-button" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
             <div className="logo">
               <PiggyBank className="logo-icon" />
               <span className="logo-text">CAPITAL ONLINE</span>
@@ -256,6 +271,16 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* Menu Mobile */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu">
+          <button className="mobile-menu-item" onClick={() => handleNavigate('/dashboard')}>Dashboard</button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('/nova-movimentacao')}>Nova movimentação</button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('/graficos')}>Gráficos</button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('/objetivos')}>Objetivos</button>
+        </div>
+      )}
 
       {/* Conteúdo principal */}
       <div className="main-content">
