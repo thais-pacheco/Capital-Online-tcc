@@ -11,4 +11,5 @@ urlpatterns = [
     
     path('verify-token/', views.verify_token_view, name='verify_token'),
     path('refresh-token/', views.refresh_token_view, name='refresh_token'),
+    path('test-email/', views.test_email_view, name='test_email'),
 ]
