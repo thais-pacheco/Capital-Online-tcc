@@ -233,40 +233,52 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard">
 
-      {/* HEADER atualizado com menu mobile */}
-      <header className="header">
-        <div className="header-container">
-          <div className="header-left">
+      {/* HEADER IDÊNTICO AO PROFILE */}
+      <header className="profile-header-bar">
+        <div className="profile-header-container">
+          <div className="profile-header-left">
             <button 
-              className="menu-button" 
+              className="profile-menu-button" 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Menu"
             >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
-            <div className="logo">
-              <PiggyBank className="logo-icon" />
-              <span className="logo-text">CAPITAL ONLINE</span>
+            <div className="profile-logo">
+              <div className="profile-logo-icon">
+                <PiggyBank size={32} />
+              </div>
+              <span className="profile-logo-text">CAPITAL ONLINE</span>
             </div>
           </div>
-          <nav className="nav">
-            <button className="nav-button active" onClick={() => navigate('/dashboard')}>Dashboard</button>
-            <button className="nav-button" onClick={() => navigate('/nova-movimentacao')}>Nova movimentação</button>
-            <button className="nav-button" onClick={() => navigate('/graficos')}>Gráficos</button>
-            <button className="nav-button" onClick={() => navigate('/objetivos')}>Objetivos</button>
-          </nav>
-          <div className="header-right">
-            <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
-              <Calendar size={18} />
+
+          <div className="profile-header-center">
+            <button className="profile-nav-button active" onClick={() => navigate('/dashboard')}>
+              Dashboard
             </button>
-            <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
-              <Bell size={18} />
+            <button className="profile-nav-button" onClick={() => navigate('/nova-movimentacao')}>
+              Nova movimentação
             </button>
-            <div className="profile-avatar" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
-              <User size={18} />
+            <button className="profile-nav-button" onClick={() => navigate('/graficos')}>
+              Gráficos
+            </button>
+            <button className="profile-nav-button" onClick={() => navigate('/objetivos')}>
+              Objetivos
+            </button>
+          </div>
+
+          <div className="profile-header-right">
+            <button className="profile-icon-button" onClick={() => setIsCalendarOpen(true)}>
+              <Calendar size={20} />
+            </button>
+            <button className="profile-icon-button" onClick={() => setIsNotificationsOpen(true)}>
+              <Bell size={20} />
+            </button>
+            <div className="profile-avatar" onClick={() => navigate('/profile')}>
+              <User size={20} />
             </div>
-            <button className="icon-button logout" onClick={handleLogout}>
-              <LogOut size={18} />
+            <button className="profile-icon-button logout" onClick={handleLogout}>
+              <LogOut size={20} />
             </button>
           </div>
         </div>
@@ -274,11 +286,19 @@ const Dashboard: React.FC = () => {
 
       {/* Menu Mobile */}
       {isMobileMenuOpen && (
-        <div className="mobile-menu">
-          <button className="mobile-menu-item" onClick={() => handleNavigate('/dashboard')}>Dashboard</button>
-          <button className="mobile-menu-item" onClick={() => handleNavigate('/nova-movimentacao')}>Nova movimentação</button>
-          <button className="mobile-menu-item" onClick={() => handleNavigate('/graficos')}>Gráficos</button>
-          <button className="mobile-menu-item" onClick={() => handleNavigate('/objetivos')}>Objetivos</button>
+        <div className="profile-mobile-menu">
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('/dashboard')}>
+            Dashboard
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('/nova-movimentacao')}>
+            Nova movimentação
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('/graficos')}>
+            Gráficos
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('/objetivos')}>
+            Objetivos
+          </button>
         </div>
       )}
 
