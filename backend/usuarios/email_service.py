@@ -46,5 +46,3 @@ def send_reset_code_email(email, nome, codigo):
         import traceback
         print(traceback.format_exc())
         return False, str(e)
-
-
