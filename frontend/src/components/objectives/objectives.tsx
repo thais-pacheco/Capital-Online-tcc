@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PiggyBank, Calendar, Bell, LogOut, User, Clock, AlertCircle, Edit, Trash2, Plus, Wallet, MinusCircle, TrendingUp, Target, CheckCircle } from 'lucide-react';
+import { PiggyBank, Calendar, Bell, LogOut, User, Clock, AlertCircle, Edit, Trash2, Plus, Wallet, MinusCircle, TrendingUp, Target, CheckCircle, Menu, X } from 'lucide-react';
 import CalendarPopup from '../calendario/CalendarPopup';
 import NotificationsPopup from '../notificacoes/NotificationsPopup';
 import './objectives.css';
@@ -60,6 +60,7 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const token = localStorage.getItem('token')?.replace(/"/g, '');
 
@@ -335,7 +336,13 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
     onLogout();
+  };
+
+  const handleNavigate = (path: Page) => {
+    onNavigate(path);
+    setIsMobileMenuOpen(false);
   };
 
   const totalSaved = goals.reduce((sum, goal) => sum + goal.valor_atual, 0);
@@ -346,36 +353,74 @@ const Goals: React.FC<GoalsProps> = ({ onNavigate, onLogout }) => {
 
   return (
     <div className="goals-page">
-      <header className="header">
-        <div className="header-container">
-          <div className="header-left">
-            <div className="logo">
-              <PiggyBank className="logo-icon" />
-              <span className="logo-text">CAPITAL ONLINE</span>
+      {/* HEADER IDÊNTICO AO PROFILE */}
+      <header className="profile-header-bar">
+        <div className="profile-header-container">
+          <div className="profile-header-left">
+            <button 
+              className="profile-menu-button" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            <div className="profile-logo">
+              <div className="profile-logo-icon">
+                <PiggyBank size={32} />
+              </div>
+              <span className="profile-logo-text">CAPITAL ONLINE</span>
             </div>
           </div>
-          <nav className="nav">
-            <button className="nav-button" onClick={() => onNavigate('dashboard')}>Dashboard</button>
-            <button className="nav-button" onClick={() => onNavigate('new-transaction')}>Nova movimentação</button>
-            <button className="nav-button" onClick={() => onNavigate('charts')}>Gráficos</button>
-            <button className="nav-button active" onClick={() => onNavigate('objetivos')}>Objetivos</button>
-          </nav>
-          <div className="header-right">
-            <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
-              <Calendar size={18} />
+
+          <div className="profile-header-center">
+            <button className="profile-nav-button" onClick={() => onNavigate('dashboard')}>
+              Dashboard
             </button>
-            <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
-              <Bell size={18} />
+            <button className="profile-nav-button" onClick={() => onNavigate('new-transaction')}>
+              Nova movimentação
             </button>
-            <div className="profile-avatar" onClick={() => onNavigate('profile')} style={{ cursor: 'pointer' }}>
-              <User size={18} />
+            <button className="profile-nav-button" onClick={() => onNavigate('charts')}>
+              Gráficos
+            </button>
+            <button className="profile-nav-button active" onClick={() => onNavigate('objetivos')}>
+              Objetivos
+            </button>
+          </div>
+
+          <div className="profile-header-right">
+            <button className="profile-icon-button" onClick={() => setIsCalendarOpen(true)}>
+              <Calendar size={20} />
+            </button>
+            <button className="profile-icon-button" onClick={() => setIsNotificationsOpen(true)}>
+              <Bell size={20} />
+            </button>
+            <div className="profile-avatar" onClick={() => onNavigate('profile')}>
+              <User size={20} />
             </div>
-            <button className="icon-button logout" onClick={handleLogout}>
-              <LogOut size={18} />
+            <button className="profile-icon-button logout" onClick={handleLogout}>
+              <LogOut size={20} />
             </button>
           </div>
         </div>
       </header>
+
+      {/* Menu Mobile */}
+      {isMobileMenuOpen && (
+        <div className="profile-mobile-menu">
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('dashboard')}>
+            Dashboard
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('new-transaction')}>
+            Nova movimentação
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('charts')}>
+            Gráficos
+          </button>
+          <button className="profile-mobile-menu-item" onClick={() => handleNavigate('objetivos')}>
+            Objetivos
+          </button>
+        </div>
+      )}
 
       <main className="main-content">
         {errorMessage && (

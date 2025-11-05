@@ -6,7 +6,9 @@ import {
   TrendingDown,
   LogOut,
   Bell,
-  User
+  User,
+  Menu,
+  X
 } from 'lucide-react';
 import Chart from 'chart.js/auto';
 import './charts.css';
@@ -42,9 +44,15 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<any>(null);
+
+  const handleNavigate = (path: string) => {
+    onNavigate(path);
+    setIsMobileMenuOpen(false);
+  };
 
   // Buscar transações e categorias
   useEffect(() => {
@@ -317,416 +325,17 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
 
   return (
     <div className="charts-container">
-      <style>{`
-        /* Header */
-        .charts-header {
-          background: white;
-          border-bottom: 1px solid #e9ecef;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-          position: sticky;
-          top: 0;
-          z-index: 100;
-        }
-
-        .charts-header-inner {
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 24px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          height: 64px;
-        }
-
-        .charts-header-left {
-          display: flex;
-          align-items: center;
-          gap: 32px;
-        }
-
-        .charts-logo {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .charts-title {
-          font-size: 18px;
-          font-weight: 700;
-          color: #22c55e;
-        }
-
-        .charts-nav {
-          display: flex;
-          gap: 8px;
-        }
-
-        .nav-button {
-          padding: 8px 16px;
-          border: none;
-          background: none;
-          color: #6b7280;
-          font-size: 14px;
-          font-weight: 500;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .nav-button:hover {
-          color: #22c55e;
-          background: #f0fdf4;
-        }
-
-        .nav-button.active {
-          color: #10b981;
-          background: #f0fdf4;
-        }
-
-        .charts-header-right {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .icon-button {
-          width: 40px;
-          height: 40px;
-          border: none;
-          background: none;
-          color: #6b7280;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-
-        .icon-button:hover {
-          background: #f3f4f6;
-          color: #374151;
-        }
-
-        .icon-button.logout:hover {
-          background: #fef2f2;
-          color: #dc2626;
-        }
-
-    
-
-        .charts-main {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 32px;
-        }
-
-        .charts-page-header {
-          margin-bottom: 32px;
-        }
-
-        .back-btn {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 16px;
-          background: none;
-          border: none;
-          color: #6B7280;
-          cursor: pointer;
-        }
-
-        .charts-stats-grid {
-          display: flex;
-          gap: 16px;
-          margin-bottom: 32px;
-        }
-
-        .charts-stats-card {
-          background: #fff;
-          padding: 24px;
-          border-radius: 16px;
-          border: 1px solid #E5E7EB;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .icon-wrapper {
-          padding: 12px;
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: fit-content;
-        }
-
-        .icon-wrapper.green {
-          background-color: #D1FAE5;
-          color: #059669;
-        }
-
-        .icon-wrapper.red {
-          background-color: #FEE2E2;
-          color: #DC2626;
-        }
-
-        .charts-filters {
-          display: flex;
-          gap: 16px;
-          margin-bottom: 32px;
-        }
-
-        .filter-item {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .filter-item input,
-        .filter-item select {
-          padding: 8px;
-          border: 1px solid #D1D5DB;
-          border-radius: 8px;
-        }
-
-        .charts-graph-card {
-          background: #fff;
-          padding: 24px;
-          border-radius: 16px;
-          border: 1px solid #E5E7EB;
-        }
-
-        .charts-graph {
-          display: flex;
-          position: relative;
-          height: 320px;
-          margin-bottom: 24px;
-        }
-
-        .charts-y-axis {
-          position: absolute;
-          left: 0;
-          top: 0;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          font-size: 12px;
-          color: #6B7280;
-          padding-right: 8px;
-        }
-
-        .charts-bars {
-          margin-left: 48px;
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          flex: 1;
-        }
-
-        .charts-bar-column {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          flex: 1;
-        }
-
-        .charts-bar {
-          width: 100%;
-          border-radius: 4px 4px 0 0;
-        }
-
-        .charts-bar.income {
-          background-color: #60A5FA;
-          margin-right: 4px;
-        }
-
-        .charts-bar.expense {
-          background-color: #F87171;
-        }
-
-        .month-label {
-          font-size: 12px;
-          color: #6B7280;
-          margin-top: 8px;
-        }
-
-        .charts-legend {
-          display: flex;
-          justify-content: center;
-          gap: 24px;
-          font-size: 12px;
-        }
-
-        .income-color {
-          width: 12px;
-          height: 12px;
-          background-color: #60A5FA;
-          border-radius: 2px;
-        }
-
-        .expense-color {
-          width: 12px;
-          height: 12px;
-          background-color: #F87171;
-          border-radius: 2px;
-        }
-
-        /* Análise Inteligente */
-        .charts-analysis-section {
-          margin-top: 32px;
-        }
-
-        .charts-analysis-section h2 {
-          font-size: 24px;
-          font-weight: 700;
-          color: #111827;
-          margin-bottom: 24px;
-        }
-
-        .insights-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 16px;
-          margin-bottom: 32px;
-        }
-
-        .insight-card {
-          background: white;
-          padding: 20px;
-          border-radius: 12px;
-          border: 1px solid #E5E7EB;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .insight-card.success {
-          border-left: 4px solid #22c55e;
-          background: linear-gradient(to right, #f0fdf4 0%, white 10%);
-        }
-
-        .insight-card.warning {
-          border-left: 4px solid #f59e0b;
-          background: linear-gradient(to right, #fffbeb 0%, white 10%);
-        }
-
-        .insight-card.danger {
-          border-left: 4px solid #ef4444;
-          background: linear-gradient(to right, #fef2f2 0%, white 10%);
-        }
-
-        .insight-header {
-          margin-bottom: 8px;
-        }
-
-        .insight-header strong {
-          font-size: 16px;
-          font-weight: 600;
-          color: #111827;
-        }
-
-        .insight-message {
-          font-size: 14px;
-          color: #4B5563;
-          margin-bottom: 8px;
-          line-height: 1.5;
-        }
-
-        .insight-recommendation {
-          font-size: 13px;
-          color: #6B7280;
-          font-style: italic;
-          padding-top: 8px;
-          border-top: 1px solid #F3F4F6;
-        }
-
-        .category-analysis-card {
-          background: white;
-          padding: 24px;
-          border-radius: 12px;
-          border: 1px solid #E5E7EB;
-        }
-
-        .category-analysis-card h3 {
-          font-size: 20px;
-          font-weight: 600;
-          color: #111827;
-          margin-bottom: 4px;
-        }
-
-        .category-subtitle {
-          font-size: 14px;
-          color: #6B7280;
-          margin-bottom: 20px;
-        }
-
-        .category-list {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-
-        .category-item {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .category-info {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .category-name {
-          font-size: 14px;
-          font-weight: 500;
-          color: #111827;
-        }
-
-        .category-count {
-          font-size: 12px;
-          color: #6B7280;
-        }
-
-        .category-bar-container {
-          width: 100%;
-          height: 8px;
-          background-color: #F3F4F6;
-          border-radius: 4px;
-          overflow: hidden;
-        }
-
-        .category-bar {
-          height: 100%;
-          border-radius: 4px;
-          transition: width 0.3s ease;
-        }
-
-        .category-values {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .category-amount {
-          font-size: 14px;
-          font-weight: 600;
-          color: #111827;
-        }
-
-        .category-percentage {
-          font-size: 13px;
-          font-weight: 500;
-          color: #6B7280;
-        }
-      `}</style>
-
       {/* Header */}
       <header className="charts-header">
         <div className="charts-header-inner">
           <div className="charts-header-left">
+            <button 
+              className="menu-button" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
             <div className="charts-logo">
               <PiggyBank className="logo-icon" />
               <span className="charts-title">CAPITAL ONLINE</span>
@@ -742,20 +351,38 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
 
           <div className="charts-header-right">
             <button className="icon-button" onClick={() => setIsCalendarOpen(true)}>
-              <Calendar size={18} />
+              <Calendar size={20} />
             </button>
             <button className="icon-button" onClick={() => setIsNotificationsOpen(true)}>
-              <Bell size={18} />
+              <Bell size={20} />
             </button>
-            <div className="profile-avatar" style={{ cursor: 'pointer' }} onClick={() => onNavigate('profile')}>
-              <User size={18} />
+            <div className="profile-avatar" onClick={() => onNavigate('profile')}>
+              <User size={20} />
             </div>
             <button className="icon-button logout" onClick={onLogout}>
-              <LogOut size={18} />
+              <LogOut size={20} />
             </button>
           </div>
         </div>
       </header>
+
+      {/* Menu Mobile */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu">
+          <button className="mobile-menu-item" onClick={() => handleNavigate('dashboard')}>
+            Dashboard
+          </button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('nova-transacao')}>
+            Nova movimentação
+          </button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('charts')}>
+            Gráficos
+          </button>
+          <button className="mobile-menu-item" onClick={() => handleNavigate('objetivos')}>
+            Objetivos
+          </button>
+        </div>
+      )}
 
       <main className="charts-main">
         {/* Page header */}
@@ -857,23 +484,23 @@ const Charts: React.FC<ChartsProps> = ({ onNavigate, onLogout }) => {
           )}
 
           {/* Stats cards */}
-        <div className="charts-stats-grid">
-          <div className="charts-stats-card">
-            <div className="icon-wrapper green"><PiggyBank size={24} /></div>
-            <span>Saldo Atual</span>
-            <strong>R$ {(totalBalance / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+          <div className="charts-stats-grid">
+            <div className="charts-stats-card">
+              <div className="icon-wrapper green"><PiggyBank size={24} /></div>
+              <span>Saldo Atual</span>
+              <strong>R$ {(totalBalance / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+            </div>
+            <div className="charts-stats-card">
+              <div className="icon-wrapper green"><TrendingUp size={24} /></div>
+              <span>Entradas</span>
+              <strong>R$ {(totalIncome / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+            </div>
+            <div className="charts-stats-card">
+              <div className="icon-wrapper red"><TrendingDown size={24} /></div>
+              <span>Saídas</span>
+              <strong>R$ {(totalExpenses / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+            </div>
           </div>
-          <div className="charts-stats-card">
-            <div className="icon-wrapper green"><TrendingUp size={24} /></div>
-            <span>Entradas</span>
-            <strong>R$ {(totalIncome / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-          </div>
-          <div className="charts-stats-card">
-            <div className="icon-wrapper red"><TrendingDown size={24} /></div>
-            <span>Saídas</span>
-            <strong>R$ {(totalExpenses / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
-          </div>
-        </div>
         </div>
       </main>
     </div>
