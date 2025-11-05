@@ -261,18 +261,23 @@
 /* Stats Grid - CARDS ALINHADOS E PROPORCIONAIS */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
   margin-bottom: 32px;
 }
 
 .stat-card {
   background: white;
-  padding: 28px;
+  padding: 20px;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .stat-card:hover {
@@ -282,15 +287,16 @@
 
 .stat-header {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -299,8 +305,8 @@
 }
 
 .stat-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .stat-icon.balance {
@@ -316,14 +322,14 @@
 }
 
 .stat-label {
-  font-size: 15px;
+  font-size: 14px;
   color: #6b7280;
   font-weight: 500;
   line-height: 1.4;
 }
 
 .stat-value {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
   color: #111827;
   line-height: 1.2;
@@ -549,7 +555,8 @@
   }
   
   .stats-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
   }
   
   .charts-side-by-side {
@@ -564,7 +571,7 @@
 /* Tablets pequenos (até 900px) */
 @media (max-width: 900px) {
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
   
   .charts-side-by-side {
@@ -642,35 +649,36 @@
   }
   
   .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     margin-bottom: 24px;
   }
   
   .stat-card {
-    padding: 20px;
+    padding: 16px;
   }
   
   .stat-header {
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 10px;
   }
   
   .stat-icon {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
   
   .stat-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
   }
   
   .stat-label {
-    font-size: 14px;
+    font-size: 13px;
   }
   
   .stat-value {
-    font-size: 24px;
+    font-size: 22px;
   }
   
   .charts-side-by-side {
@@ -830,31 +838,32 @@
   }
   
   .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-bottom: 20px;
   }
   
   .stat-card {
-    padding: 16px;
+    padding: 14px;
   }
   
   .stat-header {
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 8px;
+    margin-bottom: 10px;
   }
   
   .stat-icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
   }
   
   .stat-icon svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
   
   .stat-label {
-    font-size: 13px;
+    font-size: 12px;
   }
   
   .stat-value {
@@ -992,30 +1001,31 @@
   }
   
   .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
   }
   
   .stat-card {
-    padding: 14px;
+    padding: 12px;
   }
   
   .stat-header {
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 6px;
+    margin-bottom: 8px;
   }
   
   .stat-icon {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
   }
   
   .stat-icon svg {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
   }
   
   .stat-label {
-    font-size: 12px;
+    font-size: 11px;
   }
   
   .stat-value {
